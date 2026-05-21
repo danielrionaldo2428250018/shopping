@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/inbox_messages_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../utils/l10n_helpers.dart';
+import 'admin_rewards_screen.dart';
 import 'settings_screen.dart';
 
 /// Profil pemilik toko (penjual) — menu ke My Store, Orders, Settings.
@@ -244,6 +245,33 @@ class SellerProfileScreen extends StatelessWidget {
                       title: loc.myOrders,
                       onTap: () =>
                           Navigator.pushNamed(context, '/orders'),
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade200),
+                    Container(
+                      color: Colors.orange.shade50,
+                      child: _row(
+                        context,
+                        icon: Icons.admin_panel_settings_outlined,
+                        iconBg: Colors.orange.shade100,
+                        iconColor: Colors.orange.shade800,
+                        title: loc.adminSellerApps,
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          '/admin-seller-applications',
+                        ),
+                      ),
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade200),
+                    _row(
+                      context,
+                      icon: Icons.card_membership_outlined,
+                      iconBg: Colors.orange.shade50,
+                      iconColor: Colors.orange.shade800,
+                      title: loc.adminRewards,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        AdminRewardsScreen.route,
+                      ),
                     ),
                     Divider(height: 1, color: Colors.grey.shade200),
                     _row(

@@ -11,6 +11,7 @@ import '../providers/orders_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../utils/loyalty_points.dart';
 import '../utils/l10n_helpers.dart';
+import 'admin_rewards_screen.dart';
 import 'loyalty_rewards_screen.dart';
 import 'settings_screen.dart';
 
@@ -413,6 +414,50 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     Divider(height: 1, color: Colors.grey.shade200),
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        if (!auth.isLoggedIn) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          children: [
+                            Container(
+                              color: Colors.orange.shade50,
+                              child: _menuRow(
+                                context,
+                                iconBg: Colors.orange.shade100,
+                                iconColor: Colors.orange.shade800,
+                                icon: Icons.admin_panel_settings_outlined,
+                                title: loc.adminSellerApps,
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  '/admin-seller-applications',
+                                ),
+                              ),
+                            ),
+                            Divider(
+                              height: 1,
+                              color: Colors.grey.shade200,
+                            ),
+                            _menuRow(
+                              context,
+                              iconBg: Colors.orange.shade50,
+                              iconColor: Colors.orange.shade800,
+                              icon: Icons.card_membership_outlined,
+                              title: loc.adminRewards,
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                AdminRewardsScreen.route,
+                              ),
+                            ),
+                            Divider(
+                              height: 1,
+                              color: Colors.grey.shade200,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                     _menuRow(
                       context,
                       iconBg: Colors.grey.shade100,
