@@ -417,6 +417,13 @@
   "sortOrderLabel": "الترتيب: {sort}",
   "productNewNotification": "منتج جديد على PreLoved",
   "storeNewNotification": "متجر جديد على PreLoved",
+  "storeNewNotificationBody": "{storeName} أصبح بائعاً رسمياً. تصفّح أحدث كتالوج السلع المستعملة!",
+  "@storeNewNotificationBody": {
+    "placeholders": {
+      "storeName": { "type": "String" }
+    }
+  },
+  "storeNewNotificationSender": "مسؤول PreLoved",
   "openRelatedPage": "فتح الصفحة المرتبطة",
   "mapRequestingLocation": "طلب إذن الموقع…",
   "mapLoadOsmFailed": "فشل تحميل بيانات OSM. تحقق من الاتصال.",
@@ -454,6 +461,21 @@
   "rewardSampleDiscount": "خصم 10% (حد 50 ألف)",
   "rewardSampleBag": "حقيبة تسوق صديقة للبيئة",
   "rewardSampleFeeWaive": "إعفاء رسوم الخدمة لشهر",
+  "rewardSampleShippingDesc": "خصم شحن لمرة شراء واحدة (حد أدنى 100 ألف روبية).",
+  "rewardSampleDiscountDesc": "صالح لفئات الأزياء والإلكترونيات.",
+  "rewardSampleBagDesc": "استلام من فعاليات PreLoved أو الشحن لعنوان الملف.",
+  "rewardSampleFeeWaiveDesc": "للأعضاء المخلصين — بدون رسوم إدارة البائع.",
+  "rewardPointCostLine": "{cost} نقطة",
+  "@rewardPointCostLine": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "nativeLangIndonesian": "Bahasa Indonesia",
+  "nativeLangEnglish": "English",
+  "nativeLangArabic": "العربية",
+  "nativeLangKorean": "한국어",
+  "nativeLangChinese": "中文",
   "homePrelovedDeal": "PRELOVED DEAL",
   "homeWeekThriftBest": "أفضل أسعار التوفيق هذا الأسبوع",
   "homeTrustedSellersLine": "مستعملات جيدة من بائعين موثوقين",
@@ -505,5 +527,9 @@
   "authFirebaseNotReady": "Firebase غير جاهز. أعد تشغيل التطبيق بعد الإعداد.",
   "authFailedWithCode": "فشل المصادقة ({code}).",
   "authPlatformGoogleFailed": "فشل Google Sign-In. أضف SHA-1 في Firebase.",
-  "authPlatformFailedWithCode": "فشل الدخول ({code})."
+  "authPlatformFailedWithCode": "فشل الدخول ({code}).",
+  "authGoogleSignInCancelled": "تم إلغاء تسجيل الدخول عبر Google.",
+  "authGoogleNoEmail": "حساب Google لا يحتوي على بريد إلكتروني.",
+  "authGoogleEmptyToken": "رمز Google فارغ. تحقق من Web Client ID وoauth_client في google-services.json.",
+  "authGoogleNetworkError": "فشل الاتصال أثناء تسجيل الدخول عبر Google. تحقق من الإنترنت."
 }

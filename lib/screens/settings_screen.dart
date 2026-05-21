@@ -142,7 +142,7 @@ class _SettingsScreenState
                               languageLabel(loc, locale.languageCode),
                             ),
                             subtitle: Text(
-                              nativeLanguageName(locale.languageCode),
+                              nativeLanguageName(loc, locale.languageCode),
                             ),
                             value: locale.languageCode,
                             groupValue: selectedLang,

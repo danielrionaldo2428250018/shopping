@@ -34,6 +34,12 @@ String firebaseAuthErrorMessage(
       return loc.authGoogleSignInFailed;
     case 'firebase-not-initialized':
       return loc.authFirebaseNotReady;
+    case 'google-sign-in-cancelled':
+      return loc.authGoogleSignInCancelled;
+    case 'google-no-email':
+      return loc.authGoogleNoEmail;
+    case 'google-empty-token':
+      return loc.authGoogleEmptyToken;
     default:
       return e.message ?? loc.authFailedWithCode(e.code);
   }
@@ -42,6 +48,9 @@ String firebaseAuthErrorMessage(
 String platformAuthErrorMessage(PlatformException e, AppLocalizations loc) {
   if (e.code == 'sign_in_failed' || (e.message ?? '').contains('10')) {
     return loc.authPlatformGoogleFailed;
+  }
+  if (e.code == 'network_error') {
+    return loc.authGoogleNetworkError;
   }
   return e.message ?? loc.authPlatformFailedWithCode(e.code);
 }

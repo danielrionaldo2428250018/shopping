@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/seller_application.dart';
@@ -26,18 +27,27 @@ String languageLabel(AppLocalizations loc, String languageCode) {
   }
 }
 
-String nativeLanguageName(String languageCode) {
+/// [AppLocalizations] untuk kode bahasa tanpa [BuildContext] (notifikasi, provider).
+AppLocalizations appLocalizationsForLanguage(String languageCode) {
+  return lookupAppLocalizations(Locale(languageCode));
+}
+
+AppLocalizations appLocalizationsFromPrefs(SharedPreferences prefs) {
+  return appLocalizationsForLanguage(prefs.getString('locale') ?? 'id');
+}
+
+String nativeLanguageName(AppLocalizations loc, String languageCode) {
   switch (languageCode) {
     case 'id':
-      return 'Bahasa Indonesia';
+      return loc.nativeLangIndonesian;
     case 'en':
-      return 'English';
+      return loc.nativeLangEnglish;
     case 'ar':
-      return 'العربية';
+      return loc.nativeLangArabic;
     case 'ko':
-      return '한국어';
+      return loc.nativeLangKorean;
     case 'zh':
-      return '中文';
+      return loc.nativeLangChinese;
     default:
       return languageCode;
   }
@@ -54,6 +64,21 @@ String? rewardCatalogTitleL10n(AppLocalizations loc, String id) {
       return loc.rewardSampleBag;
     case 'voucher-premium':
       return loc.rewardSampleFeeWaive;
+    default:
+      return null;
+  }
+}
+
+String? rewardCatalogDescriptionL10n(AppLocalizations loc, String id) {
+  switch (id) {
+    case 'voucher-ongkir-50':
+      return loc.rewardSampleShippingDesc;
+    case 'voucher-diskon-10':
+      return loc.rewardSampleDiscountDesc;
+    case 'voucher-eco-bag':
+      return loc.rewardSampleBagDesc;
+    case 'voucher-premium':
+      return loc.rewardSampleFeeWaiveDesc;
     default:
       return null;
   }

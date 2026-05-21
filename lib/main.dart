@@ -144,7 +144,10 @@ Future<void> main() async {
           create: (_) => RewardsCatalogProvider(prefs),
         ),
         ChangeNotifierProvider(
-          create: (_) => CatalogProvider(firebaseReady: firebaseReady),
+          create: (_) => CatalogProvider(
+            firebaseReady: firebaseReady,
+            prefs: prefs,
+          ),
         ),
       ],
       child: const _FirebaseAuthBinder(

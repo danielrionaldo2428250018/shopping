@@ -42,10 +42,7 @@ class GoogleAuthService {
 
   static Future<GoogleAuthResult> signIn() async {
     if (!_firebaseAvailable) {
-      throw FirebaseAuthException(
-        code: 'firebase-not-initialized',
-        message: 'Firebase belum diinisialisasi.',
-      );
+      throw FirebaseAuthException(code: 'firebase-not-initialized');
     }
 
     if (!GoogleSignInConfig.isConfigured) {
@@ -55,30 +52,27 @@ class GoogleAuthService {
     GoogleSignInAccount? account;
     try {
       account = await _googleSignIn.signIn();
-    } on PlatformException catch (e) {
-      throw StateError(_platformMessage(e));
+    } on PlatformException {
+      rethrow;
     }
     if (account == null) {
-      throw StateError('Masuk Google dibatalkan.');
+      throw FirebaseAuthException(code: 'google-sign-in-cancelled');
     }
 
     final email = account.email.trim();
     if (email.isEmpty) {
-      throw StateError('Akun Google tidak memiliki email.');
+      throw FirebaseAuthException(code: 'google-no-email');
     }
 
     final GoogleSignInAuthentication googleAuth;
     try {
       googleAuth = await account.authentication;
-    } on PlatformException catch (e) {
-      throw StateError(_platformMessage(e));
+    } on PlatformException {
+      rethrow;
     }
 
     if (googleAuth.idToken == null || googleAuth.idToken!.isEmpty) {
-      throw StateError(
-        'Token Google kosong. Pastikan Web Client ID benar dan '
-        'google-services.json memiliki oauth_client (client_type 3).',
-      );
+      throw FirebaseAuthException(code: 'google-empty-token');
     }
 
     final authInstance = FirebaseAuth.instance;
@@ -92,23 +86,11 @@ class GoogleAuthService {
       idToken: googleAuth.idToken,
     );
 
-    try {
-      await authInstance.signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'invalid-credential' || e.code == 'account-exists-with-different-credential') {
-        throw StateError(
-          '${e.message ?? e.code}. Periksa Web Client ID (project-uas-44504) dan SHA-1 di Firebase Console.',
-        );
-      }
-      rethrow;
-    }
+    await authInstance.signInWithCredential(credential);
 
     final user = authInstance.currentUser;
     if (user == null || user.isAnonymous) {
-      throw FirebaseAuthException(
-        code: 'google-sign-in-failed',
-        message: 'Firebase tidak mengembalikan pengguna setelah Google Sign-In.',
-      );
+      throw FirebaseAuthException(code: 'google-sign-in-failed');
     }
 
     if (kDebugMode) {
@@ -122,19 +104,6 @@ class GoogleAuthService {
           : account.displayName?.trim() ?? email.split('@').first,
       firebaseLinked: true,
     );
-  }
-
-  static String _platformMessage(PlatformException e) {
-    final code = e.code;
-    final msg = e.message ?? '';
-    if (code == 'sign_in_failed' || msg.contains('10')) {
-      return 'Google Sign-In gagal (ApiException 10). Tambahkan SHA-1 debug ke Firebase '
-          '(project-uas-44504), aktifkan Google Auth, unduh ulang google-services.json.';
-    }
-    if (code == 'network_error') {
-      return 'Koneksi gagal saat masuk Google. Periksa internet Anda.';
-    }
-    return msg.isNotEmpty ? msg : 'Masuk Google gagal ($code).';
   }
 
   static Future<void> signOut() async {

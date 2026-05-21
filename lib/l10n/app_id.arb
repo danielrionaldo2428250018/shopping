@@ -145,7 +145,7 @@
   "addToCart": "Tambah ke keranjang",
   "productDetails": "Detail produk",
   "productNotFound": "Produk tidak ditemukan",
-  "chat": "Chat",
+  "chat": "Obrolan",
   "chats": "Obrolan",
   "noChats": "Belum ada obrolan",
   "nearbyStores": "Toko terdekat",
@@ -181,7 +181,7 @@
   "close": "Tutup",
   "understand": "Mengerti",
   "apply": "Terapkan",
-  "reset": "Reset",
+  "reset": "Atur ulang",
   "sort": "Urutkan",
   "startShopping": "Mulai belanja",
   "startShoppingHint": "Yuk tambahkan produk favoritmu",
@@ -213,7 +213,7 @@
   "promoCode": "Kode promo",
   "applyPromo": "Pakai",
   "shippingReguler": "Reguler",
-  "shippingExpress": "Express",
+  "shippingExpress": "Ekspres",
   "shippingEtaReguler": "2–3 hari kerja",
   "shippingEtaExpress": "1 hari kerja",
   "subtotalLine": "Subtotal ({count} item)",
@@ -381,7 +381,7 @@
   "@orderStatus": { "placeholders": { "status": { "type": "String" } } },
   "trackingNumber": "Resi: {number}",
   "@trackingNumber": { "placeholders": { "number": { "type": "String" } } },
-  "wishlist": "Wishlist",
+  "wishlist": "Daftar simpan",
   "changePasswordTitle": "Ubah kata sandi",
   "changeProfileInfo": "Ubah informasi profil Anda",
   "reviewSample1": "Produk sesuai deskripsi, penjual responsif.",
@@ -426,6 +426,13 @@
   "@sortOrderLabel": { "placeholders": { "sort": { "type": "String" } } },
   "productNewNotification": "Produk baru di PreLoved",
   "storeNewNotification": "Toko baru di PreLoved",
+  "storeNewNotificationBody": "{storeName} resmi jadi penjual. Cek katalog preloved terbaru!",
+  "@storeNewNotificationBody": {
+    "placeholders": {
+      "storeName": { "type": "String" }
+    }
+  },
+  "storeNewNotificationSender": "Admin PreLoved",
   "openRelatedPage": "Buka halaman terkait",
   "mapRequestingLocation": "Meminta izin lokasi…",
   "mapLoadOsmFailed": "Gagal memuat data OSM. Periksa koneksi.",
@@ -465,6 +472,21 @@
   "rewardSampleDiscount": "Diskon 10% (maks Rp 50rb)",
   "rewardSampleBag": "Tas belanja ramah lingkungan",
   "rewardSampleFeeWaive": "Gratis biaya layanan 1 bulan",
+  "rewardSampleShippingDesc": "Potongan ongkir untuk 1x checkout (min. belanja Rp 100rb).",
+  "rewardSampleDiscountDesc": "Berlaku untuk kategori Fashion & Electronics.",
+  "rewardSampleBagDesc": "Ambil di event PreLoved atau kirim ke alamat profil.",
+  "rewardSampleFeeWaiveDesc": "Untuk member setia — tanpa biaya admin penjual.",
+  "rewardPointCostLine": "{cost} poin",
+  "@rewardPointCostLine": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "nativeLangIndonesian": "Bahasa Indonesia",
+  "nativeLangEnglish": "English",
+  "nativeLangArabic": "العربية",
+  "nativeLangKorean": "한국어",
+  "nativeLangChinese": "中文",
   "homePrelovedDeal": "PRELOVED DEAL",
   "homeWeekThriftBest": "Harga thrifting terbaik minggu ini",
   "homeTrustedSellersLine": "Barang bekas berkualitas dari penjual terpercaya",
@@ -525,5 +547,9 @@
   "@authFailedWithCode": { "placeholders": { "code": { "type": "String" } } },
   "authPlatformGoogleFailed": "Google Sign-In gagal. Tambahkan SHA-1 di Firebase Console dan unduh ulang google-services.json.",
   "authPlatformFailedWithCode": "Masuk gagal ({code}).",
-  "@authPlatformFailedWithCode": { "placeholders": { "code": { "type": "String" } } }
+  "@authPlatformFailedWithCode": { "placeholders": { "code": { "type": "String" } } },
+  "authGoogleSignInCancelled": "Masuk Google dibatalkan.",
+  "authGoogleNoEmail": "Akun Google tidak memiliki email.",
+  "authGoogleEmptyToken": "Token Google kosong. Periksa Web Client ID dan oauth_client di google-services.json.",
+  "authGoogleNetworkError": "Koneksi gagal saat masuk Google. Periksa internet Anda."
 }

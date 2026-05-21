@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/seller_application.dart';
 import '../services/push_notification_service.dart';
+import '../utils/l10n_helpers.dart';
 import '../services/seller_applications_repository.dart';
 import 'auth_provider.dart';
 
@@ -180,12 +181,12 @@ class SellerApplicationsProvider extends ChangeNotifier {
     }
     auth.grantSellerRoleForEmail(app.email);
 
+    final loc = appLocalizationsFromPrefs(_prefs);
     unawaited(
       sendNotificationToTopic(
-        title: 'Toko baru di PreLoved',
-        body:
-            '${app.storeName} resmi jadi penjual. Cek katalog preloved terbaru!',
-        senderName: 'Admin PreLoved',
+        title: loc.storeNewNotification,
+        body: loc.storeNewNotificationBody(app.storeName),
+        senderName: loc.storeNewNotificationSender,
       ),
     );
   }

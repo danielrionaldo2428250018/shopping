@@ -111,7 +111,10 @@ class LoyaltyRewardsScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: Text(rewardCatalogTitleL10n(loc, item.id) ?? item.title),
         content: Text(
-          loc.redeemConfirm(item.pointCost, item.description),
+          loc.redeemConfirm(
+            item.pointCost,
+            rewardCatalogDescriptionL10n(loc, item.id) ?? item.description,
+          ),
         ),
         actions: [
           TextButton(
@@ -294,7 +297,8 @@ class _RewardTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.description,
+                    rewardCatalogDescriptionL10n(loc, item.id) ??
+                        item.description,
                     style: TextStyle(
                       color: Colors.grey.shade700,
                       fontSize: 13,
@@ -303,7 +307,7 @@ class _RewardTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${item.pointCost} poin',
+                    loc.rewardPointCostLine(item.pointCost),
                     style: TextStyle(
                       color: AppBranding.seedColor,
                       fontWeight: FontWeight.bold,

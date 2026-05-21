@@ -399,6 +399,13 @@
   "sortOrderLabel": "Sort: {sort}",
   "productNewNotification": "New product on PreLoved",
   "storeNewNotification": "New store on PreLoved",
+  "storeNewNotificationBody": "{storeName} is now an official seller. Check out the latest preloved catalog!",
+  "@storeNewNotificationBody": {
+    "placeholders": {
+      "storeName": { "type": "String" }
+    }
+  },
+  "storeNewNotificationSender": "PreLoved Admin",
   "openRelatedPage": "Open related page",
   "mapRequestingLocation": "Requesting location permission…",
   "mapLoadOsmFailed": "Failed to load OSM data. Check your connection.",
@@ -436,6 +443,21 @@
   "rewardSampleDiscount": "10% off (max Rp 50k)",
   "rewardSampleBag": "Eco-friendly shopping bag",
   "rewardSampleFeeWaive": "Free service fee for 1 month",
+  "rewardSampleShippingDesc": "Shipping discount for one checkout (min. purchase Rp 100k).",
+  "rewardSampleDiscountDesc": "Valid for Fashion & Electronics categories.",
+  "rewardSampleBagDesc": "Pick up at PreLoved events or ship to your profile address.",
+  "rewardSampleFeeWaiveDesc": "For loyal members — no seller admin fee.",
+  "rewardPointCostLine": "{cost} points",
+  "@rewardPointCostLine": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "nativeLangIndonesian": "Bahasa Indonesia",
+  "nativeLangEnglish": "English",
+  "nativeLangArabic": "العربية",
+  "nativeLangKorean": "한국어",
+  "nativeLangChinese": "中文",
   "homePrelovedDeal": "PRELOVED DEAL",
   "homeWeekThriftBest": "Best thrift prices this week",
   "homeTrustedSellersLine": "Quality secondhand from trusted sellers",
@@ -487,5 +509,9 @@
   "authFirebaseNotReady": "Firebase not ready. Restart the app after configuring google-services.json.",
   "authFailedWithCode": "Authentication failed ({code}).",
   "authPlatformGoogleFailed": "Google Sign-In failed. Add SHA-1 in Firebase Console and re-download google-services.json.",
-  "authPlatformFailedWithCode": "Sign-in failed ({code})."
+  "authPlatformFailedWithCode": "Sign-in failed ({code}).",
+  "authGoogleSignInCancelled": "Google sign-in was cancelled.",
+  "authGoogleNoEmail": "Google account has no email address.",
+  "authGoogleEmptyToken": "Google token is empty. Check Web Client ID and oauth_client in google-services.json.",
+  "authGoogleNetworkError": "Connection failed during Google sign-in. Check your internet."
 }

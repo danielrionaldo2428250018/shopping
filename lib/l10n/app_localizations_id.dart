@@ -447,7 +447,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get productNotFound => 'Produk tidak ditemukan';
 
   @override
-  String get chat => 'Chat';
+  String get chat => 'Obrolan';
 
   @override
   String get chats => 'Obrolan';
@@ -557,7 +557,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get apply => 'Terapkan';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'Atur ulang';
 
   @override
   String get sort => 'Urutkan';
@@ -654,7 +654,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get shippingReguler => 'Reguler';
 
   @override
-  String get shippingExpress => 'Express';
+  String get shippingExpress => 'Ekspres';
 
   @override
   String get shippingEtaReguler => '2–3 hari kerja';
@@ -1291,6 +1291,14 @@ class AppLocalizationsId extends AppLocalizations {
   String get storeNewNotification => 'Toko baru di PreLoved';
 
   @override
+  String storeNewNotificationBody(String storeName) {
+    return '$storeName resmi jadi penjual. Cek katalog preloved terbaru!';
+  }
+
+  @override
+  String get storeNewNotificationSender => 'Admin PreLoved';
+
+  @override
   String get openRelatedPage => 'Buka halaman terkait';
 
   @override
@@ -1419,6 +1427,42 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get rewardSampleFeeWaive => 'Gratis biaya layanan 1 bulan';
+
+  @override
+  String get rewardSampleShippingDesc =>
+      'Potongan ongkir untuk 1x checkout (min. belanja Rp 100rb).';
+
+  @override
+  String get rewardSampleDiscountDesc =>
+      'Berlaku untuk kategori Fashion & Electronics.';
+
+  @override
+  String get rewardSampleBagDesc =>
+      'Ambil di event PreLoved atau kirim ke alamat profil.';
+
+  @override
+  String get rewardSampleFeeWaiveDesc =>
+      'Untuk member setia — tanpa biaya admin penjual.';
+
+  @override
+  String rewardPointCostLine(int cost) {
+    return '$cost poin';
+  }
+
+  @override
+  String get nativeLangIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get nativeLangEnglish => 'English';
+
+  @override
+  String get nativeLangArabic => 'العربية';
+
+  @override
+  String get nativeLangKorean => '한국어';
+
+  @override
+  String get nativeLangChinese => '中文';
 
   @override
   String get homePrelovedDeal => 'PRELOVED DEAL';
@@ -1604,4 +1648,18 @@ class AppLocalizationsId extends AppLocalizations {
   String authPlatformFailedWithCode(String code) {
     return 'Masuk gagal ($code).';
   }
+
+  @override
+  String get authGoogleSignInCancelled => 'Masuk Google dibatalkan.';
+
+  @override
+  String get authGoogleNoEmail => 'Akun Google tidak memiliki email.';
+
+  @override
+  String get authGoogleEmptyToken =>
+      'Token Google kosong. Periksa Web Client ID dan oauth_client di google-services.json.';
+
+  @override
+  String get authGoogleNetworkError =>
+      'Koneksi gagal saat masuk Google. Periksa internet Anda.';
 }

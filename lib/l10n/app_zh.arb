@@ -417,6 +417,13 @@
   "sortOrderLabel": "排序：{sort}",
   "productNewNotification": "PreLoved 新商品",
   "storeNewNotification": "PreLoved 新店铺",
+  "storeNewNotificationBody": "{storeName} 已成为官方卖家。查看最新二手好物目录！",
+  "@storeNewNotificationBody": {
+    "placeholders": {
+      "storeName": { "type": "String" }
+    }
+  },
+  "storeNewNotificationSender": "PreLoved 管理员",
   "openRelatedPage": "打开相关页面",
   "mapRequestingLocation": "正在请求位置权限…",
   "mapLoadOsmFailed": "加载 OSM 数据失败，请检查网络。",
@@ -454,6 +461,21 @@
   "rewardSampleDiscount": "9折（最高5万）",
   "rewardSampleBag": "环保购物袋",
   "rewardSampleFeeWaive": "免服务费 1 个月",
+  "rewardSampleShippingDesc": "单次结账运费优惠（最低消费 10 万印尼盾）。",
+  "rewardSampleDiscountDesc": "适用于时尚与电子类目。",
+  "rewardSampleBagDesc": "在 PreLoved 活动领取或寄至资料地址。",
+  "rewardSampleFeeWaiveDesc": "忠实会员 — 免卖家服务费。",
+  "rewardPointCostLine": "{cost} 积分",
+  "@rewardPointCostLine": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "nativeLangIndonesian": "Bahasa Indonesia",
+  "nativeLangEnglish": "English",
+  "nativeLangArabic": "العربية",
+  "nativeLangKorean": "한국어",
+  "nativeLangChinese": "中文",
   "homePrelovedDeal": "PRELOVED DEAL",
   "homeWeekThriftBest": "本周最佳二手价",
   "homeTrustedSellersLine": "来自可信卖家的优质二手",
@@ -505,5 +527,9 @@
   "authFirebaseNotReady": "Firebase 未就绪，配置后请重启应用。",
   "authFailedWithCode": "认证失败（{code}）。",
   "authPlatformGoogleFailed": "Google 登录失败，请在 Firebase 添加 SHA-1。",
-  "authPlatformFailedWithCode": "登录失败（{code}）。"
+  "authPlatformFailedWithCode": "登录失败（{code}）。",
+  "authGoogleSignInCancelled": "已取消 Google 登录。",
+  "authGoogleNoEmail": "Google 账号没有电子邮件。",
+  "authGoogleEmptyToken": "Google 令牌为空。请检查 Web Client ID 与 google-services.json 中的 oauth_client。",
+  "authGoogleNetworkError": "Google 登录时网络失败，请检查网络连接。"
 }

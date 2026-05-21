@@ -1273,6 +1273,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get storeNewNotification => 'متجر جديد على PreLoved';
 
   @override
+  String storeNewNotificationBody(String storeName) {
+    return '$storeName أصبح بائعاً رسمياً. تصفّح أحدث كتالوج السلع المستعملة!';
+  }
+
+  @override
+  String get storeNewNotificationSender => 'مسؤول PreLoved';
+
+  @override
   String get openRelatedPage => 'فتح الصفحة المرتبطة';
 
   @override
@@ -1392,6 +1400,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rewardSampleFeeWaive => 'إعفاء رسوم الخدمة لشهر';
+
+  @override
+  String get rewardSampleShippingDesc =>
+      'خصم شحن لمرة شراء واحدة (حد أدنى 100 ألف روبية).';
+
+  @override
+  String get rewardSampleDiscountDesc => 'صالح لفئات الأزياء والإلكترونيات.';
+
+  @override
+  String get rewardSampleBagDesc =>
+      'استلام من فعاليات PreLoved أو الشحن لعنوان الملف.';
+
+  @override
+  String get rewardSampleFeeWaiveDesc =>
+      'للأعضاء المخلصين — بدون رسوم إدارة البائع.';
+
+  @override
+  String rewardPointCostLine(int cost) {
+    return '$cost نقطة';
+  }
+
+  @override
+  String get nativeLangIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get nativeLangEnglish => 'English';
+
+  @override
+  String get nativeLangArabic => 'العربية';
+
+  @override
+  String get nativeLangKorean => '한국어';
+
+  @override
+  String get nativeLangChinese => '中文';
 
   @override
   String get homePrelovedDeal => 'PRELOVED DEAL';
@@ -1572,4 +1615,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String authPlatformFailedWithCode(String code) {
     return 'فشل الدخول ($code).';
   }
+
+  @override
+  String get authGoogleSignInCancelled => 'تم إلغاء تسجيل الدخول عبر Google.';
+
+  @override
+  String get authGoogleNoEmail => 'حساب Google لا يحتوي على بريد إلكتروني.';
+
+  @override
+  String get authGoogleEmptyToken =>
+      'رمز Google فارغ. تحقق من Web Client ID وoauth_client في google-services.json.';
+
+  @override
+  String get authGoogleNetworkError =>
+      'فشل الاتصال أثناء تسجيل الدخول عبر Google. تحقق من الإنترنت.';
 }

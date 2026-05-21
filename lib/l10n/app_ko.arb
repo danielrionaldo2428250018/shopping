@@ -417,6 +417,13 @@
   "sortOrderLabel": "정렬: {sort}",
   "productNewNotification": "PreLoved 신규 상품",
   "storeNewNotification": "PreLoved 신규 스토어",
+  "storeNewNotificationBody": "{storeName}이(가) 공식 판매자가 되었습니다. 최신 프리러브드 카탈로그를 확인하세요!",
+  "@storeNewNotificationBody": {
+    "placeholders": {
+      "storeName": { "type": "String" }
+    }
+  },
+  "storeNewNotificationSender": "PreLoved 관리자",
   "openRelatedPage": "관련 페이지 열기",
   "mapRequestingLocation": "위치 권한 요청 중…",
   "mapLoadOsmFailed": "OSM 데이터 로드 실패. 연결을 확인하세요.",
@@ -454,6 +461,21 @@
   "rewardSampleDiscount": "10% 할인(최대 5만)",
   "rewardSampleBag": "친환경 쇼핑백",
   "rewardSampleFeeWaive": "1개월 서비스 수수료 면제",
+  "rewardSampleShippingDesc": "1회 결제 배송 할인(최소 구매 10만 루피아).",
+  "rewardSampleDiscountDesc": "패션·전자 카테고리에 적용.",
+  "rewardSampleBagDesc": "PreLoved 행사 수령 또는 프로필 주소로 배송.",
+  "rewardSampleFeeWaiveDesc": "충성 회원 — 판매자 수수료 면제.",
+  "rewardPointCostLine": "{cost}포인트",
+  "@rewardPointCostLine": {
+    "placeholders": {
+      "cost": { "type": "int" }
+    }
+  },
+  "nativeLangIndonesian": "Bahasa Indonesia",
+  "nativeLangEnglish": "English",
+  "nativeLangArabic": "العربية",
+  "nativeLangKorean": "한국어",
+  "nativeLangChinese": "中文",
   "homePrelovedDeal": "PRELOVED DEAL",
   "homeWeekThriftBest": "이번 주 최고의 중고 가격",
   "homeTrustedSellersLine": "신뢰할 수 있는 판매자의 양질의 중고",
@@ -505,5 +527,9 @@
   "authFirebaseNotReady": "Firebase가 준비되지 않았습니다. 설정 후 앱을 재시작하세요.",
   "authFailedWithCode": "인증 실패 ({code}).",
   "authPlatformGoogleFailed": "Google Sign-In 실패. Firebase에 SHA-1을 추가하세요.",
-  "authPlatformFailedWithCode": "로그인 실패 ({code})."
+  "authPlatformFailedWithCode": "로그인 실패 ({code}).",
+  "authGoogleSignInCancelled": "Google 로그인이 취소되었습니다.",
+  "authGoogleNoEmail": "Google 계정에 이메일이 없습니다.",
+  "authGoogleEmptyToken": "Google 토큰이 비어 있습니다. Web Client ID와 google-services.json의 oauth_client를 확인하세요.",
+  "authGoogleNetworkError": "Google 로그인 중 연결에 실패했습니다. 인터넷을 확인하세요."
 }

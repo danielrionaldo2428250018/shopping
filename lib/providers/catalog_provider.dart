@@ -1,19 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/catalog_data.dart';
+import '../utils/l10n_helpers.dart';
 import '../models/catalog_product.dart';
 import '../services/catalog_rtdb_service.dart';
 import '../services/push_notification_service.dart';
 
 /// Sinkron katalog barang dari Realtime Database ke [kCatalogProducts].
 class CatalogProvider extends ChangeNotifier {
-  CatalogProvider({required bool firebaseReady}) {
+  CatalogProvider({
+    required bool firebaseReady,
+    required SharedPreferences prefs,
+  }) : _prefs = prefs {
     if (firebaseReady) {
       _subscribe();
     }
   }
+
+  final SharedPreferences _prefs;
 
   StreamSubscription<List<CatalogProduct>>? _sub;
   bool _loading = true;
@@ -54,8 +61,9 @@ class CatalogProvider extends ChangeNotifier {
     try {
       final id = await CatalogRtdbService.saveProduct(product);
       if (notifySubscribers) {
+        final loc = appLocalizationsFromPrefs(_prefs);
         await sendNotificationToTopic(
-          title: 'Produk baru di PreLoved',
+          title: loc.productNewNotification,
           body: product.title,
           senderName: product.sellerName,
         );

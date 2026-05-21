@@ -947,7 +947,7 @@ abstract class AppLocalizations {
   /// No description provided for @chat.
   ///
   /// In id, this message translates to:
-  /// **'Chat'**
+  /// **'Obrolan'**
   String get chat;
 
   /// No description provided for @chats.
@@ -1151,7 +1151,7 @@ abstract class AppLocalizations {
   /// No description provided for @reset.
   ///
   /// In id, this message translates to:
-  /// **'Reset'**
+  /// **'Atur ulang'**
   String get reset;
 
   /// No description provided for @sort.
@@ -1343,7 +1343,7 @@ abstract class AppLocalizations {
   /// No description provided for @shippingExpress.
   ///
   /// In id, this message translates to:
-  /// **'Express'**
+  /// **'Ekspres'**
   String get shippingExpress;
 
   /// No description provided for @shippingEtaReguler.
@@ -2498,6 +2498,18 @@ abstract class AppLocalizations {
   /// **'Toko baru di PreLoved'**
   String get storeNewNotification;
 
+  /// No description provided for @storeNewNotificationBody.
+  ///
+  /// In id, this message translates to:
+  /// **'{storeName} resmi jadi penjual. Cek katalog preloved terbaru!'**
+  String storeNewNotificationBody(String storeName);
+
+  /// No description provided for @storeNewNotificationSender.
+  ///
+  /// In id, this message translates to:
+  /// **'Admin PreLoved'**
+  String get storeNewNotificationSender;
+
   /// No description provided for @openRelatedPage.
   ///
   /// In id, this message translates to:
@@ -2719,6 +2731,66 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Gratis biaya layanan 1 bulan'**
   String get rewardSampleFeeWaive;
+
+  /// No description provided for @rewardSampleShippingDesc.
+  ///
+  /// In id, this message translates to:
+  /// **'Potongan ongkir untuk 1x checkout (min. belanja Rp 100rb).'**
+  String get rewardSampleShippingDesc;
+
+  /// No description provided for @rewardSampleDiscountDesc.
+  ///
+  /// In id, this message translates to:
+  /// **'Berlaku untuk kategori Fashion & Electronics.'**
+  String get rewardSampleDiscountDesc;
+
+  /// No description provided for @rewardSampleBagDesc.
+  ///
+  /// In id, this message translates to:
+  /// **'Ambil di event PreLoved atau kirim ke alamat profil.'**
+  String get rewardSampleBagDesc;
+
+  /// No description provided for @rewardSampleFeeWaiveDesc.
+  ///
+  /// In id, this message translates to:
+  /// **'Untuk member setia — tanpa biaya admin penjual.'**
+  String get rewardSampleFeeWaiveDesc;
+
+  /// No description provided for @rewardPointCostLine.
+  ///
+  /// In id, this message translates to:
+  /// **'{cost} poin'**
+  String rewardPointCostLine(int cost);
+
+  /// No description provided for @nativeLangIndonesian.
+  ///
+  /// In id, this message translates to:
+  /// **'Bahasa Indonesia'**
+  String get nativeLangIndonesian;
+
+  /// No description provided for @nativeLangEnglish.
+  ///
+  /// In id, this message translates to:
+  /// **'English'**
+  String get nativeLangEnglish;
+
+  /// No description provided for @nativeLangArabic.
+  ///
+  /// In id, this message translates to:
+  /// **'العربية'**
+  String get nativeLangArabic;
+
+  /// No description provided for @nativeLangKorean.
+  ///
+  /// In id, this message translates to:
+  /// **'한국어'**
+  String get nativeLangKorean;
+
+  /// No description provided for @nativeLangChinese.
+  ///
+  /// In id, this message translates to:
+  /// **'中文'**
+  String get nativeLangChinese;
 
   /// No description provided for @homePrelovedDeal.
   ///
@@ -3031,6 +3103,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Masuk gagal ({code}).'**
   String authPlatformFailedWithCode(String code);
+
+  /// No description provided for @authGoogleSignInCancelled.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk Google dibatalkan.'**
+  String get authGoogleSignInCancelled;
+
+  /// No description provided for @authGoogleNoEmail.
+  ///
+  /// In id, this message translates to:
+  /// **'Akun Google tidak memiliki email.'**
+  String get authGoogleNoEmail;
+
+  /// No description provided for @authGoogleEmptyToken.
+  ///
+  /// In id, this message translates to:
+  /// **'Token Google kosong. Periksa Web Client ID dan oauth_client di google-services.json.'**
+  String get authGoogleEmptyToken;
+
+  /// No description provided for @authGoogleNetworkError.
+  ///
+  /// In id, this message translates to:
+  /// **'Koneksi gagal saat masuk Google. Periksa internet Anda.'**
+  String get authGoogleNetworkError;
 }
 
 class _AppLocalizationsDelegate

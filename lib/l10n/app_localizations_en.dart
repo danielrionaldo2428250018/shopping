@@ -1282,6 +1282,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeNewNotification => 'New store on PreLoved';
 
   @override
+  String storeNewNotificationBody(String storeName) {
+    return '$storeName is now an official seller. Check out the latest preloved catalog!';
+  }
+
+  @override
+  String get storeNewNotificationSender => 'PreLoved Admin';
+
+  @override
   String get openRelatedPage => 'Open related page';
 
   @override
@@ -1410,6 +1418,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardSampleFeeWaive => 'Free service fee for 1 month';
+
+  @override
+  String get rewardSampleShippingDesc =>
+      'Shipping discount for one checkout (min. purchase Rp 100k).';
+
+  @override
+  String get rewardSampleDiscountDesc =>
+      'Valid for Fashion & Electronics categories.';
+
+  @override
+  String get rewardSampleBagDesc =>
+      'Pick up at PreLoved events or ship to your profile address.';
+
+  @override
+  String get rewardSampleFeeWaiveDesc =>
+      'For loyal members — no seller admin fee.';
+
+  @override
+  String rewardPointCostLine(int cost) {
+    return '$cost points';
+  }
+
+  @override
+  String get nativeLangIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get nativeLangEnglish => 'English';
+
+  @override
+  String get nativeLangArabic => 'العربية';
+
+  @override
+  String get nativeLangKorean => '한국어';
+
+  @override
+  String get nativeLangChinese => '中文';
 
   @override
   String get homePrelovedDeal => 'PRELOVED DEAL';
@@ -1593,4 +1637,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String authPlatformFailedWithCode(String code) {
     return 'Sign-in failed ($code).';
   }
+
+  @override
+  String get authGoogleSignInCancelled => 'Google sign-in was cancelled.';
+
+  @override
+  String get authGoogleNoEmail => 'Google account has no email address.';
+
+  @override
+  String get authGoogleEmptyToken =>
+      'Google token is empty. Check Web Client ID and oauth_client in google-services.json.';
+
+  @override
+  String get authGoogleNetworkError =>
+      'Connection failed during Google sign-in. Check your internet.';
 }

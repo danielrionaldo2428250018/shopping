@@ -1264,6 +1264,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storeNewNotification => 'PreLoved 신규 스토어';
 
   @override
+  String storeNewNotificationBody(String storeName) {
+    return '$storeName이(가) 공식 판매자가 되었습니다. 최신 프리러브드 카탈로그를 확인하세요!';
+  }
+
+  @override
+  String get storeNewNotificationSender => 'PreLoved 관리자';
+
+  @override
   String get openRelatedPage => '관련 페이지 열기';
 
   @override
@@ -1379,6 +1387,38 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get rewardSampleFeeWaive => '1개월 서비스 수수료 면제';
+
+  @override
+  String get rewardSampleShippingDesc => '1회 결제 배송 할인(최소 구매 10만 루피아).';
+
+  @override
+  String get rewardSampleDiscountDesc => '패션·전자 카테고리에 적용.';
+
+  @override
+  String get rewardSampleBagDesc => 'PreLoved 행사 수령 또는 프로필 주소로 배송.';
+
+  @override
+  String get rewardSampleFeeWaiveDesc => '충성 회원 — 판매자 수수료 면제.';
+
+  @override
+  String rewardPointCostLine(int cost) {
+    return '$cost포인트';
+  }
+
+  @override
+  String get nativeLangIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get nativeLangEnglish => 'English';
+
+  @override
+  String get nativeLangArabic => 'العربية';
+
+  @override
+  String get nativeLangKorean => '한국어';
+
+  @override
+  String get nativeLangChinese => '中文';
 
   @override
   String get homePrelovedDeal => 'PRELOVED DEAL';
@@ -1556,4 +1596,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String authPlatformFailedWithCode(String code) {
     return '로그인 실패 ($code).';
   }
+
+  @override
+  String get authGoogleSignInCancelled => 'Google 로그인이 취소되었습니다.';
+
+  @override
+  String get authGoogleNoEmail => 'Google 계정에 이메일이 없습니다.';
+
+  @override
+  String get authGoogleEmptyToken =>
+      'Google 토큰이 비어 있습니다. Web Client ID와 google-services.json의 oauth_client를 확인하세요.';
+
+  @override
+  String get authGoogleNetworkError => 'Google 로그인 중 연결에 실패했습니다. 인터넷을 확인하세요.';
 }

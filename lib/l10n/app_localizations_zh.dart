@@ -1261,6 +1261,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storeNewNotification => 'PreLoved 新店铺';
 
   @override
+  String storeNewNotificationBody(String storeName) {
+    return '$storeName 已成为官方卖家。查看最新二手好物目录！';
+  }
+
+  @override
+  String get storeNewNotificationSender => 'PreLoved 管理员';
+
+  @override
   String get openRelatedPage => '打开相关页面';
 
   @override
@@ -1375,6 +1383,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get rewardSampleFeeWaive => '免服务费 1 个月';
+
+  @override
+  String get rewardSampleShippingDesc => '单次结账运费优惠（最低消费 10 万印尼盾）。';
+
+  @override
+  String get rewardSampleDiscountDesc => '适用于时尚与电子类目。';
+
+  @override
+  String get rewardSampleBagDesc => '在 PreLoved 活动领取或寄至资料地址。';
+
+  @override
+  String get rewardSampleFeeWaiveDesc => '忠实会员 — 免卖家服务费。';
+
+  @override
+  String rewardPointCostLine(int cost) {
+    return '$cost 积分';
+  }
+
+  @override
+  String get nativeLangIndonesian => 'Bahasa Indonesia';
+
+  @override
+  String get nativeLangEnglish => 'English';
+
+  @override
+  String get nativeLangArabic => 'العربية';
+
+  @override
+  String get nativeLangKorean => '한국어';
+
+  @override
+  String get nativeLangChinese => '中文';
 
   @override
   String get homePrelovedDeal => 'PRELOVED DEAL';
@@ -1549,4 +1589,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String authPlatformFailedWithCode(String code) {
     return '登录失败（$code）。';
   }
+
+  @override
+  String get authGoogleSignInCancelled => '已取消 Google 登录。';
+
+  @override
+  String get authGoogleNoEmail => 'Google 账号没有电子邮件。';
+
+  @override
+  String get authGoogleEmptyToken =>
+      'Google 令牌为空。请检查 Web Client ID 与 google-services.json 中的 oauth_client。';
+
+  @override
+  String get authGoogleNetworkError => 'Google 登录时网络失败，请检查网络连接。';
 }
