@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import '../constants/app_admin_config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/settings_prefs_provider.dart';
@@ -162,6 +163,55 @@ class _SettingsScreenState
 
                     _settingCard(
                       children: [
+                        Consumer<AuthProvider>(
+                          builder: (context, auth, _) {
+                            if (!auth.isLoggedIn) {
+                              return const SizedBox.shrink();
+                            }
+                            final email =
+                                auth.resolvedAccountEmail ?? '-';
+                            final role = auth.isAdmin
+                                ? loc.roleAdmin
+                                : loc.roleUser;
+                            return Column(
+                              children: [
+                                _settingTile(
+                                  icon: Icons.badge_outlined,
+                                  iconColor: Colors.indigo,
+                                  title: loc.accountLoginLabel,
+                                  subtitle: '$email · $role',
+                                  onTap: null,
+                                ),
+                                if (!auth.isAdmin) ...[
+                                  Divider(
+                                    color: Colors.grey.shade200,
+                                    height: 1,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      8,
+                                      16,
+                                      12,
+                                    ),
+                                    child: Text(
+                                      loc.adminLoginHint(kAppAdminEmail),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                Divider(
+                                  color: Colors.grey.shade200,
+                                  height: 1,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
 
                         _settingTile(
                           icon: Icons.person_outline,

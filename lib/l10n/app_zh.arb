@@ -541,5 +541,10 @@
   "viewSellerApplicationStatus": "查看申请状态",
   "adminAccessDenied": "仅指定的管理员账号可访问。",
   "adminEmailNotConfigured": "未配置管理员邮箱。请编辑 app_admin_local.dart。",
-  "submittedLabel": "提交时间"
+  "submittedLabel": "提交时间",
+  "accountLoginLabel": "当前登录账号",
+  "roleAdmin": "管理员",
+  "roleUser": "用户",
+  "adminLoginHint": "管理面板仅限 {email}。请使用该邮箱的邮箱/密码登录（不要用 Google）。",
+  "@adminLoginHint": { "placeholders": { "email": { "type": "String" } } }
 }

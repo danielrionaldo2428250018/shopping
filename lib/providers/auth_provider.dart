@@ -37,7 +37,16 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isSeller => _isSeller;
-  bool get isAdmin => isAppAdminEmail(_accountEmail);
+  bool get isAdmin => isAppAdminUser(email: resolvedAccountEmail, uid: _uid);
+
+  /// Email dari Firebase Auth (termasuk provider password/google).
+  String? get resolvedAccountEmail {
+    final cached = _accountEmail;
+    if (cached != null && cached.isNotEmpty) return cached;
+    final user = _firebaseAuth?.currentUser;
+    if (user == null) return null;
+    return _emailFromFirebaseUser(user);
+  }
   String? get accountEmail => _accountEmail;
   String? get displayName => _displayName;
   String? get uid => _uid;
@@ -75,11 +84,21 @@ class AuthProvider extends ChangeNotifier {
     _applyFirebaseUser(firebaseAuth.currentUser);
   }
 
+  static String? _emailFromFirebaseUser(User user) {
+    final direct = user.email?.trim().toLowerCase();
+    if (direct != null && direct.isNotEmpty) return direct;
+    for (final info in user.providerData) {
+      final e = info.email?.trim().toLowerCase();
+      if (e != null && e.isNotEmpty) return e;
+    }
+    return null;
+  }
+
   void _applyFirebaseUser(User? user) {
     if (user != null && !user.isAnonymous) {
       _isLoggedIn = true;
       _uid = user.uid;
-      _accountEmail = user.email?.trim().toLowerCase();
+      _accountEmail = _emailFromFirebaseUser(user);
       _displayName = user.displayName?.trim();
       _isSeller = _accountEmail != null &&
           _sellerApprovedEmails.contains(_accountEmail);
@@ -123,10 +142,12 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    await _auth.signInWithEmailAndPassword(
+    final cred = await _auth.signInWithEmailAndPassword(
       email: email.trim(),
       password: password,
     );
+    await cred.user?.reload();
+    _applyFirebaseUser(_auth.currentUser);
   }
 
   /// Daftar akun baru (Firebase).
@@ -164,6 +185,8 @@ class AuthProvider extends ChangeNotifier {
             'Gagal menghubungkan ke Firebase. Aktifkan Google Sign-In dan SHA-1 di Firebase Console.',
       );
     }
+    await _auth.currentUser?.reload();
+    _applyFirebaseUser(_auth.currentUser);
     return result;
   }
 

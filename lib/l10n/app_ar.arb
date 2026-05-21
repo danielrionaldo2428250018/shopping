@@ -541,5 +541,10 @@
   "viewSellerApplicationStatus": "عرض حالة الطلب",
   "adminAccessDenied": "حساب المسؤول المحدد فقط يمكنه الوصول.",
   "adminEmailNotConfigured": "لم يُضبط بريد المسؤول. عدّل app_admin_local.dart وfirestore.rules.",
-  "submittedLabel": "تاريخ التقديم"
+  "submittedLabel": "تاريخ التقديم",
+  "accountLoginLabel": "الحساب المسجّل",
+  "roleAdmin": "مسؤول",
+  "roleUser": "مستخدم",
+  "adminLoginHint": "لوحة الإدارة لـ {email} فقط. سجّل الدخول بالبريد/كلمة المرور (ليس Google).",
+  "@adminLoginHint": { "placeholders": { "email": { "type": "String" } } }
 }

@@ -1697,4 +1697,18 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get submittedLabel => 'Diajukan';
+
+  @override
+  String get accountLoginLabel => 'Akun yang login';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleUser => 'Pengguna';
+
+  @override
+  String adminLoginHint(String email) {
+    return 'Panel admin hanya untuk $email. Masuk dengan Email/Kata sandi (bukan Google) memakai alamat itu.';
+  }
 }

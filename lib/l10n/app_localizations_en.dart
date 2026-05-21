@@ -1687,4 +1687,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get submittedLabel => 'Submitted';
+
+  @override
+  String get accountLoginLabel => 'Signed-in account';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleUser => 'User';
+
+  @override
+  String adminLoginHint(String email) {
+    return 'Admin panel is only for $email. Sign in with Email/Password (not Google) using that address.';
+  }
 }

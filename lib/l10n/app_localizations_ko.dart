@@ -1640,4 +1640,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get submittedLabel => '제출일';
+
+  @override
+  String get accountLoginLabel => '로그인 계정';
+
+  @override
+  String get roleAdmin => '관리자';
+
+  @override
+  String get roleUser => '사용자';
+
+  @override
+  String adminLoginHint(String email) {
+    return '관리자 패널은 $email 전용입니다. 해당 이메일로 이메일/비밀번호로 로그인하세요(Google 아님).';
+  }
 }

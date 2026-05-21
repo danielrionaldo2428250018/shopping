@@ -5,12 +5,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function adminEmail() {
-      return 'admin@preloved.id';
+      return 'danielrionaldo_2428250018@mhs.mdp.ac.id';
+    }
+
+    function adminUid() {
+      return 'S3zzmx2SJ5WDN8bhzJHep5BTepy1';
     }
 
     function isAdmin() {
       return request.auth != null
-        && request.auth.token.email == adminEmail();
+        && (request.auth.token.email == adminEmail()
+            || request.auth.uid == adminUid());
     }
 
     match /sellerApplications/{applicationId} {

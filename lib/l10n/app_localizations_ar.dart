@@ -1663,4 +1663,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get submittedLabel => 'تاريخ التقديم';
+
+  @override
+  String get accountLoginLabel => 'الحساب المسجّل';
+
+  @override
+  String get roleAdmin => 'مسؤول';
+
+  @override
+  String get roleUser => 'مستخدم';
+
+  @override
+  String adminLoginHint(String email) {
+    return 'لوحة الإدارة لـ $email فقط. سجّل الدخول بالبريد/كلمة المرور (ليس Google).';
+  }
 }

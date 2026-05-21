@@ -3187,6 +3187,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Diajukan'**
   String get submittedLabel;
+
+  /// No description provided for @accountLoginLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Akun yang login'**
+  String get accountLoginLabel;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In id, this message translates to:
+  /// **'Admin'**
+  String get roleAdmin;
+
+  /// No description provided for @roleUser.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengguna'**
+  String get roleUser;
+
+  /// No description provided for @adminLoginHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Panel admin hanya untuk {email}. Masuk dengan Email/Kata sandi (bukan Google) memakai alamat itu.'**
+  String adminLoginHint(String email);
 }
 
 class _AppLocalizationsDelegate

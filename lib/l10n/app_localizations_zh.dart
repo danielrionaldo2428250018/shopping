@@ -1632,4 +1632,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get submittedLabel => '提交时间';
+
+  @override
+  String get accountLoginLabel => '当前登录账号';
+
+  @override
+  String get roleAdmin => '管理员';
+
+  @override
+  String get roleUser => '用户';
+
+  @override
+  String adminLoginHint(String email) {
+    return '管理面板仅限 $email。请使用该邮箱的邮箱/密码登录（不要用 Google）。';
+  }
 }

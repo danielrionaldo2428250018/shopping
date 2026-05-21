@@ -13,7 +13,17 @@ String get kAppAdminEmail {
 
 bool get isAppAdminConfigured => kAppAdminEmail.isNotEmpty;
 
+String get kAppAdminUid => kAppAdminUidLocal.trim();
+
 bool isAppAdminEmail(String? email) {
   if (!isAppAdminConfigured) return false;
   return email?.trim().toLowerCase() == kAppAdminEmail;
+}
+
+/// Admin jika email ATAU UID Firebase cocok dengan konfigurasi lokal.
+bool isAppAdminUser({String? email, String? uid}) {
+  if (kAppAdminUid.isNotEmpty && uid != null && uid.trim() == kAppAdminUid) {
+    return true;
+  }
+  return isAppAdminEmail(email);
 }

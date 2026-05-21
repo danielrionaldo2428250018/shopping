@@ -561,5 +561,14 @@
   "viewSellerApplicationStatus": "Lihat status pengajuan",
   "adminAccessDenied": "Hanya akun admin yang ditentukan yang dapat mengakses ini.",
   "adminEmailNotConfigured": "Email admin belum diatur. Edit lib/config/app_admin_local.dart dan firestore.rules (adminEmail).",
-  "submittedLabel": "Diajukan"
+  "submittedLabel": "Diajukan",
+  "accountLoginLabel": "Akun yang login",
+  "roleAdmin": "Admin",
+  "roleUser": "Pengguna",
+  "adminLoginHint": "Panel admin hanya untuk {email}. Masuk dengan Email/Kata sandi (bukan Google) memakai alamat itu.",
+  "@adminLoginHint": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  }
 }

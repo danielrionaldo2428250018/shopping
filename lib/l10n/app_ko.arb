@@ -541,5 +541,10 @@
   "viewSellerApplicationStatus": "신청 상태 보기",
   "adminAccessDenied": "지정된 관리자 계정만 접근할 수 있습니다.",
   "adminEmailNotConfigured": "관리자 이메일이 설정되지 않았습니다. app_admin_local.dart를 수정하세요.",
-  "submittedLabel": "제출일"
+  "submittedLabel": "제출일",
+  "accountLoginLabel": "로그인 계정",
+  "roleAdmin": "관리자",
+  "roleUser": "사용자",
+  "adminLoginHint": "관리자 패널은 {email} 전용입니다. 해당 이메일로 이메일/비밀번호로 로그인하세요(Google 아님).",
+  "@adminLoginHint": { "placeholders": { "email": { "type": "String" } } }
 }

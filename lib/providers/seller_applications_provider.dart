@@ -107,7 +107,7 @@ class SellerApplicationsProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    if (isAppAdminEmail(email)) {
+    if (isAppAdminUser(email: email, uid: _auth?.uid)) {
       _sub = _repo!.watchAll().listen(onList, onError: onError);
     } else if (email != null && email.isNotEmpty) {
       _sub = _repo!.watchByEmail(email).listen(onList, onError: onError);

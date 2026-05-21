@@ -523,5 +523,14 @@
   "viewSellerApplicationStatus": "View application status",
   "adminAccessDenied": "Only the designated admin account can access this.",
   "adminEmailNotConfigured": "Admin email is not set. Edit lib/config/app_admin_local.dart and firestore.rules (adminEmail).",
-  "submittedLabel": "Submitted"
+  "submittedLabel": "Submitted",
+  "accountLoginLabel": "Signed-in account",
+  "roleAdmin": "Admin",
+  "roleUser": "User",
+  "adminLoginHint": "Admin panel is only for {email}. Sign in with Email/Password (not Google) using that address.",
+  "@adminLoginHint": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  }
 }
