@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../constants/app_admin_config.dart';
 import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
@@ -39,6 +40,15 @@ async {
   if (ok != true || !context.mounted) return false;
 
   final auth = Provider.of<AuthProvider>(context, listen: false);
+  if (!auth.isAdmin) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.adminAccessDenied)),
+      );
+    }
+    return false;
+  }
+
   final apps = Provider.of<SellerApplicationsProvider>(context, listen: false);
 
   try {
@@ -104,10 +114,21 @@ Future<bool> runRejectSellerFlow(
 
   }
 
+  final auth = Provider.of<AuthProvider>(context, listen: false);
+  if (!auth.isAdmin) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.adminAccessDenied)),
+      );
+    }
+    ctrl.dispose();
+    return false;
+  }
+
   final apps = Provider.of<SellerApplicationsProvider>(context, listen: false);
 
   try {
-    await apps.reject(a.id, reason: ctrl.text);
+    await apps.reject(a.id, auth, reason: ctrl.text);
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,6 +163,37 @@ class AdminSellerApplicationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final auth = context.watch<AuthProvider>();
+
+    if (!isAppAdminConfigured) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.adminSellerApps)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              loc.adminEmailNotConfigured,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (!auth.isAdmin) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.adminSellerApps)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              loc.adminAccessDenied,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
 
     return DefaultTabController(
       length: 3,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../constants/app_admin_config.dart';
 import '../constants/app_branding.dart';
+import '../providers/auth_provider.dart';
 import '../models/reward_catalog_item.dart';
 import '../providers/rewards_catalog_provider.dart';
 import '../utils/l10n_helpers.dart';
@@ -15,6 +17,25 @@ class AdminRewardsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final auth = context.watch<AuthProvider>();
+
+    if (!isAppAdminConfigured || !auth.isAdmin) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.adminRewards)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              !isAppAdminConfigured
+                  ? loc.adminEmailNotConfigured
+                  : loc.adminAccessDenied,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.adminRewards),

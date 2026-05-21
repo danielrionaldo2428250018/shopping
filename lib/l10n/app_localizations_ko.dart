@@ -1609,4 +1609,35 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get authGoogleNetworkError => 'Google 로그인 중 연결에 실패했습니다. 인터넷을 확인하세요.';
+
+  @override
+  String get sellerApplicationStatus => '판매자 신청 상태';
+
+  @override
+  String get noSellerApplicationYet => '아직 판매자 신청을 하지 않았습니다.';
+
+  @override
+  String get applicationPendingMessage => '신청이 검토 중입니다. 관리자의 승인/거절을 기다려 주세요.';
+
+  @override
+  String get applicationApprovedMessage => '승인되었습니다! 앱에서 판매자 기능을 사용할 수 있습니다.';
+
+  @override
+  String get applicationRejectedMessage => '신청이 거절되었습니다. 사유를 확인하거나 다시 신청하세요.';
+
+  @override
+  String get submitNewSellerApplication => '새로 신청';
+
+  @override
+  String get viewSellerApplicationStatus => '신청 상태 보기';
+
+  @override
+  String get adminAccessDenied => '지정된 관리자 계정만 접근할 수 있습니다.';
+
+  @override
+  String get adminEmailNotConfigured =>
+      '관리자 이메일이 설정되지 않았습니다. app_admin_local.dart를 수정하세요.';
+
+  @override
+  String get submittedLabel => '제출일';
 }

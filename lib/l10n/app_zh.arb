@@ -531,5 +531,15 @@
   "authGoogleSignInCancelled": "已取消 Google 登录。",
   "authGoogleNoEmail": "Google 账号没有电子邮件。",
   "authGoogleEmptyToken": "Google 令牌为空。请检查 Web Client ID 与 google-services.json 中的 oauth_client。",
-  "authGoogleNetworkError": "Google 登录时网络失败，请检查网络连接。"
+  "authGoogleNetworkError": "Google 登录时网络失败，请检查网络连接。",
+  "sellerApplicationStatus": "卖家申请状态",
+  "noSellerApplicationYet": "您尚未提交卖家申请。",
+  "applicationPendingMessage": "申请审核中，请等待管理员批准或拒绝。",
+  "applicationApprovedMessage": "已通过！可使用卖家功能。",
+  "applicationRejectedMessage": "申请被拒绝。请查看原因或重新提交。",
+  "submitNewSellerApplication": "重新提交申请",
+  "viewSellerApplicationStatus": "查看申请状态",
+  "adminAccessDenied": "仅指定的管理员账号可访问。",
+  "adminEmailNotConfigured": "未配置管理员邮箱。请编辑 app_admin_local.dart。",
+  "submittedLabel": "提交时间"
 }

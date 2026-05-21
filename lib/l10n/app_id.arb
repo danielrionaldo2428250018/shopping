@@ -551,5 +551,15 @@
   "authGoogleSignInCancelled": "Masuk Google dibatalkan.",
   "authGoogleNoEmail": "Akun Google tidak memiliki email.",
   "authGoogleEmptyToken": "Token Google kosong. Periksa Web Client ID dan oauth_client di google-services.json.",
-  "authGoogleNetworkError": "Koneksi gagal saat masuk Google. Periksa internet Anda."
+  "authGoogleNetworkError": "Koneksi gagal saat masuk Google. Periksa internet Anda.",
+  "sellerApplicationStatus": "Status pengajuan penjual",
+  "noSellerApplicationYet": "Anda belum mengajukan menjadi penjual.",
+  "applicationPendingMessage": "Pengajuan sedang ditinjau admin. Mohon tunggu persetujuan atau penolakan.",
+  "applicationApprovedMessage": "Disetujui! Anda dapat menggunakan fitur penjual di aplikasi.",
+  "applicationRejectedMessage": "Pengajuan ditolak. Lihat alasan di bawah atau ajukan ulang.",
+  "submitNewSellerApplication": "Ajukan ulang",
+  "viewSellerApplicationStatus": "Lihat status pengajuan",
+  "adminAccessDenied": "Hanya akun admin yang ditentukan yang dapat mengakses ini.",
+  "adminEmailNotConfigured": "Email admin belum diatur. Edit lib/config/app_admin_local.dart dan firestore.rules (adminEmail).",
+  "submittedLabel": "Diajukan"
 }

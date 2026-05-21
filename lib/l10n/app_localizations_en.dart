@@ -1651,4 +1651,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get authGoogleNetworkError =>
       'Connection failed during Google sign-in. Check your internet.';
+
+  @override
+  String get sellerApplicationStatus => 'Seller application status';
+
+  @override
+  String get noSellerApplicationYet =>
+      'You have not submitted a seller application yet.';
+
+  @override
+  String get applicationPendingMessage =>
+      'Your application is under review. Please wait for the admin to approve or reject it.';
+
+  @override
+  String get applicationApprovedMessage =>
+      'Approved! You can use seller features in this app.';
+
+  @override
+  String get applicationRejectedMessage =>
+      'Your application was rejected. See the reason below or submit again.';
+
+  @override
+  String get submitNewSellerApplication => 'Submit a new application';
+
+  @override
+  String get viewSellerApplicationStatus => 'View application status';
+
+  @override
+  String get adminAccessDenied =>
+      'Only the designated admin account can access this.';
+
+  @override
+  String get adminEmailNotConfigured =>
+      'Admin email is not set. Edit lib/config/app_admin_local.dart and firestore.rules (adminEmail).';
+
+  @override
+  String get submittedLabel => 'Submitted';
 }

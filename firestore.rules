@@ -1,9 +1,20 @@
 rules_version = '2';
 // Deploy: Firebase Console → Firestore → Rules, atau `firebase deploy --only firestore:rules`
+//
+// Email admin HARUS sama dengan `kAppAdminEmailLocal` di lib/config/app_admin_local.dart
 service cloud.firestore {
   match /databases/{database}/documents {
+    function adminEmail() {
+      return 'admin@preloved.id';
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == adminEmail();
+    }
+
     match /sellerApplications/{applicationId} {
-      // Pengguna login boleh mengajukan (email harus sama dengan akun Firebase).
+      // Pemohon mengajukan (email = akun login, status pending).
       allow create: if request.auth != null
         && request.resource.data.keys().hasAll([
           'submittedAt', 'storeName', 'storeDescription', 'email', 'phone',
@@ -12,11 +23,13 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && request.resource.data.email == request.auth.token.email;
 
-      // Baca daftar pengajuan (panel admin di app + sinkron peta).
-      allow read: if request.auth != null;
+      // Admin: semua dokumen. Pemohon: hanya pengajuan sendiri.
+      allow read: if isAdmin()
+        || (request.auth != null
+            && resource.data.email == request.auth.token.email);
 
-      // Admin app memperbarui status (setujui / tolak).
-      allow update: if request.auth != null;
+      // Hanya admin yang boleh setujui / tolak.
+      allow update: if isAdmin();
 
       allow delete: if false;
     }

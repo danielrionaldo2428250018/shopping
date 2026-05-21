@@ -1602,4 +1602,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get authGoogleNetworkError => 'Google 登录时网络失败，请检查网络连接。';
+
+  @override
+  String get sellerApplicationStatus => '卖家申请状态';
+
+  @override
+  String get noSellerApplicationYet => '您尚未提交卖家申请。';
+
+  @override
+  String get applicationPendingMessage => '申请审核中，请等待管理员批准或拒绝。';
+
+  @override
+  String get applicationApprovedMessage => '已通过！可使用卖家功能。';
+
+  @override
+  String get applicationRejectedMessage => '申请被拒绝。请查看原因或重新提交。';
+
+  @override
+  String get submitNewSellerApplication => '重新提交申请';
+
+  @override
+  String get viewSellerApplicationStatus => '查看申请状态';
+
+  @override
+  String get adminAccessDenied => '仅指定的管理员账号可访问。';
+
+  @override
+  String get adminEmailNotConfigured => '未配置管理员邮箱。请编辑 app_admin_local.dart。';
+
+  @override
+  String get submittedLabel => '提交时间';
 }

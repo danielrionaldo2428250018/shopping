@@ -531,5 +531,15 @@
   "authGoogleSignInCancelled": "تم إلغاء تسجيل الدخول عبر Google.",
   "authGoogleNoEmail": "حساب Google لا يحتوي على بريد إلكتروني.",
   "authGoogleEmptyToken": "رمز Google فارغ. تحقق من Web Client ID وoauth_client في google-services.json.",
-  "authGoogleNetworkError": "فشل الاتصال أثناء تسجيل الدخول عبر Google. تحقق من الإنترنت."
+  "authGoogleNetworkError": "فشل الاتصال أثناء تسجيل الدخول عبر Google. تحقق من الإنترنت.",
+  "sellerApplicationStatus": "حالة طلب البائع",
+  "noSellerApplicationYet": "لم تقدّم طلب بائع بعد.",
+  "applicationPendingMessage": "طلبك قيد المراجعة. انتظر قرار المسؤول.",
+  "applicationApprovedMessage": "تمت الموافقة! يمكنك استخدام ميزات البائع.",
+  "applicationRejectedMessage": "تم رفض طلبك. راجع السبب أو قدّم طلباً جديداً.",
+  "submitNewSellerApplication": "تقديم طلب جديد",
+  "viewSellerApplicationStatus": "عرض حالة الطلب",
+  "adminAccessDenied": "حساب المسؤول المحدد فقط يمكنه الوصول.",
+  "adminEmailNotConfigured": "لم يُضبط بريد المسؤول. عدّل app_admin_local.dart وfirestore.rules.",
+  "submittedLabel": "تاريخ التقديم"
 }

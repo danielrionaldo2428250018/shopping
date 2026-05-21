@@ -10,6 +10,7 @@ import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../utils/l10n_helpers.dart';
+import 'seller_application_status_screen.dart';
 
 /// Form pengajuan menjadi penjual barang bekas — data ke antrian admin.
 class BecomeSellerScreen extends StatefulWidget {
@@ -39,11 +40,21 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final email =
-          Provider.of<AuthProvider>(context, listen: false)
-              .accountEmail;
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final email = auth.accountEmail;
       if (email != null && email.isNotEmpty) {
         emailCtrl.text = email;
+      }
+      if (!mounted || auth.isAdmin) return;
+      final apps =
+          Provider.of<SellerApplicationsProvider>(context, listen: false);
+      final mine = apps.myLatestApplication;
+      if (mine != null &&
+          mine.status != SellerApplicationStatus.rejected) {
+        Navigator.pushReplacementNamed(
+          context,
+          SellerApplicationStatusScreen.route,
+        );
       }
     });
   }
@@ -216,6 +227,24 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
       return;
     }
 
+    final apps = Provider.of<SellerApplicationsProvider>(
+      context,
+      listen: false,
+    );
+    if (apps.hasPendingForEmail(accountEmail)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.applicationPendingMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pushReplacementNamed(
+        context,
+        SellerApplicationStatusScreen.route,
+      );
+      return;
+    }
+
     bool savedToCloud = false;
     try {
       savedToCloud = await Provider.of<SellerApplicationsProvider>(
@@ -245,7 +274,10 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
       ),
     );
 
-    Navigator.pop(context);
+    Navigator.pushReplacementNamed(
+      context,
+      SellerApplicationStatusScreen.route,
+    );
   }
 
   @override

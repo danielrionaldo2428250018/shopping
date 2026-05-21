@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/app_admin_config.dart';
 import '../models/seller_application.dart';
 import '../services/push_notification_service.dart';
 import '../utils/l10n_helpers.dart';
@@ -18,19 +19,7 @@ class SellerApplicationsProvider extends ChangeNotifier {
     if (Firebase.apps.isNotEmpty) {
       _useFirestore = true;
       _repo = SellerApplicationsRepository(FirebaseFirestore.instance);
-      _sub = _repo!.watchAll().listen(
-        (list) {
-          _items
-            ..clear()
-            ..addAll(list);
-          notifyListeners();
-          _syncApprovedSellerForBoundAuth();
-        },
-        onError: (Object e) {
-          _error = 'Firestore: $e';
-          notifyListeners();
-        },
-      );
+      _resubscribe();
     } else {
       _useFirestore = false;
       _error = null;
@@ -89,10 +78,56 @@ class SellerApplicationsProvider extends ChangeNotifier {
     _auth?.removeListener(_onAuthChanged);
     _auth = auth;
     _auth!.addListener(_onAuthChanged);
+    _resubscribe();
     _syncApprovedSellerForBoundAuth();
   }
 
-  void _onAuthChanged() => _syncApprovedSellerForBoundAuth();
+  void _onAuthChanged() {
+    _resubscribe();
+    _syncApprovedSellerForBoundAuth();
+  }
+
+  void _resubscribe() {
+    _sub?.cancel();
+    _sub = null;
+    if (!_useFirestore || _repo == null) return;
+
+    final email = _auth?.accountEmail?.trim().toLowerCase();
+    void onList(List<SellerApplication> list) {
+      _items
+        ..clear()
+        ..addAll(list);
+      _error = null;
+      notifyListeners();
+      _syncApprovedSellerForBoundAuth();
+    }
+
+    void onError(Object e) {
+      _error = 'Firestore: $e';
+      notifyListeners();
+    }
+
+    if (isAppAdminEmail(email)) {
+      _sub = _repo!.watchAll().listen(onList, onError: onError);
+    } else if (email != null && email.isNotEmpty) {
+      _sub = _repo!.watchByEmail(email).listen(onList, onError: onError);
+    } else {
+      _items.clear();
+      notifyListeners();
+    }
+  }
+
+  /// Pengajuan terbaru milik akun yang sedang login (bukan admin).
+  SellerApplication? get myLatestApplication {
+    final email = _auth?.accountEmail?.trim().toLowerCase();
+    if (email == null || email.isEmpty) return null;
+    final mine = _items.where((a) => a.email.toLowerCase() == email).toList();
+    if (mine.isEmpty) return null;
+    mine.sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+    return mine.first;
+  }
+
+  bool get hasMyApplication => myLatestApplication != null;
 
   void _restoreLocal() {
     final s = _prefs.getString(_kApps);
@@ -166,6 +201,9 @@ class SellerApplicationsProvider extends ChangeNotifier {
   }
 
   Future<void> approve(String id, AuthProvider auth) async {
+    if (!auth.isAdmin) {
+      throw StateError('admin-only');
+    }
     final app = findById(id);
     if (app == null || app.status != SellerApplicationStatus.pending) return;
 
@@ -191,7 +229,10 @@ class SellerApplicationsProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> reject(String id, {String reason = ''}) async {
+  Future<void> reject(String id, AuthProvider auth, {String reason = ''}) async {
+    if (!auth.isAdmin) {
+      throw StateError('admin-only');
+    }
     final app = findById(id);
     if (app == null || app.status != SellerApplicationStatus.pending) return;
 

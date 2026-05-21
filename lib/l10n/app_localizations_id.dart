@@ -1151,7 +1151,7 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get wishlist => 'Wishlist';
+  String get wishlist => 'Daftar simpan';
 
   @override
   String get changePasswordTitle => 'Ubah kata sandi';
@@ -1662,4 +1662,39 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get authGoogleNetworkError =>
       'Koneksi gagal saat masuk Google. Periksa internet Anda.';
+
+  @override
+  String get sellerApplicationStatus => 'Status pengajuan penjual';
+
+  @override
+  String get noSellerApplicationYet => 'Anda belum mengajukan menjadi penjual.';
+
+  @override
+  String get applicationPendingMessage =>
+      'Pengajuan sedang ditinjau admin. Mohon tunggu persetujuan atau penolakan.';
+
+  @override
+  String get applicationApprovedMessage =>
+      'Disetujui! Anda dapat menggunakan fitur penjual di aplikasi.';
+
+  @override
+  String get applicationRejectedMessage =>
+      'Pengajuan ditolak. Lihat alasan di bawah atau ajukan ulang.';
+
+  @override
+  String get submitNewSellerApplication => 'Ajukan ulang';
+
+  @override
+  String get viewSellerApplicationStatus => 'Lihat status pengajuan';
+
+  @override
+  String get adminAccessDenied =>
+      'Hanya akun admin yang ditentukan yang dapat mengakses ini.';
+
+  @override
+  String get adminEmailNotConfigured =>
+      'Email admin belum diatur. Edit lib/config/app_admin_local.dart dan firestore.rules (adminEmail).';
+
+  @override
+  String get submittedLabel => 'Diajukan';
 }

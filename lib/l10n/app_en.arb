@@ -513,5 +513,15 @@
   "authGoogleSignInCancelled": "Google sign-in was cancelled.",
   "authGoogleNoEmail": "Google account has no email address.",
   "authGoogleEmptyToken": "Google token is empty. Check Web Client ID and oauth_client in google-services.json.",
-  "authGoogleNetworkError": "Connection failed during Google sign-in. Check your internet."
+  "authGoogleNetworkError": "Connection failed during Google sign-in. Check your internet.",
+  "sellerApplicationStatus": "Seller application status",
+  "noSellerApplicationYet": "You have not submitted a seller application yet.",
+  "applicationPendingMessage": "Your application is under review. Please wait for the admin to approve or reject it.",
+  "applicationApprovedMessage": "Approved! You can use seller features in this app.",
+  "applicationRejectedMessage": "Your application was rejected. See the reason below or submit again.",
+  "submitNewSellerApplication": "Submit a new application",
+  "viewSellerApplicationStatus": "View application status",
+  "adminAccessDenied": "Only the designated admin account can access this.",
+  "adminEmailNotConfigured": "Admin email is not set. Edit lib/config/app_admin_local.dart and firestore.rules (adminEmail).",
+  "submittedLabel": "Submitted"
 }

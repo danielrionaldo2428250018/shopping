@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/app_admin_config.dart';
 import '../services/google_auth_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/firebase_auth_messages.dart';
@@ -36,6 +37,7 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isSeller => _isSeller;
+  bool get isAdmin => isAppAdminEmail(_accountEmail);
   String? get accountEmail => _accountEmail;
   String? get displayName => _displayName;
   String? get uid => _uid;

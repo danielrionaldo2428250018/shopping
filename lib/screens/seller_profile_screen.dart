@@ -246,33 +246,35 @@ class SellerProfileScreen extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, '/orders'),
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
-                    Container(
-                      color: Colors.orange.shade50,
-                      child: _row(
-                        context,
-                        icon: Icons.admin_panel_settings_outlined,
-                        iconBg: Colors.orange.shade100,
-                        iconColor: Colors.orange.shade800,
-                        title: loc.adminSellerApps,
-                        onTap: () => Navigator.pushNamed(
+                    if (context.watch<AuthProvider>().isAdmin) ...[
+                      Divider(height: 1, color: Colors.grey.shade200),
+                      Container(
+                        color: Colors.orange.shade50,
+                        child: _row(
                           context,
-                          '/admin-seller-applications',
+                          icon: Icons.admin_panel_settings_outlined,
+                          iconBg: Colors.orange.shade100,
+                          iconColor: Colors.orange.shade800,
+                          title: loc.adminSellerApps,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/admin-seller-applications',
+                          ),
                         ),
                       ),
-                    ),
-                    Divider(height: 1, color: Colors.grey.shade200),
-                    _row(
-                      context,
-                      icon: Icons.card_membership_outlined,
-                      iconBg: Colors.orange.shade50,
-                      iconColor: Colors.orange.shade800,
-                      title: loc.adminRewards,
-                      onTap: () => Navigator.pushNamed(
+                      Divider(height: 1, color: Colors.grey.shade200),
+                      _row(
                         context,
-                        AdminRewardsScreen.route,
+                        icon: Icons.card_membership_outlined,
+                        iconBg: Colors.orange.shade50,
+                        iconColor: Colors.orange.shade800,
+                        title: loc.adminRewards,
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AdminRewardsScreen.route,
+                        ),
                       ),
-                    ),
+                    ],
                     Divider(height: 1, color: Colors.grey.shade200),
                     _row(
                       context,

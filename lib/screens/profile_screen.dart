@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../constants/app_branding.dart';
 import '../providers/auth_provider.dart';
+import '../providers/seller_applications_provider.dart';
 import '../providers/loyalty_points_provider.dart';
 import '../providers/inbox_messages_provider.dart';
 import '../providers/orders_provider.dart';
@@ -13,6 +14,7 @@ import '../utils/loyalty_points.dart';
 import '../utils/l10n_helpers.dart';
 import 'admin_rewards_screen.dart';
 import 'loyalty_rewards_screen.dart';
+import 'seller_application_status_screen.dart';
 import 'settings_screen.dart';
 
 /// Profil user biasa — header gradient, kartu statistik, menu.
@@ -399,55 +401,74 @@ class ProfileScreen extends StatelessWidget {
                           Navigator.pushNamed(context, '/orders'),
                     ),
                     Divider(height: 1, color: Colors.grey.shade200),
-                    Container(
-                      color: const Color(0xFFEFFAF0),
-                      child: _menuRow(
-                        context,
-                        iconBg: Colors.green.shade50,
-                        iconColor: Colors.green.shade700,
-                        icon: Icons.storefront_outlined,
-                        title: loc.becomeSeller,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          '/become-seller',
-                        ),
-                      ),
-                    ),
-                    Divider(height: 1, color: Colors.grey.shade200),
-                    Consumer<AuthProvider>(
-                      builder: (context, auth, _) {
+                    Consumer2<AuthProvider, SellerApplicationsProvider>(
+                      builder: (context, auth, apps, _) {
                         if (!auth.isLoggedIn) {
                           return const SizedBox.shrink();
                         }
+                        if (auth.isAdmin) {
+                          return Column(
+                            children: [
+                              Container(
+                                color: Colors.orange.shade50,
+                                child: _menuRow(
+                                  context,
+                                  iconBg: Colors.orange.shade100,
+                                  iconColor: Colors.orange.shade800,
+                                  icon: Icons.admin_panel_settings_outlined,
+                                  title: loc.adminSellerApps,
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    '/admin-seller-applications',
+                                  ),
+                                ),
+                              ),
+                              Divider(
+                                height: 1,
+                                color: Colors.grey.shade200,
+                              ),
+                              _menuRow(
+                                context,
+                                iconBg: Colors.orange.shade50,
+                                iconColor: Colors.orange.shade800,
+                                icon: Icons.card_membership_outlined,
+                                title: loc.adminRewards,
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  AdminRewardsScreen.route,
+                                ),
+                              ),
+                              Divider(
+                                height: 1,
+                                color: Colors.grey.shade200,
+                              ),
+                            ],
+                          );
+                        }
+                        if (auth.isSeller) {
+                          return const SizedBox.shrink();
+                        }
+                        final hasApp = apps.hasMyApplication;
                         return Column(
                           children: [
                             Container(
-                              color: Colors.orange.shade50,
+                              color: const Color(0xFFEFFAF0),
                               child: _menuRow(
                                 context,
-                                iconBg: Colors.orange.shade100,
-                                iconColor: Colors.orange.shade800,
-                                icon: Icons.admin_panel_settings_outlined,
-                                title: loc.adminSellerApps,
+                                iconBg: Colors.green.shade50,
+                                iconColor: Colors.green.shade700,
+                                icon: hasApp
+                                    ? Icons.fact_check_outlined
+                                    : Icons.storefront_outlined,
+                                title: hasApp
+                                    ? loc.viewSellerApplicationStatus
+                                    : loc.becomeSeller,
                                 onTap: () => Navigator.pushNamed(
                                   context,
-                                  '/admin-seller-applications',
+                                  hasApp
+                                      ? SellerApplicationStatusScreen.route
+                                      : '/become-seller',
                                 ),
-                              ),
-                            ),
-                            Divider(
-                              height: 1,
-                              color: Colors.grey.shade200,
-                            ),
-                            _menuRow(
-                              context,
-                              iconBg: Colors.orange.shade50,
-                              iconColor: Colors.orange.shade800,
-                              icon: Icons.card_membership_outlined,
-                              title: loc.adminRewards,
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AdminRewardsScreen.route,
                               ),
                             ),
                             Divider(

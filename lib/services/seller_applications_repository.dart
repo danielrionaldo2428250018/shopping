@@ -76,6 +76,20 @@ class SellerApplicationsRepository {
         );
   }
 
+  /// Hanya pengajuan milik pemohon (email = akun login).
+  Stream<List<SellerApplication>> watchByEmail(String email) {
+    final e = email.trim().toLowerCase();
+    return _col
+        .where('email', isEqualTo: e)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((d) => sellerApplicationFromFirestore(d))
+              .toList()
+            ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt)),
+        );
+  }
+
   Future<void> create(SellerApplication a) async {
     await _col.doc(a.id).set(sellerApplicationToCreateMap(a));
   }

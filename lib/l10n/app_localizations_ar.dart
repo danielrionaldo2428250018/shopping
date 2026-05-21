@@ -1629,4 +1629,38 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get authGoogleNetworkError =>
       'فشل الاتصال أثناء تسجيل الدخول عبر Google. تحقق من الإنترنت.';
+
+  @override
+  String get sellerApplicationStatus => 'حالة طلب البائع';
+
+  @override
+  String get noSellerApplicationYet => 'لم تقدّم طلب بائع بعد.';
+
+  @override
+  String get applicationPendingMessage =>
+      'طلبك قيد المراجعة. انتظر قرار المسؤول.';
+
+  @override
+  String get applicationApprovedMessage =>
+      'تمت الموافقة! يمكنك استخدام ميزات البائع.';
+
+  @override
+  String get applicationRejectedMessage =>
+      'تم رفض طلبك. راجع السبب أو قدّم طلباً جديداً.';
+
+  @override
+  String get submitNewSellerApplication => 'تقديم طلب جديد';
+
+  @override
+  String get viewSellerApplicationStatus => 'عرض حالة الطلب';
+
+  @override
+  String get adminAccessDenied => 'حساب المسؤول المحدد فقط يمكنه الوصول.';
+
+  @override
+  String get adminEmailNotConfigured =>
+      'لم يُضبط بريد المسؤول. عدّل app_admin_local.dart وfirestore.rules.';
+
+  @override
+  String get submittedLabel => 'تاريخ التقديم';
 }

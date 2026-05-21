@@ -59,6 +59,7 @@ import 'screens/store_dashboard.dart';
 import 'screens/add_product_screen.dart';
 import 'screens/edit_product_screen.dart';
 import 'screens/admin_seller_applications_screen.dart';
+import 'screens/seller_application_status_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/chat_list_screen.dart';
 import 'screens/buy_product_screen.dart';
@@ -501,6 +502,9 @@ class MyApp extends StatelessWidget {
                 const EditProductScreen(),
 
         /// ADMIN
+        SellerApplicationStatusScreen.route: (context) =>
+            const SellerApplicationStatusScreen(),
+
         '/admin-seller-applications':
             (context) =>
                 const AdminSellerApplicationsScreen(),

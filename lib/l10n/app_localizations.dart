@@ -2243,7 +2243,7 @@ abstract class AppLocalizations {
   /// No description provided for @wishlist.
   ///
   /// In id, this message translates to:
-  /// **'Wishlist'**
+  /// **'Daftar simpan'**
   String get wishlist;
 
   /// No description provided for @changePasswordTitle.
@@ -3127,6 +3127,66 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Koneksi gagal saat masuk Google. Periksa internet Anda.'**
   String get authGoogleNetworkError;
+
+  /// No description provided for @sellerApplicationStatus.
+  ///
+  /// In id, this message translates to:
+  /// **'Status pengajuan penjual'**
+  String get sellerApplicationStatus;
+
+  /// No description provided for @noSellerApplicationYet.
+  ///
+  /// In id, this message translates to:
+  /// **'Anda belum mengajukan menjadi penjual.'**
+  String get noSellerApplicationYet;
+
+  /// No description provided for @applicationPendingMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengajuan sedang ditinjau admin. Mohon tunggu persetujuan atau penolakan.'**
+  String get applicationPendingMessage;
+
+  /// No description provided for @applicationApprovedMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Disetujui! Anda dapat menggunakan fitur penjual di aplikasi.'**
+  String get applicationApprovedMessage;
+
+  /// No description provided for @applicationRejectedMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengajuan ditolak. Lihat alasan di bawah atau ajukan ulang.'**
+  String get applicationRejectedMessage;
+
+  /// No description provided for @submitNewSellerApplication.
+  ///
+  /// In id, this message translates to:
+  /// **'Ajukan ulang'**
+  String get submitNewSellerApplication;
+
+  /// No description provided for @viewSellerApplicationStatus.
+  ///
+  /// In id, this message translates to:
+  /// **'Lihat status pengajuan'**
+  String get viewSellerApplicationStatus;
+
+  /// No description provided for @adminAccessDenied.
+  ///
+  /// In id, this message translates to:
+  /// **'Hanya akun admin yang ditentukan yang dapat mengakses ini.'**
+  String get adminAccessDenied;
+
+  /// No description provided for @adminEmailNotConfigured.
+  ///
+  /// In id, this message translates to:
+  /// **'Email admin belum diatur. Edit lib/config/app_admin_local.dart dan firestore.rules (adminEmail).'**
+  String get adminEmailNotConfigured;
+
+  /// No description provided for @submittedLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Diajukan'**
+  String get submittedLabel;
 }
 
 class _AppLocalizationsDelegate
