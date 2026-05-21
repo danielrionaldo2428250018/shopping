@@ -44,7 +44,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final pages = _pages(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Column(
         children: [
           Expanded(

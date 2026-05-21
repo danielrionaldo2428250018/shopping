@@ -23,6 +23,7 @@ import 'providers/user_profile_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'providers/loyalty_points_provider.dart';
 import 'providers/rewards_catalog_provider.dart';
+import 'styles/app_theme.dart';
 import 'providers/catalog_provider.dart';
 
 import 'bootstrap/startup_permissions.dart';
@@ -182,7 +183,9 @@ class _FirebaseAuthBinderState extends State<_FirebaseAuthBinder> {
       } catch (e) {
         debugPrint('bindFirebase: $e');
       }
-      context.read<SellerApplicationsProvider>().bindAuth(auth);
+      final apps = context.read<SellerApplicationsProvider>();
+      apps.bindAuth(auth);
+      apps.bindProfile(context.read<UserProfileProvider>());
     });
   }
 
@@ -223,22 +226,8 @@ class MyApp extends StatelessWidget {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           themeMode: themePrefs.themeMode,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppBranding.seedColor,
-              brightness: Brightness.light,
-            ),
-            scaffoldBackgroundColor: AppBranding.scaffoldLight,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppBranding.seedColor,
-              brightness: Brightness.dark,
-            ),
-            scaffoldBackgroundColor: AppBranding.scaffoldDark,
-          ),
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
           initialRoute: SplashScreen.route,
           routes: {
 

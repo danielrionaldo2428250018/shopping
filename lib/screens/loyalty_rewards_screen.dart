@@ -18,8 +18,7 @@ class LoyaltyRewardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
+            appBar: AppBar(
         title: Text(loc.loyaltyRewards),
         backgroundColor: AppBranding.seedColor,
         foregroundColor: Colors.white,

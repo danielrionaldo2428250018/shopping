@@ -6,8 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/app_branding.dart';
 import '../providers/user_profile_provider.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 
 /// Edit profil lengkap: foto (izin galeri/kamera), nama, email, nomor HP (tersimpan lokal).
@@ -152,9 +152,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     const purple = Color(0xFF7F3DFF);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: appScaffoldBackground(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: appCardColor(context),
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),

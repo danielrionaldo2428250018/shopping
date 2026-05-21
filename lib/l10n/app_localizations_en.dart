@@ -113,6 +113,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gallery permission is required to pick an image.';
 
   @override
+  String get galleryPermissionOpenSettings =>
+      'Gallery access blocked. Open app settings to allow photos.';
+
+  @override
+  String productPhotosMax(int count) {
+    return 'Maximum $count photos per product.';
+  }
+
+  @override
+  String productPhotosAdded(int count) {
+    return '$count photo(s) added.';
+  }
+
+  @override
+  String get productPhotoRequired => 'Add at least one product photo.';
+
+  @override
   String get cameraPermissionRequired =>
       'Camera permission is required to take a photo.';
 
@@ -824,6 +841,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fingerprintAuth => 'Fingerprint authentication';
 
   @override
+  String get fingerprintAuthSubtitle =>
+      'Only for quick payment (OVO, GoPay, DANA, ShopeePay)';
+
+  @override
+  String get biometricAuthPaymentReason =>
+      'Confirm your identity to complete quick payment';
+
+  @override
+  String get biometricNotAvailable =>
+      'Biometrics are not available on this device';
+
+  @override
+  String get biometricAuthFailed => 'Authentication failed. Payment cancelled.';
+
+  @override
   String get privacyPolicy => 'Privacy policy';
 
   @override
@@ -858,6 +890,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadLogoWebHint => 'Logo upload not available on web (demo).';
+
+  @override
+  String get uploadLogoFailedKeepLocal =>
+      'Cloud logo upload failed; application sent with local logo only.';
 
   @override
   String get storeInformation => 'Store information';

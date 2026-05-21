@@ -110,6 +110,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get galleryPermissionRequired => '갤러리 권한이 필요합니다.';
 
   @override
+  String get galleryPermissionOpenSettings => '갤러리가 차단되었습니다. 앱 설정에서 허용하세요.';
+
+  @override
+  String productPhotosMax(int count) {
+    return '상품당 최대 $count장.';
+  }
+
+  @override
+  String productPhotosAdded(int count) {
+    return '사진 $count장 추가됨.';
+  }
+
+  @override
+  String get productPhotoRequired => '상품 사진을 최소 1장 추가하세요.';
+
+  @override
   String get cameraPermissionRequired => '카메라 권한이 필요합니다.';
 
   @override
@@ -813,6 +829,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fingerprintAuth => '지문 인증';
 
   @override
+  String get fingerprintAuthSubtitle =>
+      '빠른 결제(OVO, GoPay, DANA, ShopeePay)에만 사용';
+
+  @override
+  String get biometricAuthPaymentReason => '빠른 결제를 완료하려면 본인 확인이 필요합니다';
+
+  @override
+  String get biometricNotAvailable => '이 기기에서는 생체 인증을 사용할 수 없습니다';
+
+  @override
+  String get biometricAuthFailed => '인증에 실패했습니다. 결제가 취소되었습니다.';
+
+  @override
   String get privacyPolicy => '개인정보 처리방침';
 
   @override
@@ -847,6 +876,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get uploadLogoWebHint => '웹에서는 로고 업로드 불가 (데모).';
+
+  @override
+  String get uploadLogoFailedKeepLocal => '클라우드 로고 업로드 실패; 로컬 로고로 신청이 전송되었습니다.';
 
   @override
   String get storeInformation => '스토어 정보';

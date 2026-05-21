@@ -77,7 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppBranding.scaffoldLight,
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(

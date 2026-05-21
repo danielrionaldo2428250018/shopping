@@ -261,8 +261,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     final a = widget.args;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: CustomScrollView(
+            body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 120,

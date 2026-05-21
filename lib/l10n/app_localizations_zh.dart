@@ -110,6 +110,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get galleryPermissionRequired => '需要相册权限。';
 
   @override
+  String get galleryPermissionOpenSettings => '相册权限被禁用，请在系统设置中允许访问。';
+
+  @override
+  String productPhotosMax(int count) {
+    return '每件商品最多 $count 张照片。';
+  }
+
+  @override
+  String productPhotosAdded(int count) {
+    return '已添加 $count 张照片。';
+  }
+
+  @override
+  String get productPhotoRequired => '请至少添加一张商品照片。';
+
+  @override
   String get cameraPermissionRequired => '需要相机权限。';
 
   @override
@@ -812,6 +828,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fingerprintAuth => '指纹认证';
 
   @override
+  String get fingerprintAuthSubtitle => '仅用于快捷支付（OVO、GoPay、DANA、ShopeePay）';
+
+  @override
+  String get biometricAuthPaymentReason => '请验证身份以完成快捷支付';
+
+  @override
+  String get biometricNotAvailable => '此设备不支持生物识别';
+
+  @override
+  String get biometricAuthFailed => '验证失败，支付已取消。';
+
+  @override
   String get privacyPolicy => '隐私政策';
 
   @override
@@ -846,6 +874,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get uploadLogoWebHint => '网页版无法上传标志（演示）。';
+
+  @override
+  String get uploadLogoFailedKeepLocal => '云端标志上传失败；已使用本地标志提交申请。';
 
   @override
   String get storeInformation => '店铺信息';

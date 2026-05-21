@@ -12,6 +12,7 @@ import '../services/push_notification_service.dart';
 import '../utils/l10n_helpers.dart';
 import '../services/seller_applications_repository.dart';
 import 'auth_provider.dart';
+import 'user_profile_provider.dart';
 
 /// Pengajuan penjual: **Firestore** bila Firebase aktif, selain itu **SharedPreferences** (tetap jalan).
 class SellerApplicationsProvider extends ChangeNotifier {
@@ -60,6 +61,35 @@ class SellerApplicationsProvider extends ChangeNotifier {
       .toList();
 
   AuthProvider? _auth;
+  UserProfileProvider? _profile;
+
+  /// Pengajuan disetujui untuk akun yang sedang login.
+  SellerApplication? get myApprovedStore {
+    final email = _auth?.accountEmail?.trim().toLowerCase();
+    if (email == null || email.isEmpty) return null;
+    final mine = approved
+        .where((a) => a.email.trim().toLowerCase() == email)
+        .toList();
+    if (mine.isEmpty) return null;
+    mine.sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+    return mine.first;
+  }
+
+  /// Toko penjual untuk halaman pembeli (cocokkan nama toko / penjual).
+  SellerApplication? approvedStoreBySellerName(String sellerName) {
+    final key = sellerName.trim().toLowerCase();
+    if (key.isEmpty) return null;
+    for (final app in approved) {
+      if (app.storeName.trim().toLowerCase() == key) return app;
+      if (app.email.trim().toLowerCase() == key) return app;
+    }
+    return null;
+  }
+
+  void bindProfile(UserProfileProvider profile) {
+    _profile = profile;
+    _syncApprovedSellerForBoundAuth();
+  }
 
   void _syncApprovedSellerForBoundAuth() {
     final auth = _auth;
@@ -69,6 +99,10 @@ class SellerApplicationsProvider extends ChangeNotifier {
     for (final app in approved) {
       if (app.email.trim().toLowerCase() == email) {
         auth.grantSellerRoleForEmail(app.email);
+        final name = app.storeName.trim();
+        if (name.isNotEmpty) {
+          _profile?.setDisplayName(name);
+        }
       }
     }
   }

@@ -39,12 +39,8 @@ class OrderInvoiceScreen extends StatelessWidget {
     final o = order;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
+            appBar: AppBar(
         title: Text(loc.myOrders),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

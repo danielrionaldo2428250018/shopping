@@ -5,7 +5,10 @@ import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
+import '../providers/seller_applications_provider.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/store_logo_avatar.dart';
 
 /// Dashboard penjual — produk dari Realtime Database (toko Anda).
 class StoreDashboardScreen extends StatelessWidget {
@@ -15,20 +18,36 @@ class StoreDashboardScreen extends StatelessWidget {
 
   static const Color _purple = Color(0xFF7B42F6);
 
+  List<CatalogProduct> _productsForStore(
+    String storeName,
+    String? displayName,
+  ) {
+    final keys = <String>{
+      if (storeName.isNotEmpty) storeName,
+      if (displayName != null && displayName.isNotEmpty) displayName,
+    };
+    if (keys.isEmpty) return [];
+    return kCatalogProducts
+        .where((p) => keys.contains(p.sellerName))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<CatalogProvider>();
     final loc = context.l10n;
-    final seller = context.watch<AuthProvider>().displayName?.trim() ?? '';
-    final products = seller.isEmpty
-        ? <CatalogProduct>[]
-        : kCatalogProducts
-            .where((p) => p.sellerName == seller)
-            .toList();
+    final auth = context.watch<AuthProvider>();
+    final store = context.watch<SellerApplicationsProvider>().myApprovedStore;
+    final storeName = store?.storeName.trim().isNotEmpty == true
+        ? store!.storeName.trim()
+        : (auth.displayName?.trim() ?? '');
+    final products = _productsForStore(
+      storeName,
+      auth.displayName?.trim(),
+    );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
+            body: SafeArea(
         bottom: false,
         child: CustomScrollView(
           slivers: [
@@ -106,23 +125,79 @@ class StoreDashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      loc.myStore,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      loc.settingsSubtitle,
-                      style: TextStyle(
-                        color:
-                            Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        StoreLogoAvatar(
+                          storeName: storeName.isNotEmpty
+                              ? storeName
+                              : loc.myStore,
+                          logoUrl: store?.logoUrl,
+                          logoPath: store?.logoPath,
+                          radius: 40,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                storeName.isNotEmpty
+                                    ? storeName
+                                    : loc.myStore,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                store?.storeDescription.trim().isNotEmpty ==
+                                        true
+                                    ? store!.storeDescription.trim()
+                                    : loc.settingsSubtitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                  fontSize: 13,
+                                  height: 1.35,
+                                ),
+                              ),
+                              if (store?.city.trim().isNotEmpty == true) ...[
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 14,
+                                      color: Colors.white
+                                          .withValues(alpha: 0.85),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${store!.streetAddress}, ${store.city}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.85),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     IntrinsicHeight(
@@ -171,9 +246,9 @@ class StoreDashboardScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appCardColor(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade100),
+                    border: Border.all(color: appBorderColor(context)),
                     boxShadow: [
                       BoxShadow(
                         color:
@@ -343,10 +418,10 @@ class StoreDashboardScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: appCardColor(context),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.grey.shade100,
+                          color: appBorderColor(context),
                         ),
                         boxShadow: [
                           BoxShadow(

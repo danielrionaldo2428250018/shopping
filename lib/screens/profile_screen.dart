@@ -10,6 +10,7 @@ import '../providers/loyalty_points_provider.dart';
 import '../providers/inbox_messages_provider.dart';
 import '../providers/orders_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/loyalty_points.dart';
 import '../utils/l10n_helpers.dart';
 import 'admin_rewards_screen.dart';
@@ -27,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: appScaffoldBackground(context),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -223,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
                   final progress = loyaltyLevelProgress(loyalty.lifetimeEarned);
                   final next = nextLoyaltyLevel(loyalty.lifetimeEarned);
                   return Material(
-                    color: Colors.white,
+                    color: appCardColor(context),
                     borderRadius: BorderRadius.circular(18),
                     elevation: 2,
                     shadowColor: Colors.black.withValues(alpha: 0.08),
@@ -329,12 +330,13 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: appCardColor(context),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          Colors.black.withValues(alpha: 0.05),
+                      color: Theme.of(context)
+                          .shadowColor
+                          .withValues(alpha: 0.08),
                       blurRadius: 12,
                     ),
                   ],
@@ -401,12 +403,15 @@ class ProfileScreen extends StatelessWidget {
                           Navigator.pushNamed(context, '/orders'),
                     ),
                     Divider(height: 1, color: Colors.grey.shade200),
-                    Consumer2<AuthProvider, SellerApplicationsProvider>(
-                      builder: (context, auth, apps, _) {
+                    Consumer3<AuthProvider, SellerApplicationsProvider,
+                        UserProfileProvider>(
+                      builder: (context, auth, apps, profile, _) {
                         if (!auth.isLoggedIn) {
                           return const SizedBox.shrink();
                         }
-                        if (auth.isAdmin) {
+                        final isAdmin =
+                            auth.isAdminWithProfileEmail(profile.email);
+                        if (isAdmin) {
                           return Column(
                             children: [
                               Container(

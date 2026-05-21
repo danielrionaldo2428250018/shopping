@@ -37,7 +37,16 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isSeller => _isSeller;
-  bool get isAdmin => isAppAdminUser(email: resolvedAccountEmail, uid: _uid);
+  bool get isAdmin => isAppAdminUser(
+        email: resolvedAccountEmail ?? _prefs.getString(_kEmail),
+        uid: _uid ?? _firebaseAuth?.currentUser?.uid,
+      );
+
+  /// Gabungkan email profil lokal bila Firebase belum mengembalikan email.
+  bool isAdminWithProfileEmail(String? profileEmail) => isAppAdminUser(
+        email: resolvedAccountEmail ?? profileEmail ?? _prefs.getString(_kEmail),
+        uid: _uid ?? _firebaseAuth?.currentUser?.uid,
+      );
 
   /// Email dari Firebase Auth (termasuk provider password/google).
   String? get resolvedAccountEmail {
@@ -142,12 +151,23 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
+    final normalized = email.trim().toLowerCase();
     final cred = await _auth.signInWithEmailAndPassword(
-      email: email.trim(),
+      email: normalized,
       password: password,
     );
     await cred.user?.reload();
     _applyFirebaseUser(_auth.currentUser);
+    if (_accountEmail == null || _accountEmail!.isEmpty) {
+      _accountEmail = normalized;
+      _persistSession();
+      notifyListeners();
+    }
+    if (kDebugMode) {
+      debugPrint(
+        'Auth login: uid=$_uid email=$_accountEmail isAdmin=$isAdmin',
+      );
+    }
   }
 
   /// Daftar akun baru (Firebase).

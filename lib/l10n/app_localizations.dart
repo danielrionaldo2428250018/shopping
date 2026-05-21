@@ -302,6 +302,30 @@ abstract class AppLocalizations {
   /// **'Izin galeri diperlukan untuk memilih gambar.'**
   String get galleryPermissionRequired;
 
+  /// No description provided for @galleryPermissionOpenSettings.
+  ///
+  /// In id, this message translates to:
+  /// **'Akses galeri diblokir. Buka pengaturan aplikasi untuk mengizinkan foto.'**
+  String get galleryPermissionOpenSettings;
+
+  /// No description provided for @productPhotosMax.
+  ///
+  /// In id, this message translates to:
+  /// **'Maksimal {count} foto per produk.'**
+  String productPhotosMax(int count);
+
+  /// No description provided for @productPhotosAdded.
+  ///
+  /// In id, this message translates to:
+  /// **'{count} foto ditambahkan.'**
+  String productPhotosAdded(int count);
+
+  /// No description provided for @productPhotoRequired.
+  ///
+  /// In id, this message translates to:
+  /// **'Tambahkan minimal satu foto produk.'**
+  String get productPhotoRequired;
+
   /// No description provided for @cameraPermissionRequired.
   ///
   /// In id, this message translates to:
@@ -1670,6 +1694,30 @@ abstract class AppLocalizations {
   /// **'Autentikasi sidik jari'**
   String get fingerprintAuth;
 
+  /// No description provided for @fingerprintAuthSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Hanya untuk pembayaran cepat (OVO, GoPay, DANA, ShopeePay)'**
+  String get fingerprintAuthSubtitle;
+
+  /// No description provided for @biometricAuthPaymentReason.
+  ///
+  /// In id, this message translates to:
+  /// **'Konfirmasi identitas untuk menyelesaikan pembayaran cepat'**
+  String get biometricAuthPaymentReason;
+
+  /// No description provided for @biometricNotAvailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Sidik jari tidak tersedia di perangkat ini'**
+  String get biometricNotAvailable;
+
+  /// No description provided for @biometricAuthFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Autentikasi gagal. Pembayaran dibatalkan.'**
+  String get biometricAuthFailed;
+
   /// No description provided for @privacyPolicy.
   ///
   /// In id, this message translates to:
@@ -1741,6 +1789,12 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Unggah logo tidak tersedia di web untuk demo.'**
   String get uploadLogoWebHint;
+
+  /// No description provided for @uploadLogoFailedKeepLocal.
+  ///
+  /// In id, this message translates to:
+  /// **'Logo cloud gagal diunggah; pengajuan tetap dikirim dengan logo lokal.'**
+  String get uploadLogoFailedKeepLocal;
 
   /// No description provided for @storeInformation.
   ///

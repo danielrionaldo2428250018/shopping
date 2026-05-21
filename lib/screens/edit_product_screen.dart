@@ -1,6 +1,10 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-import 'add_product_screen.dart' show DottedUploadBox;
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import 'add_product_screen.dart' show DottedUploadBox, ProductPhotoGrid;
+import '../services/image_service.dart';
 import '../utils/l10n_helpers.dart';
 
 /// Form edit produk — penjual.
@@ -23,6 +27,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   late final TextEditingController descCtrl;
 
   String? category;
+  final List<File> _productImages = [];
 
   @override
   void initState() {
@@ -40,6 +45,75 @@ class _EditProductScreenState extends State<EditProductScreen> {
     stockCtrl.dispose();
     descCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _showPhotoSourceSheet() async {
+    final loc = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(loc.chooseFromGallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(loc.takePhotoNow),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickFromCamera();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickFromGallery() async {
+    final loc = context.l10n;
+    if (!await ImageService.ensureGalleryAccess()) {
+      if (!mounted) return;
+      if (await ImageService.isGalleryPermanentlyDenied()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.galleryPermissionOpenSettings)),
+        );
+        await openAppSettings();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.galleryPermissionRequired)),
+        );
+      }
+      return;
+    }
+    final remaining =
+        ImageService.maxProductPhotos - _productImages.length;
+    if (remaining <= 0) return;
+    final files =
+        await ImageService.pickMultipleFromGallery(max: remaining);
+    if (!mounted || files.isEmpty) return;
+    setState(() => _productImages.addAll(files));
+  }
+
+  Future<void> _pickFromCamera() async {
+    final loc = context.l10n;
+    if (!await ImageService.ensureCameraAccess()) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.cameraPermissionRequired)),
+      );
+      return;
+    }
+    final file = await ImageService.pickFromCamera();
+    if (!mounted || file == null) return;
+    setState(() => _productImages.add(file));
   }
 
   InputDecoration _input(String hint, {String? label}) {
@@ -68,8 +142,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+            body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
@@ -161,11 +234,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               ),
                               const SizedBox(height: 14),
                               SizedBox(
-                                height: 120,
+                                height: 160,
                                 width: double.infinity,
-                                child: DottedUploadBox(
-                                  onTap: () {},
-                                ),
+                                child: _productImages.isEmpty
+                                    ? DottedUploadBox(
+                                        onTap: _showPhotoSourceSheet,
+                                      )
+                                    : ProductPhotoGrid(
+                                        files: _productImages,
+                                        onAdd: _showPhotoSourceSheet,
+                                        onRemove: (i) => setState(
+                                          () => _productImages.removeAt(i),
+                                        ),
+                                      ),
                               ),
                             ],
                           ),

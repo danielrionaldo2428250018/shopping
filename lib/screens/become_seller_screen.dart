@@ -9,6 +9,7 @@ import '../constants/app_branding.dart';
 import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
+import '../services/upload_service.dart';
 import '../utils/l10n_helpers.dart';
 import 'seller_application_status_screen.dart';
 
@@ -183,13 +184,31 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
     if (!_validate()) return;
     final loc = context.l10n;
 
+    final appId = 'SELL-${DateTime.now().millisecondsSinceEpoch}';
+    String? logoUrl;
+    if (logoPath != null && logoPath!.isNotEmpty) {
+      try {
+        logoUrl = await UploadService.uploadStoreLogo(
+          File(logoPath!),
+          appId,
+        );
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.uploadLogoFailedKeepLocal),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+
     final app = SellerApplication(
-      id:
-          'SELL-${DateTime.now().millisecondsSinceEpoch}',
-      submittedAt:
-          DateTime.now(),
-      logoPath:
-          logoPath,
+      id: appId,
+      submittedAt: DateTime.now(),
+      logoPath: logoPath,
+      logoUrl: logoUrl,
       storeName:
           storeNameCtrl.text.trim(),
       storeDescription:
@@ -285,8 +304,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
     final loc = context.l10n;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      bottomNavigationBar: Material(
+            bottomNavigationBar: Material(
         color: Colors.white,
         elevation: 12,
 

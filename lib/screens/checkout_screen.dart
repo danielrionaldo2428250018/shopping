@@ -6,8 +6,12 @@ import '../l10n/app_localizations.dart';
 import '../providers/cart_provider.dart';
 import '../providers/loyalty_points_provider.dart';
 import '../providers/orders_provider.dart';
+import '../providers/settings_prefs_provider.dart';
+import '../services/biometric_auth_service.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/phone_order_gate.dart';
+import '../utils/quick_payment.dart';
 
 /// Checkout alur keranjang: ongkir, voucher, ringkasan, bayar.
 class CheckoutScreen extends StatefulWidget {
@@ -215,6 +219,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!await ensurePhoneForOrder(context)) return;
     if (!context.mounted) return;
 
+    final loc = context.l10n;
+    final setPrefs = context.read<SettingsPrefsProvider>();
+    final payment = _displayPayment(loc);
+    if (setPrefs.fingerprintAuth &&
+        QuickPayment.isQuickPayment(payment, loc)) {
+      final ok =
+          await BiometricAuthService.instance.authenticateForPayment(context);
+      if (!context.mounted) return;
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.biometricAuthFailed)),
+        );
+        return;
+      }
+    }
+
     final cart = context.read<CartProvider>();
     final orders = context.read<OrdersProvider>();
     final sub = cart.subtotal;
@@ -261,9 +281,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return Scaffold(
         appBar: AppBar(
           title: Text(loc.checkout),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
         ),
         body: Center(
           child: Column(
@@ -283,20 +300,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: Text(
           loc.checkout,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
       ),
       bottomNavigationBar: Material(
         elevation: 16,
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -622,9 +635,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appCardColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: appBorderColor(context)),
       ),
       child: child,
     );

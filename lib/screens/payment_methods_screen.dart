@@ -14,12 +14,8 @@ class PaymentMethodsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.paymentMethods),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: ListView(
+            body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _tile(

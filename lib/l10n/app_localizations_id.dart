@@ -113,6 +113,23 @@ class AppLocalizationsId extends AppLocalizations {
       'Izin galeri diperlukan untuk memilih gambar.';
 
   @override
+  String get galleryPermissionOpenSettings =>
+      'Akses galeri diblokir. Buka pengaturan aplikasi untuk mengizinkan foto.';
+
+  @override
+  String productPhotosMax(int count) {
+    return 'Maksimal $count foto per produk.';
+  }
+
+  @override
+  String productPhotosAdded(int count) {
+    return '$count foto ditambahkan.';
+  }
+
+  @override
+  String get productPhotoRequired => 'Tambahkan minimal satu foto produk.';
+
+  @override
   String get cameraPermissionRequired =>
       'Izin kamera diperlukan untuk mengambil foto.';
 
@@ -828,6 +845,21 @@ class AppLocalizationsId extends AppLocalizations {
   String get fingerprintAuth => 'Autentikasi sidik jari';
 
   @override
+  String get fingerprintAuthSubtitle =>
+      'Hanya untuk pembayaran cepat (OVO, GoPay, DANA, ShopeePay)';
+
+  @override
+  String get biometricAuthPaymentReason =>
+      'Konfirmasi identitas untuk menyelesaikan pembayaran cepat';
+
+  @override
+  String get biometricNotAvailable =>
+      'Sidik jari tidak tersedia di perangkat ini';
+
+  @override
+  String get biometricAuthFailed => 'Autentikasi gagal. Pembayaran dibatalkan.';
+
+  @override
   String get privacyPolicy => 'Kebijakan privasi';
 
   @override
@@ -864,6 +896,10 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get uploadLogoWebHint =>
       'Unggah logo tidak tersedia di web untuk demo.';
+
+  @override
+  String get uploadLogoFailedKeepLocal =>
+      'Logo cloud gagal diunggah; pengajuan tetap dikirim dengan logo lokal.';
 
   @override
   String get storeInformation => 'Informasi toko';

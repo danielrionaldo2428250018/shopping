@@ -112,6 +112,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryPermissionRequired => 'مطلوب إذن المعرض.';
 
   @override
+  String get galleryPermissionOpenSettings =>
+      'تم حظر المعرض. افتح إعدادات التطبيق.';
+
+  @override
+  String productPhotosMax(int count) {
+    return 'حد أقصى $count صور للمنتج.';
+  }
+
+  @override
+  String productPhotosAdded(int count) {
+    return 'تمت إضافة $count صورة.';
+  }
+
+  @override
+  String get productPhotoRequired => 'أضف صورة منتج واحدة على الأقل.';
+
+  @override
   String get cameraPermissionRequired => 'مطلوب إذن الكاميرا.';
 
   @override
@@ -816,6 +833,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fingerprintAuth => 'المصادقة ببصمة الإصبع';
 
   @override
+  String get fingerprintAuthSubtitle =>
+      'للدفع السريع فقط (OVO، GoPay، DANA، ShopeePay)';
+
+  @override
+  String get biometricAuthPaymentReason => 'أكد هويتك لإتمام الدفع السريع';
+
+  @override
+  String get biometricNotAvailable =>
+      'المصادقة البيومترية غير متوفرة على هذا الجهاز';
+
+  @override
+  String get biometricAuthFailed => 'فشلت المصادقة. تم إلغاء الدفع.';
+
+  @override
   String get privacyPolicy => 'سياسة الخصوصية';
 
   @override
@@ -850,6 +881,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get uploadLogoWebHint => 'رفع الشعار غير متاح على الويب (تجريبي).';
+
+  @override
+  String get uploadLogoFailedKeepLocal =>
+      'فشل رفع الشعار؛ تم إرسال الطلب مع الشعار المحلي.';
 
   @override
   String get storeInformation => 'معلومات المتجر';

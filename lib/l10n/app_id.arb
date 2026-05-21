@@ -34,6 +34,20 @@
   "notificationPermissionBody": "Agar pesan & update bisa mengingatkan Anda saat aplikasi di latar, aktifkan notifikasi untuk {appName}. Anda bisa menolak — pesan tetap di aplikasi.",
   "@notificationPermissionBody": { "placeholders": { "appName": { "type": "String" } } },
   "galleryPermissionRequired": "Izin galeri diperlukan untuk memilih gambar.",
+  "galleryPermissionOpenSettings": "Akses galeri diblokir. Buka pengaturan aplikasi untuk mengizinkan foto.",
+  "productPhotosMax": "Maksimal {count} foto per produk.",
+  "@productPhotosMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productPhotosAdded": "{count} foto ditambahkan.",
+  "@productPhotosAdded": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productPhotoRequired": "Tambahkan minimal satu foto produk.",
   "cameraPermissionRequired": "Izin kamera diperlukan untuk mengambil foto.",
   "aiMatchingPhoto": "Menganalisis foto dengan AI",
   "aiMatchingSubtitle": "Gemini mengenali barang… hasil segera muncul.",
@@ -271,6 +285,10 @@
   "darkMode": "Mode gelap",
   "locationAccess": "Akses lokasi",
   "fingerprintAuth": "Autentikasi sidik jari",
+  "fingerprintAuthSubtitle": "Hanya untuk pembayaran cepat (OVO, GoPay, DANA, ShopeePay)",
+  "biometricAuthPaymentReason": "Konfirmasi identitas untuk menyelesaikan pembayaran cepat",
+  "biometricNotAvailable": "Sidik jari tidak tersedia di perangkat ini",
+  "biometricAuthFailed": "Autentikasi gagal. Pembayaran dibatalkan.",
   "privacyPolicy": "Kebijakan privasi",
   "privacyPolicyDesc": "Baca ketentuan privasi kami",
   "helpSupportDesc": "Dapatkan bantuan",
@@ -283,6 +301,7 @@
   "uploadLogo": "Unggah logo",
   "uploadLogoHint": "PNG, JPG maks. 5MB",
   "uploadLogoWebHint": "Unggah logo tidak tersedia di web untuk demo.",
+  "uploadLogoFailedKeepLocal": "Logo cloud gagal diunggah; pengajuan tetap dikirim dengan logo lokal.",
   "storeInformation": "Informasi toko",
   "storeName": "Nama toko",
   "storeNameHint": "Masukkan nama toko",

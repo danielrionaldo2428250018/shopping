@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
+import '../providers/seller_applications_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../services/image_service.dart';
+import '../services/upload_service.dart';
 import '../utils/l10n_helpers.dart';
 import '../l10n/app_localizations.dart';
 
@@ -30,6 +36,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   String? category;
   String condition = 'Like New';
   bool _publishing = false;
+  final List<File> _productImages = [];
 
   static const _conditions = [
     'Brand New',
@@ -117,22 +124,42 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _showSnack(loc.stockRequired);
       return;
     }
+    if (_productImages.isEmpty) {
+      _showSnack(loc.productPhotoRequired);
+      return;
+    }
 
     final profile = context.read<UserProfileProvider>();
     final auth = context.read<AuthProvider>();
-    final sellerName = auth.displayName?.trim().isNotEmpty == true
-        ? auth.displayName!.trim()
-        : profile.displayNameOrDefault;
+    final approvedStore = context.read<SellerApplicationsProvider>().myApprovedStore;
+    final sellerName = approvedStore?.storeName.trim().isNotEmpty == true
+        ? approvedStore!.storeName.trim()
+        : (auth.displayName?.trim().isNotEmpty == true
+            ? auth.displayName!.trim()
+            : profile.displayNameOrDefault);
     final initials = sellerName.isNotEmpty
         ? sellerName.substring(0, 1).toUpperCase()
         : 'P';
+
+    var imageUrl =
+        'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400';
+    try {
+      final urls =
+          await UploadService.uploadMultiple(_productImages.take(1).toList());
+      if (urls.isNotEmpty) {
+        imageUrl = urls.first;
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(loc.publishFailed);
+      return;
+    }
 
     final product = CatalogProduct(
       id: '',
       title: title,
       unitPrice: price,
-      imageUrl:
-          'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
+      imageUrl: imageUrl,
       sellerName: sellerName,
       sellerInitials: initials,
       sellerRating: 4.8,
@@ -161,6 +188,87 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
+  Future<void> _showPhotoSourceSheet() async {
+    final loc = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(loc.chooseFromGallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(loc.takePhotoNow),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickFromCamera();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickFromGallery() async {
+    final loc = context.l10n;
+    final granted = await ImageService.ensureGalleryAccess();
+    if (!granted) {
+      if (!mounted) return;
+      if (await ImageService.isGalleryPermanentlyDenied()) {
+        _showSnack(loc.galleryPermissionOpenSettings);
+        await openAppSettings();
+      } else {
+        _showSnack(loc.galleryPermissionRequired);
+      }
+      return;
+    }
+
+    final remaining =
+        ImageService.maxProductPhotos - _productImages.length;
+    if (remaining <= 0) {
+      _showSnack(loc.productPhotosMax(ImageService.maxProductPhotos));
+      return;
+    }
+
+    final files =
+        await ImageService.pickMultipleFromGallery(max: remaining);
+    if (!mounted || files.isEmpty) return;
+    setState(() => _productImages.addAll(files));
+    _showSnack(loc.productPhotosAdded(files.length));
+  }
+
+  Future<void> _pickFromCamera() async {
+    final loc = context.l10n;
+    final granted = await ImageService.ensureCameraAccess();
+    if (!granted) {
+      if (!mounted) return;
+      _showSnack(loc.cameraPermissionRequired);
+      return;
+    }
+    if (_productImages.length >= ImageService.maxProductPhotos) {
+      _showSnack(loc.productPhotosMax(ImageService.maxProductPhotos));
+      return;
+    }
+
+    final file = await ImageService.pickFromCamera();
+    if (!mounted || file == null) return;
+    setState(() => _productImages.add(file));
+    _showSnack(loc.productPhotosAdded(1));
+  }
+
+  void _removeImage(int index) {
+    setState(() => _productImages.removeAt(index));
+  }
+
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -180,8 +288,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+            body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
@@ -259,9 +366,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             children: [
                               AspectRatio(
                                 aspectRatio: 1.4,
-                                child: DottedUploadBox(
-                                  onTap: () {},
-                                ),
+                                child: _productImages.isEmpty
+                                    ? DottedUploadBox(
+                                        onTap: _showPhotoSourceSheet,
+                                      )
+                                    : ProductPhotoGrid(
+                                        files: _productImages,
+                                        onAdd: _showPhotoSourceSheet,
+                                        onRemove: _removeImage,
+                                      ),
                               ),
                               const SizedBox(height: 10),
                               Row(
@@ -587,6 +700,76 @@ class _AddProductScreenState extends State<AddProductScreen> {
           const SizedBox(height: 14),
           child,
         ],
+      ),
+    );
+  }
+}
+
+class ProductPhotoGrid extends StatelessWidget {
+  const ProductPhotoGrid({
+    required this.files,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  final List<File> files;
+  final VoidCallback onAdd;
+  final void Function(int index) onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: GridView.builder(
+        padding: const EdgeInsets.all(8),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: files.length +
+            (files.length < ImageService.maxProductPhotos ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == files.length) {
+            return Material(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                onTap: onAdd,
+                child: const Icon(Icons.add_photo_alternate_outlined),
+              ),
+            );
+          }
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(files[index], fit: BoxFit.cover),
+              ),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Material(
+                  color: Colors.black54,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => onRemove(index),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -3,10 +3,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_admin_config.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_profile_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/settings_prefs_provider.dart';
 import '../providers/theme_prefs_provider.dart';
 import '../services/app_notifications.dart';
+import '../services/biometric_auth_service.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -28,7 +31,7 @@ class _SettingsScreenState
     final selectedLang = localeProvider.locale.languageCode;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: appScaffoldBackground(context),
 
       body: SafeArea(
         child: Column(
@@ -163,16 +166,19 @@ class _SettingsScreenState
 
                     _settingCard(
                       children: [
-                        Consumer<AuthProvider>(
-                          builder: (context, auth, _) {
+                        Consumer2<AuthProvider, UserProfileProvider>(
+                          builder: (context, auth, profile, _) {
                             if (!auth.isLoggedIn) {
                               return const SizedBox.shrink();
                             }
-                            final email =
-                                auth.resolvedAccountEmail ?? '-';
-                            final role = auth.isAdmin
-                                ? loc.roleAdmin
-                                : loc.roleUser;
+                            final isAdmin = auth.isAdminWithProfileEmail(
+                              profile.email,
+                            );
+                            final email = auth.resolvedAccountEmail ??
+                                profile.email ??
+                                '-';
+                            final role =
+                                isAdmin ? loc.roleAdmin : loc.roleUser;
                             return Column(
                               children: [
                                 _settingTile(
@@ -182,7 +188,7 @@ class _SettingsScreenState
                                   subtitle: '$email · $role',
                                   onTap: null,
                                 ),
-                                if (!auth.isAdmin) ...[
+                                if (!isAdmin) ...[
                                   Divider(
                                     color: Colors.grey.shade200,
                                     height: 1,
@@ -420,24 +426,39 @@ class _SettingsScreenState
                       children: [
 
                         _switchTile(
-                          icon:
-                              Icons.fingerprint_outlined,
+                          icon: Icons.fingerprint_outlined,
                           iconColor: Colors.indigo,
                           title: loc.fingerprintAuth,
+                          subtitle: loc.fingerprintAuthSubtitle,
                           value: setPrefs.fingerprintAuth,
-                          onChanged: (value) {
-                            setPrefs.setFingerprint(value);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    value
-                                        ? loc.biometricEnabledDemo
-                                        : loc.biometricDisabledDemo,
+                          onChanged: (value) async {
+                            if (value) {
+                              if (!await BiometricAuthService.instance
+                                  .isDeviceReady()) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(loc.biometricNotAvailable),
                                   ),
-                                ),
-                              );
+                                );
+                                return;
+                              }
+                              final ok = await BiometricAuthService.instance
+                                  .authenticateForPayment(context);
+                              if (!context.mounted) return;
+                              if (!ok) return;
                             }
+                            setPrefs.setFingerprint(value);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  value
+                                      ? loc.fingerprintAuthSubtitle
+                                      : loc.biometricDisabledDemo,
+                                ),
+                              ),
+                            );
                           },
                         ),
 
@@ -623,11 +644,11 @@ class _SettingsScreenState
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appCardColor(context),
         borderRadius:
             BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.grey.shade200,
+          color: appBorderColor(context),
         ),
       ),
       child: Column(

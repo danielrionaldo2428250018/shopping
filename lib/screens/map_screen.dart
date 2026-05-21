@@ -409,8 +409,7 @@ class _MapScreenState extends State<MapScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppBranding.scaffoldLight,
-      body: Column(
+            body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(

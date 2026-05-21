@@ -17,8 +17,7 @@ class _OfferScreenState extends State<OfferScreen> {
     final loc = context.l10n;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
+            appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,

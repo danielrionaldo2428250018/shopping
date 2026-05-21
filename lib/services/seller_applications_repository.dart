@@ -15,6 +15,7 @@ Map<String, dynamic> sellerApplicationToCreateMap(SellerApplication a) {
     'city': a.city,
     'agreedToTerms': a.agreedToTerms,
     'logoPath': a.logoPath,
+    'logoUrl': a.logoUrl,
     'status': a.status.name,
     'rejectReason': a.rejectReason,
     'reviewedAt': a.reviewedAt != null
@@ -46,6 +47,7 @@ SellerApplication sellerApplicationFromFirestore(
     city: m['city'] as String? ?? '',
     agreedToTerms: m['agreedToTerms'] as bool? ?? false,
     logoPath: m['logoPath'] as String?,
+    logoUrl: m['logoUrl'] as String?,
     status: SellerApplicationStatus.values.firstWhere(
       (e) => e.name == (m['status'] as String? ?? 'pending'),
       orElse: () => SellerApplicationStatus.pending,

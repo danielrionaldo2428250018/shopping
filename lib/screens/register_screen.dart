@@ -128,7 +128,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(

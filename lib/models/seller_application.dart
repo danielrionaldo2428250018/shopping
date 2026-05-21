@@ -31,6 +31,7 @@ class SellerApplication {
     required this.city,
     required this.agreedToTerms,
     this.logoPath,
+    this.logoUrl,
     this.status = SellerApplicationStatus.pending,
     this.rejectReason,
     this.reviewedAt,
@@ -41,6 +42,10 @@ class SellerApplication {
   final String id;
   final DateTime submittedAt;
   String? logoPath;
+
+  /// URL publik logo toko (Firebase Storage) — dipakai di halaman toko.
+  String? logoUrl;
+
   final String storeName;
   final String storeDescription;
   /// Harus sama dengan email akun login agar otomatis jadi seller saat disetujui.
@@ -69,6 +74,7 @@ class SellerApplication {
         'city': city,
         'agreedToTerms': agreedToTerms,
         'logoPath': logoPath,
+        'logoUrl': logoUrl,
         'status': status.name,
         'rejectReason': rejectReason,
         'reviewedAt': reviewedAt?.toIso8601String(),
@@ -88,6 +94,7 @@ class SellerApplication {
       city: m['city'] as String,
       agreedToTerms: m['agreedToTerms'] as bool,
       logoPath: m['logoPath'] as String?,
+      logoUrl: m['logoUrl'] as String?,
       status: SellerApplicationStatus.values.firstWhere(
         (e) => e.name == m['status'],
         orElse: () => SellerApplicationStatus.pending,

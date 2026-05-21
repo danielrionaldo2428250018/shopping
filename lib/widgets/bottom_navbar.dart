@@ -16,10 +16,11 @@ class BottomNavbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
 
+    final surface = Theme.of(context).colorScheme.surface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: surface,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),

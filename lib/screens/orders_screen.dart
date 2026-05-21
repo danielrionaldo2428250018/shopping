@@ -73,8 +73,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         orders.where((o) => o.status == 'Completed').length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+            body: Column(
         children: [
           Container(
             width: double.infinity,

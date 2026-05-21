@@ -55,8 +55,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final product = catalogProductOrNull(widget.productId);
     if (product == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF8F8F8),
-        appBar: AppBar(
+                appBar: AppBar(
           title: Text(loc.productDetails),
         ),
         body: Center(
@@ -90,14 +89,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
-      appBar: guest
+            appBar: guest
           ? null
           : AppBar(
               elevation: 0,
               scrolledUnderElevation: 0,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
               centerTitle: true,
               title: Text(
                 loc.productDetails,

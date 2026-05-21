@@ -60,8 +60,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
+            body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

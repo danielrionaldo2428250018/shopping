@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/inbox_messages_provider.dart';
+import '../providers/seller_applications_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../widgets/store_logo_avatar.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 import 'admin_rewards_screen.dart';
 import 'settings_screen.dart';
@@ -20,7 +23,7 @@ class SellerProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: appScaffoldBackground(context),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,19 +47,26 @@ class SellerProfileScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Consumer<UserProfileProvider>(
-                        builder: (context, profile, _) {
+                      Consumer2<SellerApplicationsProvider, UserProfileProvider>(
+                        builder: (context, apps, profile, _) {
+                          final store = apps.myApprovedStore;
+                          if (store != null) {
+                            return StoreLogoAvatar(
+                              storeName: store.storeName,
+                              logoUrl: store.logoUrl,
+                              logoPath: store.logoPath,
+                              radius: 48,
+                            );
+                          }
                           final path = profile.avatarLocalPath;
                           final hasAvatar = path != null &&
                               path.isNotEmpty &&
                               File(path).existsSync();
-                          final avatarPath = path;
                           return CircleAvatar(
                             radius: 48,
                             backgroundColor: Colors.white,
-                            backgroundImage:
-                                hasAvatar && avatarPath != null
-                                ? FileImage(File(avatarPath))
+                            backgroundImage: hasAvatar
+                                ? FileImage(File(path!))
                                 : null,
                             child: !hasAvatar
                                 ? const Icon(
@@ -69,10 +79,16 @@ class SellerProfileScreen extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 14),
-                      Consumer<UserProfileProvider>(
-                        builder: (context, profile, _) {
+                      Consumer2<SellerApplicationsProvider, UserProfileProvider>(
+                        builder: (context, apps, profile, _) {
+                          final name = apps.myApprovedStore?.storeName
+                                  .trim()
+                                  .isNotEmpty ==
+                              true
+                              ? apps.myApprovedStore!.storeName.trim()
+                              : profile.displayNameOrDefault;
                           return Text(
-                            profile.displayNameOrDefault,
+                            name,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 22,
@@ -246,7 +262,9 @@ class SellerProfileScreen extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, '/orders'),
                     ),
-                    if (context.watch<AuthProvider>().isAdmin) ...[
+                    if (context.watch<AuthProvider>().isAdminWithProfileEmail(
+                      context.watch<UserProfileProvider>().email,
+                    )) ...[
                       Divider(height: 1, color: Colors.grey.shade200),
                       Container(
                         color: Colors.orange.shade50,

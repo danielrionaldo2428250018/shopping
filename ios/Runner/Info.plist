@@ -51,5 +51,7 @@
 	<string>Kamera digunakan untuk mengirim foto ke penjual di chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Galeri digunakan untuk memilih foto yang dikirim ke penjual.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID digunakan untuk mengonfirmasi pembayaran cepat dengan dompet digital.</string>
 </dict>
 </plist>

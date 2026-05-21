@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/catalog_data.dart';
+import '../constants/app_branding.dart';
+import '../data/catalog_data.dart' show formatIdr, kCatalogProducts;
 import '../providers/catalog_provider.dart';
 import '../models/catalog_product.dart';
+import '../providers/seller_applications_provider.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/store_logo_avatar.dart';
 
 /// Halaman toko pembeli — produk dari penjual yang sama.
 class SellerStoreScreen extends StatelessWidget {
@@ -17,80 +21,95 @@ class SellerStoreScreen extends StatelessWidget {
 
   static const route = '/seller-store';
 
-  static const Color _purple = Color(0xFF7B42F6);
-
   @override
   Widget build(BuildContext context) {
     context.watch<CatalogProvider>();
     final loc = context.l10n;
+    final store = context
+        .watch<SellerApplicationsProvider>()
+        .approvedStoreBySellerName(sellerName);
+    final displayName =
+        store?.storeName.trim().isNotEmpty == true
+            ? store!.storeName.trim()
+            : sellerName;
     final products = kCatalogProducts
-        .where((p) => p.sellerName == sellerName)
+        .where(
+          (p) =>
+              p.sellerName == sellerName ||
+              p.sellerName == displayName,
+        )
         .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 168,
             pinned: true,
-            backgroundColor: _purple,
+            backgroundColor: AppBranding.seedColor,
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 14),
               title: Text(
-                sellerName,
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 16,
                   shadows: [
-                    Shadow(
-                      blurRadius: 4,
-                      color: Colors.black45,
-                    ),
+                    Shadow(blurRadius: 6, color: Colors.black38),
                   ],
                 ),
               ),
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF7F3DFF),
-                      Color(0xFFB388FF),
-                    ],
+                    colors: AppBranding.heroGradient,
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
+                padding: const EdgeInsets.fromLTRB(16, 56, 16, 16),
                 alignment: Alignment.bottomLeft,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.white.withValues(alpha: 0.9),
-                          child: Text(
-                            sellerName.isNotEmpty
-                                ? sellerName[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              color: _purple,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '$sellerName · ${products.length} produk',
+                    StoreLogoAvatar(
+                      storeName: displayName,
+                      logoUrl: store?.logoUrl,
+                      logoPath: store?.logoPath,
+                      radius: 32,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${products.length} ${loc.productsLabel.toLowerCase()}',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.95),
                               fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      ],
+                          if (store?.storeDescription.trim().isNotEmpty ==
+                              true) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              store!.storeDescription.trim(),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.88),
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -99,24 +118,29 @@ class SellerStoreScreen extends StatelessWidget {
           ),
           if (products.isEmpty)
             SliverFillRemaining(
-              child: Center(child: Text(loc.noProductsYet)),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    loc.noProductsYet,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: appMutedTextColor(context)),
+                  ),
+                ),
+              ),
             )
           else
             SliverPadding(
               padding: const EdgeInsets.all(16),
               sliver: SliverGrid(
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.72,
                 ),
                 delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final p = products[i];
-                    return _ProductCard(product: p);
-                  },
+                  (context, i) => _ProductCard(product: products[i]),
                   childCount: products.length,
                 ),
               ),
@@ -132,34 +156,32 @@ class _ProductCard extends StatelessWidget {
 
   final CatalogProduct product;
 
-  static const Color _purple = Color(0xFF7B42F6);
-
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: appCardColor(context),
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/product-detail',
-            arguments: product.id,
-          );
-        },
+        onTap: () => Navigator.pushNamed(
+          context,
+          '/product-detail',
+          arguments: product.id,
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Image.network(
                 product.imageUrl,
-                width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(Icons.image_not_supported_outlined),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -169,14 +191,14 @@ class _ProductCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                      fontSize: 13,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     formatIdr(product.unitPrice),
-                    style: const TextStyle(
-                      color: _purple,
+                    style: TextStyle(
+                      color: AppBranding.seedColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

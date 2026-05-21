@@ -71,7 +71,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     final loc = context.l10n;
     final pts = widget.pointsEarned;
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

@@ -33,6 +33,20 @@
   "notificationPermissionTitle": "Notification permission",
   "notificationPermissionBody": "To get message & order updates while the app is in the background, enable notifications for {appName}. You can decline — messages stay in the app.",
   "galleryPermissionRequired": "Gallery permission is required to pick an image.",
+  "galleryPermissionOpenSettings": "Gallery access blocked. Open app settings to allow photos.",
+  "productPhotosMax": "Maximum {count} photos per product.",
+  "@productPhotosMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productPhotosAdded": "{count} photo(s) added.",
+  "@productPhotosAdded": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "productPhotoRequired": "Add at least one product photo.",
   "cameraPermissionRequired": "Camera permission is required to take a photo.",
   "aiMatchingPhoto": "Analyzing photo with AI",
   "aiMatchingSubtitle": "Gemini is identifying the product…",
@@ -261,6 +275,10 @@
   "darkMode": "Dark mode",
   "locationAccess": "Location access",
   "fingerprintAuth": "Fingerprint authentication",
+  "fingerprintAuthSubtitle": "Only for quick payment (OVO, GoPay, DANA, ShopeePay)",
+  "biometricAuthPaymentReason": "Confirm your identity to complete quick payment",
+  "biometricNotAvailable": "Biometrics are not available on this device",
+  "biometricAuthFailed": "Authentication failed. Payment cancelled.",
   "privacyPolicy": "Privacy policy",
   "privacyPolicyDesc": "Read our privacy terms",
   "helpSupportDesc": "Get help",
@@ -273,6 +291,7 @@
   "uploadLogo": "Upload logo",
   "uploadLogoHint": "PNG, JPG up to 5MB",
   "uploadLogoWebHint": "Logo upload not available on web (demo).",
+  "uploadLogoFailedKeepLocal": "Cloud logo upload failed; application sent with local logo only.",
   "storeInformation": "Store information",
   "storeName": "Store name",
   "storeNameHint": "Enter your store name",

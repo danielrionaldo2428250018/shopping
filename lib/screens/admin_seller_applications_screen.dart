@@ -198,8 +198,7 @@ class AdminSellerApplicationsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        appBar: AppBar(
+                appBar: AppBar(
           backgroundColor: _purple,
 
           foregroundColor: Colors.white,
@@ -630,38 +629,29 @@ class AdminSellerDetailScreen extends StatelessWidget {
         ),
 
         children: [
-          if (a.logoPath !=
-                  null &&
-              !kIsWeb)
+          if (a.logoUrl != null && a.logoUrl!.trim().isNotEmpty)
             ClipRRect(
-              borderRadius:
-                  BorderRadius.circular(
-                12,
-              ),
-              child:
-
-                  Image.file(
-                File(a.logoPath!),
-
-
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                a.logoUrl!,
                 height: 180,
-
                 width: double.infinity,
-
                 fit: BoxFit.cover,
               ),
-
+            )
+          else if (a.logoPath != null && !kIsWeb)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(
+                File(a.logoPath!),
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
-
-          if (a.logoPath !=
-                  null &&
-              !kIsWeb)
-
-            const SizedBox(
-              height:
-
-                  14,
-                ),
+          if ((a.logoUrl != null && a.logoUrl!.isNotEmpty) ||
+              (a.logoPath != null && !kIsWeb))
+            const SizedBox(height: 14),
 
           _detailCard(
             loc.storeInfo,

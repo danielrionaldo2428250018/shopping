@@ -7,6 +7,7 @@ import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/store_logo_avatar.dart';
 
 /// Pemohon melihat status pengajuan penjual (read-only).
 class SellerApplicationStatusScreen extends StatelessWidget {
@@ -35,8 +36,7 @@ class SellerApplicationStatusScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
+            appBar: AppBar(
         title: Text(loc.sellerApplicationStatus),
         backgroundColor: AppBranding.seedColor,
         foregroundColor: Colors.white,
@@ -60,6 +60,15 @@ class SellerApplicationStatusScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _StatusBanner(status: app.status, loc: loc),
+                const SizedBox(height: 16),
+                Center(
+                  child: StoreLogoAvatar(
+                    storeName: app.storeName,
+                    logoUrl: app.logoUrl,
+                    logoPath: app.logoPath,
+                    radius: 44,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _InfoCard(
                   title: loc.storeInformation,

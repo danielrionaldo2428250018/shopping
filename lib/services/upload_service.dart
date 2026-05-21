@@ -33,6 +33,15 @@ class UploadService {
     return urls;
   }
 
+  /// Logo toko saat pengajuan penjual.
+  static Future<String> uploadStoreLogo(File file, String applicationId) async {
+    final ref = FirebaseStorage.instance.ref(
+      'store_logos/$applicationId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    await ref.putFile(file);
+    return ref.getDownloadURL();
+  }
+
   static Future<List<String>> uploadMultiple(List<File> files) async {
     List<String> urls = [];
 
