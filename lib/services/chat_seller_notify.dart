@@ -54,11 +54,20 @@ abstract final class ChatSellerNotify {
         ? '${messagePreview.substring(0, 117)}...'
         : messagePreview;
 
-    await sendNotificationToTopic(
+    final push = await sendNotificationToTopicDetailed(
       topic: sellerTopic(storeName),
       title: 'Pesan baru — $title',
       body: body,
       senderName: title,
+      data: {
+        'type': 'chat',
+        'title': 'Pesan baru — $title',
+        'body': body,
+        'senderName': title,
+      },
     );
+    if (kDebugMode && !push.ok) {
+      debugPrint('ChatSellerNotify gagal: ${push.error}');
+    }
   }
 }

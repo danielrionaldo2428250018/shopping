@@ -6,8 +6,8 @@ abstract final class FcmConfig {
   /// Awalan topic per toko: `preloved-seller-{slug}` — penjual subscribe saat login.
   static const String sellerTopicPrefix = 'preloved-seller-';
 
-  /// URL deploy Vercel shopping-cloud (ganti setelah deploy).
-  static const String cloudApiBaseUrl = 'https://shopping-cloud-vert.vercel.app';
+  /// URL deploy Vercel shopping-cloud (production).
+  static const String cloudApiBaseUrl = 'https://shopping-cloud.vercel.app';
 
   static const String defaultSenderName = 'SECO';
 }

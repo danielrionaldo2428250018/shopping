@@ -17,4 +17,13 @@ abstract final class FirebaseRtdbConfig {
 
   /// Indeks thread obrolan per UID penjual: `sellerThreads/{uid}/{threadId}`.
   static const String sellerThreadsPath = 'sellerThreads';
+
+  /// Pesanan pembeli: `buyerOrders/{buyerUid}/{orderId}`.
+  static const String buyerOrdersPath = 'buyerOrders';
+
+  /// Pesanan penjual: `sellerOrders/{sellerUid}/{orderId}`.
+  static const String sellerOrdersPath = 'sellerOrders';
+
+  /// Cadangan indeks per slug toko: `sellerOrdersByStore/{slug}/{orderId}`.
+  static const String sellerOrdersByStorePath = 'sellerOrdersByStore';
 }

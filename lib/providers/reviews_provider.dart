@@ -43,17 +43,36 @@ class ReviewsProvider extends ChangeNotifier {
     _prefs.setString(_kReviews, jsonEncode(_items));
   }
 
+  List<Map<String, dynamic>> reviewsForProduct(String productId) {
+    if (productId.isEmpty) return const [];
+    return _items
+        .where((e) => (e['productId'] as String?) == productId)
+        .toList();
+  }
+
+  ({double avg, int count}) productRatingSummary(String productId) {
+    final list = reviewsForProduct(productId);
+    if (list.isEmpty) return (avg: 0.0, count: 0);
+    var sum = 0;
+    for (final e in list) {
+      sum += (e['rating'] as num?)?.toInt() ?? 0;
+    }
+    return (avg: sum / list.length, count: list.length);
+  }
+
   void addReview({
     required String name,
     required String review,
     required int rating,
     String? orderId,
+    String? productId,
   }) {
     _items.insert(0, {
       'name': name,
       'review': review,
       'rating': rating,
       if (orderId != null) 'orderId': orderId,
+      if (productId != null && productId.isNotEmpty) 'productId': productId,
       'at': DateTime.now().toIso8601String(),
     });
     _persist();

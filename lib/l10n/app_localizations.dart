@@ -2738,6 +2738,36 @@ abstract class AppLocalizations {
   /// **'NEARMARKET10 (diskon 10%, max 50rb) · GRATISONGKIR'**
   String get voucherPromoHint;
 
+  /// No description provided for @voucherPointHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Kode dari tukar poin (Poin & Hadiah): POINONGKIR15, POIN10OFF, POINVIP1M'**
+  String get voucherPointHint;
+
+  /// No description provided for @voucherPointNotOwned.
+  ///
+  /// In id, this message translates to:
+  /// **'Kode tidak dikenali, belum ditukar poin, atau sudah dipakai'**
+  String get voucherPointNotOwned;
+
+  /// No description provided for @voucherRedeemedAvailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Voucher poin Anda (ketuk untuk pakai):'**
+  String get voucherRedeemedAvailable;
+
+  /// No description provided for @voucherApplied.
+  ///
+  /// In id, this message translates to:
+  /// **'Voucher {code} diterapkan'**
+  String voucherApplied(String code);
+
+  /// No description provided for @voucherMinPurchase.
+  ///
+  /// In id, this message translates to:
+  /// **'Voucher ini berlaku minimal belanja {amount}'**
+  String voucherMinPurchase(String amount);
+
   /// No description provided for @onlineStatus.
   ///
   /// In id, this message translates to:

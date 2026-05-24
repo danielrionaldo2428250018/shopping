@@ -9,6 +9,7 @@ import '../providers/chat_provider.dart';
 import '../services/chat_rtdb_service.dart';
 import 'seller_store_screen.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/app_network_image.dart';
 
 const _kPurple = Color(0xFF7B42F6);
 
@@ -600,13 +601,11 @@ class _ProductContextStrip extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: imageUrl != null
-                  ? Image.network(
-                      imageUrl!,
+                  ? AppNetworkImage(
+                      url: imageUrl!,
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          _placeholderThumb(),
                     )
                   : _placeholderThumb(),
             ),

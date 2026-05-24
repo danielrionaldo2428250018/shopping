@@ -10,10 +10,12 @@ import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../utils/catalog_product_access.dart';
+import '../utils/catalog_save_failure.dart';
 import '../services/image_service.dart';
 import '../services/upload_service.dart';
 import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/app_network_image.dart';
 import '../utils/upload_error_l10n.dart';
 import 'add_product_screen.dart' show DottedUploadBox, ProductPhotoGrid;
 
@@ -122,7 +124,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       product: p,
       uid: auth.uid,
       accountEmail: auth.resolvedAccountEmail,
-      isSeller: auth.isSeller,
+      isSeller: auth.hasApprovedSellerAccess,
       myStoreName: store?.storeName.trim(),
     );
   }
@@ -133,7 +135,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (p == null) return;
     if (!_canManage(p)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.publishFailed)),
+        SnackBar(
+          content: Text(
+            catalogSaveFailureMessage(loc, 'permission-denied'),
+          ),
+        ),
       );
       return;
     }
@@ -193,8 +199,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
       description: descCtrl.text.trim(),
     );
 
-    final ok =
-        await context.read<CatalogProvider>().updateProduct(updated);
+    final catalog = context.read<CatalogProvider>();
+    final ok = await catalog.updateProduct(
+      updated,
+      claimSellerUid: auth.uid,
+    );
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
@@ -204,7 +213,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.publishFailed)),
+        SnackBar(
+          content: Text(catalogSaveFailureMessage(loc, catalog.error)),
+        ),
       );
     }
   }
@@ -239,7 +250,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (yes != true || !mounted) return;
 
     setState(() => _saving = true);
-    final ok = await context.read<CatalogProvider>().deleteProduct(p.id);
+    final auth = context.read<AuthProvider>();
+    final store =
+        context.read<SellerApplicationsProvider>().myApprovedStore;
+    final ok = await context.read<CatalogProvider>().deleteProduct(
+          p.id,
+          claimSellerUid: auth.uid,
+          sellerStoreName: store?.storeName.trim(),
+        );
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
@@ -294,8 +312,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             width: double.infinity,
                             fit: BoxFit.cover,
                           )
-                        : Image.network(
-                            p.imageUrl,
+                        : AppNetworkImage(
+                            url: p.imageUrl,
                             height: 160,
                             width: double.infinity,
                             fit: BoxFit.cover,

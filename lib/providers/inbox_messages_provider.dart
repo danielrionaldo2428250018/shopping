@@ -132,6 +132,46 @@ class InboxMessagesProvider extends ChangeNotifier {
     return inboxId.substring(_chatMirrorPrefix.length);
   }
 
+  static const _orderPrefix = 'order-alert-';
+
+  /// Notifikasi pesanan baru untuk penjual (daftar Pesan).
+  void addOrderAlert({
+    required String orderId,
+    required String title,
+    required String preview,
+  }) {
+    final id = '$_orderPrefix$orderId';
+    final i = _threads.indexWhere((t) => t.id == id);
+    final msg = InboxMessage(
+      id: 'order-${DateTime.now().millisecondsSinceEpoch}',
+      text: preview,
+      sentAt: DateTime.now(),
+      isOutbound: false,
+    );
+    if (i >= 0) {
+      _threads[i] = InboxThread(
+        id: id,
+        title: title,
+        avatarLetter: '🛒',
+        messages: [msg],
+        unreadCount: 1,
+      );
+    } else {
+      _threads.insert(
+        0,
+        InboxThread(
+          id: id,
+          title: title,
+          avatarLetter: '🛒',
+          messages: [msg],
+          unreadCount: 1,
+        ),
+      );
+    }
+    _persist();
+    notifyListeners();
+  }
+
   /// Kosongkan semua percakapan notifikasi.
   void clearAll() {
     _threads.clear();

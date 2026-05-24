@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/catalog_data.dart';
-import '../models/shop_order.dart';
+import '../models/order_status.dart';
 import '../providers/orders_provider.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/app_network_image.dart';
+import '../widgets/order_review_dialog.dart';
 
 /// Invoice / ringkasan pesanan dari My Orders.
 class OrderInvoiceScreen extends StatelessWidget {
@@ -20,14 +22,7 @@ class OrderInvoiceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
-    final orders = context.watch<OrdersProvider>().orders;
-    ShopOrder? order;
-    for (final o in orders) {
-      if (o.id == orderId) {
-        order = o;
-        break;
-      }
-    }
+    final order = context.watch<OrdersProvider>().orderById(orderId);
 
     if (order == null) {
       return Scaffold(
@@ -42,7 +37,7 @@ class OrderInvoiceScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(loc.myOrders),
       ),
-      bottomNavigationBar: o.status == 'Processing'
+      bottomNavigationBar: o.status == OrderStatus.inProcess
           ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -66,14 +61,17 @@ class OrderInvoiceScreen extends StatelessWidget {
                       ),
                     );
                     if (ok != true || !context.mounted) return;
-                    final done = context
-                        .read<OrdersProvider>()
-                        .completeOrder(orderId);
+                    final ordersProv = context.read<OrdersProvider>();
+                    final done = ordersProv.completeOrder(orderId);
                     if (!context.mounted) return;
                     if (done) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(loc.orderCompletedSnack)),
                       );
+                      final updated = ordersProv.orderById(orderId);
+                      if (updated != null && !updated.reviewed) {
+                        await showOrderReviewDialog(context, order: updated);
+                      }
                     }
                   },
                   icon: const Icon(Icons.check_circle_outline_rounded),
@@ -120,7 +118,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                     orderStatusLabel(loc, o.status),
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: o.status == 'Completed'
+                      color: o.status == OrderStatus.completed
                           ? Colors.green.shade700
                           : Colors.grey.shade800,
                     ),
@@ -165,16 +163,11 @@ class OrderInvoiceScreen extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        line.imageUrl,
+                      child: AppNetworkImage(
+                        url: line.imageUrl,
                         width: 64,
                         height: 64,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 64,
-                          height: 64,
-                          color: Colors.grey.shade200,
-                        ),
                       ),
                     ),
                     const SizedBox(width: 12),

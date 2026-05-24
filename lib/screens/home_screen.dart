@@ -29,14 +29,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    final catalog = context.watch<CatalogProvider>();
-    final catalogLoading = catalog.loading;
-    final catalogError = catalog.error;
+    final catalogLoading =
+        context.select((CatalogProvider c) => c.loading);
+    final catalogError = context.select((CatalogProvider c) => c.error);
+    final products = context.select(
+      (CatalogProvider c) => c.products,
+    );
     final ecoMode =
         context.select((SettingsPrefsProvider s) => s.ecoMode);
     final loc = context.l10n;
     final r = ResponsiveLayout.of(context);
-    final products = catalog.products;
     final showCatalogShimmer = catalogLoading && products.isEmpty;
     final previewCount = GreenComputing.homeProductCap(
       ecoMode: ecoMode,
@@ -77,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
+          cacheExtent: GreenComputing.scrollCacheExtent(ecoMode),
           slivers: [
             SliverToBoxAdapter(
               child: Container(

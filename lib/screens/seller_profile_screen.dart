@@ -193,6 +193,18 @@ class SellerProfileScreen extends StatelessWidget {
                     Divider(height: 1, color: Colors.grey.shade200),
                     _row(
                       context,
+                      icon: Icons.receipt_long_outlined,
+                      iconBg: Colors.orange.shade50,
+                      iconColor: Colors.orange.shade800,
+                      title: 'Pesanan toko',
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        '/seller-orders',
+                      ),
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade200),
+                    _row(
+                      context,
                       icon: Icons.inventory_2_outlined,
                       iconBg: Colors.purple.shade50,
                       iconColor: _purple,

@@ -1433,6 +1433,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'NEARMARKET10 (10% off, max 50k) · GRATISONGKIR';
 
   @override
+  String get voucherPointHint =>
+      'Codes from points (Rewards): POINONGKIR15, POIN10OFF, POINVIP1M';
+
+  @override
+  String get voucherPointNotOwned =>
+      'Code unknown, not redeemed with points, or already used';
+
+  @override
+  String get voucherRedeemedAvailable => 'Your point vouchers (tap to apply):';
+
+  @override
+  String voucherApplied(String code) {
+    return 'Voucher $code applied';
+  }
+
+  @override
+  String voucherMinPurchase(String amount) {
+    return 'This voucher requires minimum purchase $amount';
+  }
+
+  @override
   String get onlineStatus => 'Online';
 
   @override

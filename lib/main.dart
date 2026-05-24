@@ -28,11 +28,14 @@ import 'styles/app_theme.dart';
 import 'providers/catalog_provider.dart';
 
 import 'bootstrap/app_migration.dart';
+import 'bootstrap/app_stability.dart';
 import 'bootstrap/firebase_startup.dart';
 import 'bootstrap/startup_permissions.dart';
 import 'providers/reviews_provider.dart';
+import 'utils/data_image_cache.dart';
 import 'utils/green_computing.dart';
 import 'widgets/app_width_limiter.dart';
+import 'widgets/in_app_notification_overlay.dart';
 
 /// NAVIGATION
 import 'screens/main_navigation_screen.dart';
@@ -79,14 +82,16 @@ import 'screens/payment_success_screen.dart';
 import 'screens/loyalty_rewards_screen.dart';
 import 'screens/admin_rewards_screen.dart';
 import 'screens/reviews_screen.dart';
+import 'screens/seller_orders_screen.dart';
 import 'screens/seller_store_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppStability.install();
   final prefs = await SharedPreferences.getInstance();
-  GreenComputing.applyStartupTuning(
-    ecoMode: GreenComputing.readEcoFromPrefs(prefs),
-  );
+  final ecoOnStart = GreenComputing.readEcoFromPrefs(prefs);
+  GreenComputing.applyStartupTuning(ecoMode: ecoOnStart);
+  DataImageCache.setMaxEntries(GreenComputing.dataImageCacheMax(ecoOnStart));
   await runAppMigrations(prefs);
 
   runApp(
@@ -196,12 +201,14 @@ class _DeferredStartupState extends State<_DeferredStartup> {
   Widget build(BuildContext context) => widget.child;
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
-  const MyApp({
-    super.key,
-  });
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> with AppMemoryPressureMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer2<ThemePrefsProvider, LocaleProvider>(
@@ -217,8 +224,10 @@ class MyApp extends StatelessWidget {
                   maxScaleFactor: 1.12,
                 ),
               ),
-              child: AppWidthLimiter(
-                child: child ?? const SizedBox.shrink(),
+              child: InAppNotificationOverlay(
+                child: AppWidthLimiter(
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
             );
           },
@@ -464,6 +473,9 @@ class MyApp extends StatelessWidget {
 
         '/orders': (context) =>
             const OrdersScreen(),
+
+        SellerOrdersScreen.route: (context) =>
+            const SellerOrdersScreen(),
 
         '/reviews':
             (context) {

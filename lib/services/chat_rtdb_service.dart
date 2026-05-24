@@ -47,6 +47,25 @@ class ChatRtdbService {
     return uid?.trim().isNotEmpty == true ? uid!.trim() : null;
   }
 
+  /// Cari UID penjual dari semua entri `sellerAccounts` (nama toko tidak harus slug sama persis).
+  static Future<String?> findSellerUidByStoreName(String storeName) async {
+    final direct = await lookupSellerUid(storeName);
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    final snap = await _sellerAccountsRef.get();
+    if (!snap.exists || snap.value is! Map) return null;
+    final root = snap.value as Map;
+    for (final raw in root.values) {
+      if (raw is! Map) continue;
+      final name = (raw['storeName'] as String?)?.trim() ?? '';
+      if (name.isEmpty) continue;
+      if (!storeNamesMatch(name, storeName)) continue;
+      final uid = (raw['uid'] as String?)?.trim();
+      if (uid != null && uid.isNotEmpty) return uid;
+    }
+    return null;
+  }
+
   static Future<void> registerSellerAccount({
     required String storeName,
     required String sellerUid,
@@ -74,6 +93,23 @@ class ChatRtdbService {
       if (name != null && name.isNotEmpty) names.add(name);
     }
     return names;
+  }
+
+  /// Semua slug `sellerAccounts` milik [sellerUid] (untuk indeks pesanan per toko).
+  static Future<Set<String>> slugsForSellerUid(String sellerUid) async {
+    final snap = await _sellerAccountsRef.get();
+    if (!snap.exists || snap.value is! Map) return {};
+    final slugs = <String>{};
+    final root = snap.value as Map;
+    for (final entry in root.entries) {
+      final raw = entry.value;
+      if (raw is! Map) continue;
+      final uid = (raw['uid'] as String?)?.trim();
+      if (uid != sellerUid) continue;
+      final slug = entry.key.toString().trim();
+      if (slug.isNotEmpty) slugs.add(slug);
+    }
+    return slugs;
   }
 
   static Future<void> indexThreadForSeller({

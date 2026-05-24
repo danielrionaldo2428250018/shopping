@@ -12,9 +12,11 @@
 
 Cek di browser atau Postman:
 
-`GET https://shopping-cloud-vert.vercel.app/health`
+`GET https://shopping-cloud.vercel.app/health`
 
 Harus `{"ok":true,"firebase":"project-uas-44504",...}`.
+
+Jika `ok: false` → set `FIREBASE_SERVICE_ACCOUNT_JSON` di Vercel (lihat `docs/SHOPPING_CLOUD_VERCEL.md`).
 
 Saat debug, app mencetak hasil cek ini di log (`shopping-cloud OK` / `gagal`).
 

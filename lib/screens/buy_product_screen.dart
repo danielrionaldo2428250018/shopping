@@ -1,14 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/catalog_product.dart';
-import '../data/catalog_data.dart';
+import '../data/catalog_data.dart' show catalogProductById, formatIdr;
 import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
 import '../providers/orders_provider.dart';
+import '../utils/checkout_voucher.dart';
 import '../utils/phone_order_gate.dart';
+import '../widgets/app_network_image.dart';
 import '../utils/l10n_helpers.dart';
 
 /// Argument navigasi dari detail produk (atau default demo).
@@ -76,6 +79,8 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
 
   late int _qty;
   int _shippingIndex = 0;
+  final _voucherCtrl = TextEditingController();
+  String _appliedVoucher = '';
 
   String _paymentLabel = '';
 
@@ -113,12 +118,66 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     _qty = 1;
   }
 
+  @override
+  void dispose() {
+    _voucherCtrl.dispose();
+    super.dispose();
+  }
+
   int get _subtotal => widget.args.unitPrice * _qty;
 
-  int get _shippingFee =>
-      _shippingOption(_shippingIndex, context.l10n).fee;
+  CheckoutVoucher? _resolvedVoucher(LoyaltyPointsProvider loyalty) {
+    if (_appliedVoucher.isEmpty) return null;
+    return CheckoutVoucherRules.resolve(_appliedVoucher, loyalty);
+  }
 
-  int get _total => _subtotal + _shippingFee;
+  int _shippingFee(LoyaltyPointsProvider loyalty) {
+    final base = _shippingOption(_shippingIndex, context.l10n).fee;
+    return CheckoutVoucherRules.shippingAfterDiscount(
+      base,
+      _resolvedVoucher(loyalty),
+    );
+  }
+
+  int _discount(LoyaltyPointsProvider loyalty) {
+    return CheckoutVoucherRules.orderDiscount(
+      _subtotal,
+      _resolvedVoucher(loyalty),
+    );
+  }
+
+  int _total(LoyaltyPointsProvider loyalty) {
+    return _subtotal + _shippingFee(loyalty) - _discount(loyalty);
+  }
+
+  void _applyVoucher() {
+    final loc = context.l10n;
+    final loyalty = context.read<LoyaltyPointsProvider>();
+    final code = _voucherCtrl.text.trim();
+    if (code.isEmpty) {
+      setState(() => _appliedVoucher = '');
+      return;
+    }
+    final voucher = CheckoutVoucherRules.resolve(code, loyalty);
+    if (voucher == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.voucherPointNotOwned)),
+      );
+      return;
+    }
+    if (!CheckoutVoucherRules.meetsMinSubtotal(_subtotal, voucher)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.voucherMinPurchase(formatIdr(voucher.minSubtotal))),
+        ),
+      );
+      return;
+    }
+    setState(() => _appliedVoucher = voucher.code);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(loc.voucherApplied(voucher.code))),
+    );
+  }
 
   void _incQty() {
     if (_qty >= widget.args.stock) return;
@@ -238,12 +297,28 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     if (!context.mounted) return;
     final loc = context.l10n;
 
-    if (!context.read<AuthProvider>().isLoggedIn) {
+    final buyerUid = context.read<AuthProvider>().uid ??
+        FirebaseAuth.instance.currentUser?.uid;
+    if (buyerUid == null || buyerUid.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.signInToContinue)),
       );
       return;
     }
+
+    final loyalty = context.read<LoyaltyPointsProvider>();
+    final voucher = _resolvedVoucher(loyalty);
+    if (voucher != null &&
+        !CheckoutVoucherRules.meetsMinSubtotal(_subtotal, voucher)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.voucherMinPurchase(formatIdr(voucher.minSubtotal))),
+        ),
+      );
+      return;
+    }
+    final ship = _shippingFee(loyalty);
+    final disc = _discount(loyalty);
 
     final fresh = catalogProductById(widget.args.productId);
     final maxStock = fresh?.stock ?? widget.args.stock;
@@ -270,14 +345,23 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
       return;
     }
 
-    final result = context.read<OrdersProvider>().addSingleBuy(
+    final result = await context.read<OrdersProvider>().addSingleBuy(
           productId: widget.args.productId,
           quantity: _qty,
-          shippingFee: _shippingFee,
+          shippingFee: ship,
+          discount: disc,
+          buyerUid: buyerUid,
+          buyerName: context.read<AuthProvider>().displayName ??
+              FirebaseAuth.instance.currentUser?.displayName,
         );
     if (result.orderId.isEmpty) return;
     if (!context.mounted) return;
-    final earned = context.read<LoyaltyPointsProvider>().earnFromPurchase(
+    if (voucher != null &&
+        voucher.fromPoints &&
+        result.orderId.isNotEmpty) {
+      loyalty.markVoucherUsed(voucher.code, result.orderId);
+    }
+    final earned = loyalty.earnFromPurchase(
           result.total,
           orderId: result.orderId,
         );
@@ -295,7 +379,10 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final loyalty = context.watch<LoyaltyPointsProvider>();
     final a = widget.args;
+    final total = _total(loyalty);
+    final disc = _discount(loyalty);
 
     return Scaffold(
             body: CustomScrollView(
@@ -351,9 +438,13 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                 const SizedBox(height: 8),
                 _paymentCard(loc),
                 const SizedBox(height: 14),
+                _sectionTitle(loc.promoCode),
+                const SizedBox(height: 8),
+                _voucherCard(loc, loyalty),
+                const SizedBox(height: 14),
                 _sectionTitle(loc.orderSummary),
                 const SizedBox(height: 8),
-                _summaryCard(loc),
+                _summaryCard(loc, loyalty, total, disc),
               ]),
             ),
           ),
@@ -379,7 +470,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                       ),
                     ),
                     Text(
-                      _formatIdr(_total),
+                      _formatIdr(total),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -445,17 +536,11 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              a.imageUrl,
+            child: AppNetworkImage(
+              url: a.imageUrl,
               width: 88,
               height: 88,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 88,
-                height: 88,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.image_not_supported_outlined),
-              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -779,7 +864,93 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     );
   }
 
-  Widget _summaryCard(AppLocalizations loc) {
+  Widget _voucherCard(AppLocalizations loc, LoyaltyPointsProvider loyalty) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            loc.promoCode,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            loc.voucherPromoHint,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            loc.voucherPointHint,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+          if (loyalty.unusedRedeemedVoucherCodes().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              loc.voucherRedeemedAvailable,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: loyalty.unusedRedeemedVoucherCodes().map((code) {
+                return ActionChip(
+                  label: Text(code),
+                  onPressed: () {
+                    _voucherCtrl.text = code;
+                    _applyVoucher();
+                  },
+                );
+              }).toList(),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _voucherCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    hintText: loc.promoCode,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              FilledButton(
+                onPressed: _applyVoucher,
+                style: FilledButton.styleFrom(backgroundColor: _purple),
+                child: Text(loc.applyPromo),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryCard(
+    AppLocalizations loc,
+    LoyaltyPointsProvider loyalty,
+    int total,
+    int disc,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -793,8 +964,12 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
           const SizedBox(height: 10),
           _sumRow(
             loc.shippingFeeLine(_shippingOption(_shippingIndex, loc).label),
-            _formatIdr(_shippingFee),
+            _formatIdr(_shippingFee(loyalty)),
           ),
+          if (disc > 0) ...[
+            const SizedBox(height: 8),
+            _sumRow(loc.discountLabel, '- ${_formatIdr(disc)}'),
+          ],
           const SizedBox(height: 8),
           _sumRow(loc.paymentLine, _displayPayment(loc)),
           Padding(
@@ -812,7 +987,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                 ),
               ),
               Text(
-                _formatIdr(_total),
+                _formatIdr(total),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,

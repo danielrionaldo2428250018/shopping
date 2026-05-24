@@ -1,0 +1,9 @@
+{
+  "name": "shopping-cloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API FCM untuk SECO / PreLoved Shopping (pola fasum-cloud)",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

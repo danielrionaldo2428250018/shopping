@@ -16,8 +16,7 @@ bool canManageCatalogProduct({
       product.sellerUid == uid) {
     return true;
   }
-  if (product.sellerUid.isEmpty &&
-      isSeller &&
+  if (isSeller &&
       myStoreName != null &&
       myStoreName.isNotEmpty &&
       product.sellerName == myStoreName) {

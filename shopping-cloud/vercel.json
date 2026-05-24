@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/send-to-topic", "destination": "/api/send-to-topic" },
+    { "source": "/send-to-device", "destination": "/api/send-to-device" },
+    { "source": "/send-to-multiple", "destination": "/api/send-to-multiple" },
+    { "source": "/", "destination": "/api/index" }
+  ]
+}

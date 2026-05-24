@@ -7,7 +7,10 @@ import '../providers/orders_provider.dart';
 import '../utils/app_screen_style.dart';
 import '../widgets/app_network_image.dart';
 import '../styles/app_colors_extension.dart';
+import '../models/order_status.dart';
 import '../utils/l10n_helpers.dart';
+import '../utils/order_flow_l10n.dart';
+import '../widgets/order_review_dialog.dart';
 import 'order_invoice_screen.dart';
 
 /// Pesanan user — tab + kartu; data dari pesanan demo + checkout baru.
@@ -28,11 +31,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   static Color _statusColor(String status) {
     switch (status) {
-      case 'Completed':
+      case OrderStatus.completed:
         return Colors.green;
-      case 'Processing':
+      case OrderStatus.processing:
         return Colors.orange;
-      case 'Cancelled':
+      case OrderStatus.packing:
+        return Colors.blue;
+      case OrderStatus.inProcess:
+        return Colors.deepPurple;
+      case OrderStatus.cancelled:
         return Colors.red;
       default:
         return Colors.grey;
@@ -60,9 +67,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
   List<ShopOrder> _filtered(List<ShopOrder> all) {
     if (_tab == 0) return all;
     if (_tab == 1) {
-      return all.where((o) => o.status == 'Processing').toList();
+      return all
+          .where(
+            (o) =>
+                o.status == OrderStatus.processing ||
+                o.status == OrderStatus.packing ||
+                o.status == OrderStatus.inProcess,
+          )
+          .toList();
     }
-    return all.where((o) => o.status == 'Completed').toList();
+    return all.where((o) => o.status == OrderStatus.completed).toList();
   }
 
   Future<void> _confirmOrderReceived(
@@ -88,14 +102,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
     );
     if (ok != true || !context.mounted) return;
-    final done =
-        context.read<OrdersProvider>().completeOrder(orderId);
+    final orders = context.read<OrdersProvider>();
+    final done = orders.completeOrder(orderId);
     if (!context.mounted) return;
     if (done) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.orderCompletedSnack)),
       );
+      final order = orders.orderById(orderId);
+      if (order != null && !order.reviewed) {
+        await showOrderReviewDialog(context, order: order);
+      }
     }
+  }
+
+  void _showPlaceholderSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -212,14 +236,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
                 IconData statusIcon =
                     Icons.more_horiz_rounded;
-                if (o.status == 'Completed') {
+                if (o.status == OrderStatus.completed) {
                   statusIcon =
                       Icons.check_circle_outline_rounded;
-                } else if (o.status ==
-                    'Processing') {
-                  statusIcon =
-                      Icons.local_shipping_outlined;
-                } else if (o.status == 'Cancelled') {
+                } else if (o.status == OrderStatus.packing) {
+                  statusIcon = Icons.inventory_2_outlined;
+                } else if (o.status == OrderStatus.inProcess) {
+                  statusIcon = Icons.local_shipping_outlined;
+                } else if (o.status == OrderStatus.processing) {
+                  statusIcon = Icons.hourglass_top_rounded;
+                } else if (o.status == OrderStatus.cancelled) {
                   statusIcon = Icons.cancel_outlined;
                 }
 
@@ -393,7 +419,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                         ),
                       ],
-                      if (o.status == 'Completed' &&
+                      if (o.status == OrderStatus.processing ||
+                          o.status == OrderStatus.packing) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          o.status == OrderStatus.packing
+                              ? orderStatusLabel(itemLoc, OrderStatus.packing)
+                              : orderBuyerWaitingPack(itemLoc),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                      if (o.status == OrderStatus.completed &&
                           o.completedAt != null) ...[
                         const SizedBox(height: 8),
                         Text(
@@ -408,7 +448,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         ),
                       ],
                       const SizedBox(height: 14),
-                      if (o.status == 'Processing') ...[
+                      if (o.status == OrderStatus.inProcess) ...[
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
@@ -432,10 +472,49 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         ),
                         const SizedBox(height: 10),
                       ],
+                      if (o.status == OrderStatus.completed ||
+                          o.status == OrderStatus.inProcess) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => _showPlaceholderSnack(
+                                  context,
+                                  orderComplainPlaceholder(itemLoc),
+                                ),
+                                child: Text(orderComplainBtn(itemLoc)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => _showPlaceholderSnack(
+                                  context,
+                                  orderReturnPlaceholder(itemLoc),
+                                ),
+                                child: Text(orderReturnBtn(itemLoc)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Row(
                         children: [
-                          if (o.status ==
-                              'Completed') ...[
+                          if (o.status == OrderStatus.completed) ...[
+                            if (!o.reviewed)
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () =>
+                                      showOrderReviewDialog(context, order: o),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _purple,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: Text(orderReviewSubmit(itemLoc)),
+                                ),
+                              ),
+                            if (!o.reviewed) const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () {
@@ -477,7 +556,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 OutlinedButton(
                               onPressed: () {
                                 if (o.status ==
-                                    'Processing') {
+                                    OrderStatus.inProcess) {
                                   context
                                       .read<
                                           OrdersProvider>()
@@ -542,14 +621,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 ),
                               ),
                               child: Text(
-                                o.status == 'Processing'
+                                o.status == OrderStatus.inProcess
                                     ? loc.orderTrackOrder
                                     : loc.orderBuyAgain,
                               ),
                             ),
                           ),
                           if (o.status ==
-                              'Processing') ...[
+                              OrderStatus.processing) ...[
                             const SizedBox(width: 8),
                             TextButton(
                               onPressed: () async {

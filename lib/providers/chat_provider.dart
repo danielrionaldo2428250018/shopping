@@ -6,6 +6,7 @@ import '../models/chat_inbox_mode.dart';
 import '../models/chat_models.dart';
 import '../services/chat_rtdb_service.dart';
 import '../services/chat_seller_notify.dart';
+import '../utils/notify_debouncer.dart';
 import '../utils/store_name_match.dart';
 import 'auth_provider.dart';
 import 'inbox_messages_provider.dart';
@@ -14,13 +15,18 @@ import 'user_profile_provider.dart';
 
 /// Daftar & kirim obrolan real-time (RTDB), disinkron ke [InboxMessagesProvider].
 class ChatProvider extends ChangeNotifier {
-  ChatProvider({required this.firebaseReady}) {
+  ChatProvider({required this.firebaseReady})
+      : _debouncer = NotifyDebouncer(
+          delay: const Duration(milliseconds: 150),
+        ) {
     if (firebaseReady) {
       attachFirebase();
     } else {
       _lastError = 'Firebase tidak aktif';
     }
   }
+
+  final NotifyDebouncer _debouncer;
 
   final bool firebaseReady;
   bool _firebaseAttached = false;
@@ -53,6 +59,7 @@ class ChatProvider extends ChangeNotifier {
   String? _lastError;
 
   AuthProvider? _auth;
+  String? _watchAuthUid;
   SellerApplicationsProvider? _sellers;
   UserProfileProvider? _profile;
   InboxMessagesProvider? _inbox;
@@ -131,14 +138,19 @@ class ChatProvider extends ChangeNotifier {
 
   void bindAuth(AuthProvider auth) {
     _auth = auth;
+    _watchAuthUid = auth.uid;
     auth.addListener(_onAuthChanged);
     _onAuthChanged();
   }
 
   void _onAuthChanged() {
-    _resubscribeSellerStreams();
+    final uid = _auth?.uid;
+    if (uid != _watchAuthUid) {
+      _watchAuthUid = uid;
+      _resubscribeSellerStreams();
+    }
     unawaited(_collectSellerStoreNames());
-    notifyListeners();
+    _debouncer.schedule(notifyListeners);
   }
 
   void bindSellers(SellerApplicationsProvider sellers) {
@@ -155,7 +167,7 @@ class ChatProvider extends ChangeNotifier {
         unawaited(registerSellerForPush(store.storeName));
       }
     }
-    notifyListeners();
+    _debouncer.schedule(notifyListeners);
   }
 
   Future<void> _collectSellerStoreNames() async {
@@ -174,7 +186,7 @@ class ChatProvider extends ChangeNotifier {
         if (kDebugMode) debugPrint('storeNamesForSellerUid: $e');
       }
     }
-    notifyListeners();
+    _debouncer.schedule(notifyListeners);
   }
 
   void _resubscribeSellerStreams() {
@@ -229,7 +241,7 @@ class ChatProvider extends ChangeNotifier {
     _allThreads = list;
     _lastError = null;
     _syncInboxMirror();
-    notifyListeners();
+    _debouncer.schedule(notifyListeners);
   }
 
   void _syncInboxMirror() {
@@ -430,6 +442,7 @@ class ChatProvider extends ChangeNotifier {
     _sellerInboxSub?.cancel();
     _auth?.removeListener(_onAuthChanged);
     _sellers?.removeListener(_onSellersChanged);
+    _debouncer.dispose();
     super.dispose();
   }
 }

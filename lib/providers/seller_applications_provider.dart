@@ -10,9 +10,13 @@ import '../constants/app_admin_config.dart';
 import '../models/seller_application.dart';
 import '../services/push_notification_service.dart';
 import '../utils/l10n_helpers.dart';
+import '../utils/green_computing.dart';
+import '../utils/notify_debouncer.dart';
 import '../utils/store_name_match.dart';
 import '../data/catalog_data.dart';
+import '../models/catalog_product.dart';
 import '../services/catalog_rtdb_service.dart';
+import '../services/chat_rtdb_service.dart';
 import '../services/seller_applications_repository.dart';
 import 'auth_provider.dart';
 import 'user_profile_provider.dart';
@@ -20,15 +24,24 @@ import 'user_profile_provider.dart';
 /// Pengajuan penjual: **Firestore** bila Firebase aktif, selain itu **SharedPreferences** (tetap jalan).
 class SellerApplicationsProvider extends ChangeNotifier {
   SellerApplicationsProvider(this._prefs) {
+    _debouncer = NotifyDebouncer(
+      delay: GreenComputing.providerNotifyDebounce(
+        GreenComputing.readEcoFromPrefs(_prefs),
+      ),
+    );
     if (Firebase.apps.isNotEmpty) {
-      _useFirestore = true;
-      _repo = SellerApplicationsRepository(FirebaseFirestore.instance);
-      _resubscribe();
+      _enableFirestoreRepo();
     } else {
       _useFirestore = false;
       _error = null;
       _restoreLocal();
     }
+  }
+
+  void _enableFirestoreRepo() {
+    if (Firebase.apps.isEmpty) return;
+    _useFirestore = true;
+    _repo ??= SellerApplicationsRepository(FirebaseFirestore.instance);
   }
 
   final SharedPreferences _prefs;
@@ -38,6 +51,7 @@ class SellerApplicationsProvider extends ChangeNotifier {
   StreamSubscription<List<SellerApplication>>? _sub;
   StreamSubscription<List<SellerApplication>>? _subApproved;
   List<SellerApplication> _approvedCatalog = [];
+  late final NotifyDebouncer _debouncer;
 
   final List<SellerApplication> _items = [];
   String? _error;
@@ -66,6 +80,9 @@ class SellerApplicationsProvider extends ChangeNotifier {
       .toList();
 
   AuthProvider? _auth;
+  String? _watchAuthEmail;
+  String? _watchAuthUid;
+  bool _syncingSellerRole = false;
 
   Set<String> get _mySellerEmails {
     final emails = <String>{};
@@ -114,14 +131,21 @@ class SellerApplicationsProvider extends ChangeNotifier {
   }
 
   void _syncApprovedSellerForBoundAuth() {
+    if (_syncingSellerRole) return;
     final auth = _auth;
     if (auth == null) return;
     final email = auth.effectiveAccountEmail?.trim().toLowerCase();
     if (email == null || email.isEmpty) return;
-    for (final app in approved) {
-      if (app.email.trim().toLowerCase() == email) {
-        auth.grantSellerRoleForEmail(app.email);
+
+    _syncingSellerRole = true;
+    try {
+      for (final app in approved) {
+        if (app.email.trim().toLowerCase() == email) {
+          auth.grantSellerRoleForEmail(app.email, notify: false);
+        }
       }
+    } finally {
+      _syncingSellerRole = false;
     }
   }
 
@@ -129,14 +153,24 @@ class SellerApplicationsProvider extends ChangeNotifier {
     if (_auth == auth) return;
     _auth?.removeListener(_onAuthChanged);
     _auth = auth;
+    _watchAuthEmail = auth.effectiveAccountEmail?.trim().toLowerCase();
+    _watchAuthUid = auth.uid;
     _auth!.addListener(_onAuthChanged);
+    _enableFirestoreRepo();
     _resubscribe();
     _syncApprovedSellerForBoundAuth();
   }
 
   void _onAuthChanged() {
-    _resubscribe();
-    _syncApprovedSellerForBoundAuth();
+    final email = _auth?.effectiveAccountEmail?.trim().toLowerCase();
+    final uid = _auth?.uid;
+    final identityChanged =
+        email != _watchAuthEmail || uid != _watchAuthUid;
+    _watchAuthEmail = email;
+    _watchAuthUid = uid;
+    if (identityChanged) {
+      _resubscribe();
+    }
   }
 
   void _resubscribe() {
@@ -165,17 +199,8 @@ class SellerApplicationsProvider extends ChangeNotifier {
         ..clear()
         ..addAll(byId.values);
       _error = null;
-      notifyListeners();
-      _syncApprovedSellerForBoundAuth();
+      _debouncer.schedule(notifyListeners);
     }
-
-    _subApproved = _repo!.watchApproved().listen(
-      (list) {
-        _approvedCatalog = list;
-        mergeAndNotify();
-      },
-      onError: onError,
-    );
 
     if (isAppAdminUser(email: email, uid: _auth?.uid)) {
       _sub = _repo!.watchAll().listen(
@@ -187,13 +212,20 @@ class SellerApplicationsProvider extends ChangeNotifier {
             ..clear()
             ..addAll(list);
           _error = null;
-          notifyListeners();
-          _syncApprovedSellerForBoundAuth();
+          _debouncer.schedule(notifyListeners);
         },
         onError: onError,
       );
       return;
     }
+
+    _subApproved = _repo!.watchApproved().listen(
+      (list) {
+        _approvedCatalog = list;
+        mergeAndNotify();
+      },
+      onError: onError,
+    );
 
     if (email != null && email.isNotEmpty) {
       _sub = _repo!.watchByEmail(email).listen(
@@ -391,8 +423,32 @@ class SellerApplicationsProvider extends ChangeNotifier {
         .where((p) => sellerKeys.contains(p.sellerName))
         .map((p) => p.id)
         .toList();
+    final uid = auth.uid?.trim();
+    if (uid != null && uid.isNotEmpty) {
+      await ChatRtdbService.registerSellerAccount(
+        storeName: app.storeName,
+        sellerUid: uid,
+      );
+    }
     for (final id in productIds) {
       try {
+        CatalogProduct? p;
+        for (final item in kCatalogProducts) {
+          if (item.id == id) {
+            p = item;
+            break;
+          }
+        }
+        if (p != null && uid != null && uid.isNotEmpty) {
+          final slug = storeNameSlug(p.sellerName);
+          if (slug.isNotEmpty) {
+            await CatalogRtdbService.claimProductOwnership(
+              productId: id,
+              sellerUid: uid,
+              sellerSlug: slug,
+            );
+          }
+        }
         await CatalogRtdbService.removeProduct(id);
       } catch (e) {
         if (kDebugMode) debugPrint('hapus produk $id: $e');
@@ -442,6 +498,7 @@ class SellerApplicationsProvider extends ChangeNotifier {
     _auth?.removeListener(_onAuthChanged);
     _sub?.cancel();
     _subApproved?.cancel();
+    _debouncer.dispose();
     super.dispose();
   }
 }

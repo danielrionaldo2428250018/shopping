@@ -27,20 +27,32 @@ abstract final class GreenComputing {
 
   static void applyStartupTuning({bool ecoMode = false}) {
     final cache = PaintingBinding.instance.imageCache;
-    cache.maximumSize = ecoMode ? 60 : 80;
-    cache.maximumSizeBytes = ecoMode ? 20 << 20 : 32 << 20;
+    cache.maximumSize = ecoMode ? 48 : 64;
+    cache.maximumSizeBytes = ecoMode ? 16 << 20 : 24 << 20;
   }
 
   static void tuneImageCacheForEco(bool ecoMode) {
     final cache = PaintingBinding.instance.imageCache;
-    cache.maximumSize = ecoMode ? 60 : 80;
-    cache.maximumSizeBytes = ecoMode ? 20 << 20 : 32 << 20;
+    cache.maximumSize = ecoMode ? 48 : 64;
+    cache.maximumSizeBytes = ecoMode ? 16 << 20 : 24 << 20;
     if (ecoMode) {
       cache.clear();
       cache.clearLiveImages();
     }
   }
 
+  /// Default aktif — green computing untuk HP RAM kecil (bisa dimatikan di Settings).
   static bool readEcoFromPrefs(SharedPreferences prefs) =>
-      prefs.getBool(prefsKeyEco) ?? false;
+      prefs.getBool(prefsKeyEco) ?? true;
+
+  static Duration providerNotifyDebounce(bool ecoMode) =>
+      Duration(milliseconds: ecoMode ? 220 : 90);
+
+  static double scrollCacheExtent(bool ecoMode) => ecoMode ? 180 : 420;
+
+  static int dataImageCacheMax(bool ecoMode) => ecoMode ? 14 : 32;
+
+  /// Jeda langganan chat/Firestore setelah beranda tampil.
+  static Duration secondaryServicesDelay(bool ecoMode) =>
+      Duration(milliseconds: ecoMode ? 900 : 450);
 }

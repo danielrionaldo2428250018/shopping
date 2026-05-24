@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/app_notifications.dart';
+
 /// Meminta izin inti sekali saat pertama kali aplikasi dibuka:
 /// **galeri/foto** (chat, profil, cari dengan foto).
-/// **Notifikasi** diminta dari layar Pesan/Inbox setelah penjelasan (seperti WhatsApp).
+/// **Notifikasi** diminta saat pertama buka app agar popup/heads-up bisa muncul.
 /// Lokasi tetap diminta di halaman Map / toggle Settings.
 class StartupPermissionsWrapper extends StatefulWidget {
   const StartupPermissionsWrapper({
@@ -36,6 +38,7 @@ class _StartupPermissionsWrapperState extends State<StartupPermissionsWrapper> {
 
     // Non-blocking: jangan menunda UI pertama.
     unawaited(Permission.photos.request());
+    unawaited(ensureNotificationPermission());
     await prefs.setBool(_kDone, true);
   }
 

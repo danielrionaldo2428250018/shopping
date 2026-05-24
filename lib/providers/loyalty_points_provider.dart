@@ -59,6 +59,50 @@ class LoyaltyPointsProvider extends ChangeNotifier {
     return earned;
   }
 
+  /// Kode voucher poin yang sudah ditukar dan belum dipakai di checkout.
+  List<String> unusedRedeemedVoucherCodes() {
+    final codes = <String>[];
+    for (final r in _redemptionLog) {
+      if (r['usedAt'] != null) continue;
+      final code = (r['voucherCode'] as String?)?.trim().toUpperCase() ?? '';
+      if (code.isEmpty) continue;
+      if (!codes.contains(code)) codes.add(code);
+    }
+    return codes;
+  }
+
+  bool isRedeemedVoucherAvailable(String code) {
+    final norm = code.trim().toUpperCase();
+    if (norm.isEmpty) return false;
+    for (final r in _redemptionLog) {
+      final c = (r['voucherCode'] as String?)?.trim().toUpperCase() ?? '';
+      if (c != norm) continue;
+      if (r['usedAt'] != null) return false;
+      return true;
+    }
+    return false;
+  }
+
+  bool markVoucherUsed(String code, String orderId) {
+    final norm = code.trim().toUpperCase();
+    if (norm.isEmpty) return false;
+    for (var i = 0; i < _redemptionLog.length; i++) {
+      final r = _redemptionLog[i];
+      final c = (r['voucherCode'] as String?)?.trim().toUpperCase() ?? '';
+      if (c != norm) continue;
+      if (r['usedAt'] != null) return false;
+      _redemptionLog[i] = {
+        ...r,
+        'usedAt': DateTime.now().toIso8601String(),
+        'usedOrderId': orderId,
+      };
+      _persist();
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
   /// Tukar poin dengan hadiah katalog.
   bool redeem({
     required String rewardId,

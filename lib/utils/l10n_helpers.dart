@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/seller_application.dart';
+import 'order_flow_l10n.dart';
 
 /// Akses cepat: `context.l10n.home`
 extension AppL10nContext on BuildContext {
@@ -84,18 +85,8 @@ String? rewardCatalogDescriptionL10n(AppLocalizations loc, String id) {
   }
 }
 
-String orderStatusLabel(AppLocalizations loc, String status) {
-  switch (status) {
-    case 'Completed':
-      return loc.orderStatusCompleted;
-    case 'Processing':
-      return loc.orderStatusProcessing;
-    case 'Cancelled':
-      return loc.orderStatusCancelled;
-    default:
-      return status;
-  }
-}
+String orderStatusLabel(AppLocalizations loc, String status) =>
+    orderStatusLabelExtended(loc, status);
 
 String sellerStatusLabel(
   SellerApplicationStatus status,

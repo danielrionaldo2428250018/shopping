@@ -9,10 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../firebase_options.dart';
 import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
+import '../providers/orders_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/inbox_messages_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/settings_prefs_provider.dart';
+import '../utils/green_computing.dart';
 
 /// Firebase diinisialisasi setelah [runApp] agar splash Flutter tampil lebih cepat.
 class FirebaseStartupScope extends InheritedWidget {
@@ -75,12 +78,30 @@ class _FirebaseStartupHostState extends State<FirebaseStartupHost> {
 
     if (!mounted) return ok;
     if (ok) {
-      // Setelah frame berikutnya agar tidak berebut CPU dengan transisi splash → beranda.
+      // Katalog dulu; chat + Firestore ditunda (green computing — beranda responsif).
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         context.read<CatalogProvider>().attachFirebase();
-        context.read<ChatProvider>().attachFirebase();
-        _bindAuthAndChat();
+        final orders = context.read<OrdersProvider>();
+        orders.attachFirebase();
+        final auth = context.read<AuthProvider>();
+        try {
+          auth.bindFirebase(FirebaseAuth.instance);
+        } catch (e) {
+          debugPrint('bindFirebase (early): $e');
+        }
+        orders.bindAuth(auth);
+        orders.bindSellers(context.read<SellerApplicationsProvider>());
+        orders.bindInbox(context.read<InboxMessagesProvider>());
+        final eco = context.read<SettingsPrefsProvider>().ecoMode;
+        Future<void>.delayed(
+          GreenComputing.secondaryServicesDelay(eco),
+          () {
+            if (!mounted) return;
+            context.read<ChatProvider>().attachFirebase();
+            _bindAuthAndChat();
+          },
+        );
       });
     }
     return ok;
@@ -100,7 +121,13 @@ class _FirebaseStartupHostState extends State<FirebaseStartupHost> {
     chat.bindAuth(auth);
     chat.bindSellers(apps);
     chat.bindProfile(context.read<UserProfileProvider>());
-    chat.bindInbox(context.read<InboxMessagesProvider>());
+    final inbox = context.read<InboxMessagesProvider>();
+    chat.bindInbox(inbox);
+    final orders = context.read<OrdersProvider>();
+    orders.bindAuth(auth);
+    orders.bindSellers(apps);
+    orders.bindInbox(inbox);
+    orders.attachFirebase();
     final store = apps.myApprovedStore;
     if (auth.isLoggedIn && store != null) {
       unawaited(chat.registerSellerForPush(store.storeName));

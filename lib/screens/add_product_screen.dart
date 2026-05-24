@@ -16,6 +16,7 @@ import '../services/upload_service.dart';
 import '../utils/l10n_helpers.dart';
 import '../config/media_upload_config.dart';
 import '../utils/store_initials.dart';
+import '../utils/catalog_save_failure.dart';
 import '../utils/upload_error_l10n.dart';
 import '../l10n/app_localizations.dart';
 
@@ -200,8 +201,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
 
     setState(() => _publishing = true);
-    final ok =
-        await context.read<CatalogProvider>().publishProduct(product: product);
+    final catalog = context.read<CatalogProvider>();
+    final ok = await catalog.publishProduct(product: product);
     if (!mounted) return;
     setState(() => _publishing = false);
 
@@ -213,7 +214,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       );
       Navigator.pop(context);
     } else {
-      _showSnack(loc.publishFailed);
+      _showSnack(catalogSaveFailureMessage(loc, catalog.error));
     }
   }
 

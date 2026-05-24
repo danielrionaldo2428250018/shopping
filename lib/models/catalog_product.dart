@@ -1,3 +1,5 @@
+import '../utils/store_name_match.dart';
+
 /// Produk di katalog (Realtime Database / lokal).
 class CatalogProduct {
   const CatalogProduct({
@@ -88,6 +90,7 @@ class CatalogProduct {
         'unitPrice': unitPrice,
         'imageUrl': imageUrl,
         'sellerName': sellerName,
+        'sellerSlug': storeNameSlug(sellerName),
         'sellerUid': sellerUid,
         'sellerInitials': sellerInitials,
         'sellerRating': sellerRating,

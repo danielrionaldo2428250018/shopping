@@ -5,6 +5,7 @@ import '../constants/app_branding.dart';
 import '../utils/app_screen_style.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/seller_applications_provider.dart';
 
 import 'auth_required_screen.dart';
 import 'favorites_screen.dart';
@@ -45,26 +46,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final auth = context.watch<AuthProvider>();
+    final isLoggedIn = context.select((AuthProvider a) => a.isLoggedIn);
+    final authSeller = context.select((AuthProvider a) => a.hasApprovedSellerAccess);
+    final hasApprovedStore = context.select(
+      (SellerApplicationsProvider s) => s.myApprovedStore != null,
+    );
+    final isSeller = authSeller || hasApprovedStore;
 
     return Scaffold(
       backgroundColor: appScaffoldBackground(context),
       body: IndexedStack(
         index: currentIndex,
         children: [
-          _lazyTab(0, const HomeScreen()),
+          _lazyTab(0, const _KeepAliveTab(child: HomeScreen())),
           _lazyTab(
             1,
-            auth.isLoggedIn
-                ? const FavoritesScreen()
+            isLoggedIn
+                ? const _KeepAliveTab(child: FavoritesScreen())
                 : const AuthRequiredScreen(),
           ),
           _lazyTab(
             2,
-            auth.isLoggedIn
-                ? (auth.isSeller
-                    ? const SellerProfileScreen()
-                    : const ProfileScreen())
+            isLoggedIn
+                ? _KeepAliveTab(
+                    child: isSeller
+                        ? const SellerProfileScreen()
+                        : const ProfileScreen(),
+                  )
                 : const AuthRequiredScreen(),
           ),
         ],
@@ -172,5 +180,27 @@ class _NavItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Tab yang sudah dibuka tetap di memori — hindari rebuild berat saat bolak-balik.
+class _KeepAliveTab extends StatefulWidget {
+  const _KeepAliveTab({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_KeepAliveTab> createState() => _KeepAliveTabState();
+}
+
+class _KeepAliveTabState extends State<_KeepAliveTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

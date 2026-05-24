@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/catalog_data.dart' show catalogProductById, formatIdr;
 import '../l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
@@ -13,6 +15,8 @@ import '../utils/app_screen_style.dart';
 import '../utils/responsive_layout.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/phone_order_gate.dart';
+import '../widgets/app_network_image.dart';
+import '../utils/checkout_voucher.dart';
 import '../utils/quick_payment.dart';
 
 /// Checkout alur keranjang: ongkir, voucher, ringkasan, bayar.
@@ -73,18 +77,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
-  int _shippingFee(String voucherNorm) {
-    var fee = _shippingOption(_shippingIndex, context.l10n).fee;
-    if (voucherNorm == 'GRATISONGKIR') fee = 0;
-    return fee;
+  CheckoutVoucher? _resolvedVoucher(LoyaltyPointsProvider loyalty) {
+    if (_appliedVoucher.isEmpty) return null;
+    return CheckoutVoucherRules.resolve(_appliedVoucher, loyalty);
   }
 
-  int _discount(int subtotal, String voucherNorm) {
-    if (voucherNorm == 'NEARMARKET10') {
-      final d = (subtotal * 0.1).round();
-      return d.clamp(0, 50000);
-    }
-    return 0;
+  int _shippingFee(LoyaltyPointsProvider loyalty) {
+    final base = _shippingOption(_shippingIndex, context.l10n).fee;
+    return CheckoutVoucherRules.shippingAfterDiscount(
+      base,
+      _resolvedVoucher(loyalty),
+    );
+  }
+
+  int _discount(int subtotal, LoyaltyPointsProvider loyalty) {
+    return CheckoutVoucherRules.orderDiscount(
+      subtotal,
+      _resolvedVoucher(loyalty),
+    );
   }
 
   Future<void> _pickAddress() async {
@@ -203,18 +213,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _applyVoucher() {
-    setState(() {
-      _appliedVoucher = _voucherCtrl.text.trim().toUpperCase();
-    });
-    final norm = _appliedVoucher;
-    if (norm != 'NEARMARKET10' &&
-        norm != 'GRATISONGKIR' &&
-        norm.isNotEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.voucherNotRecognized)),
-      );
+    final loc = context.l10n;
+    final loyalty = context.read<LoyaltyPointsProvider>();
+    final code = _voucherCtrl.text.trim();
+    if (code.isEmpty) {
+      setState(() => _appliedVoucher = '');
+      return;
     }
+    final voucher = CheckoutVoucherRules.resolve(code, loyalty);
+    if (voucher == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.voucherPointNotOwned)),
+      );
+      return;
+    }
+    final sub = context.read<CartProvider>().subtotal;
+    if (!CheckoutVoucherRules.meetsMinSubtotal(sub, voucher)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.voucherMinPurchase(formatIdr(voucher.minSubtotal))),
+        ),
+      );
+      return;
+    }
+    setState(() => _appliedVoucher = voucher.code);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(loc.voucherApplied(voucher.code))),
+    );
   }
 
   Future<void> _placeOrder() async {
@@ -222,6 +247,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!context.mounted) return;
 
     final loc = context.l10n;
+    final buyerUid = context.read<AuthProvider>().uid ??
+        FirebaseAuth.instance.currentUser?.uid;
+    if (buyerUid == null || buyerUid.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.signInToContinue)),
+      );
+      return;
+    }
     final setPrefs = context.read<SettingsPrefsProvider>();
     final payment = _displayPayment(loc);
     if (setPrefs.fingerprintAuth &&
@@ -240,10 +273,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = context.read<CartProvider>();
     final orders = context.read<OrdersProvider>();
     final catalog = context.read<CatalogProvider>();
+    final loyalty = context.read<LoyaltyPointsProvider>();
     final sub = cart.subtotal;
-    final v = _appliedVoucher;
-    final ship = _shippingFee(v);
-    final disc = _discount(sub, v);
+    final voucher = _resolvedVoucher(loyalty);
+    if (voucher != null &&
+        !CheckoutVoucherRules.meetsMinSubtotal(sub, voucher)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.voucherMinPurchase(formatIdr(voucher.minSubtotal))),
+        ),
+      );
+      return;
+    }
+    final ship = _shippingFee(loyalty);
+    final disc = _discount(sub, loyalty);
     final total = sub + ship - disc;
 
     if (total < 0 || cart.lines.isEmpty) return;
@@ -276,13 +319,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    final result = orders.addFromCheckout(
+    final result = await orders.addFromCheckout(
       cart: cart,
       shippingFee: ship,
       discount: disc,
+      buyerUid: buyerUid,
+      buyerName: context.read<AuthProvider>().displayName ??
+          FirebaseAuth.instance.currentUser?.displayName,
     );
     if (!context.mounted) return;
-    final earned = context.read<LoyaltyPointsProvider>().earnFromPurchase(
+    if (voucher != null &&
+        voucher.fromPoints &&
+        result.orderId.isNotEmpty) {
+      loyalty.markVoucherUsed(voucher.code, result.orderId);
+    }
+    final earned = loyalty.earnFromPurchase(
           result.total,
           orderId: result.orderId,
         );
@@ -301,10 +352,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
+    final loyalty = context.watch<LoyaltyPointsProvider>();
     final sub = cart.subtotal;
-    final v = _appliedVoucher;
-    final ship = _shippingFee(v);
-    final disc = _discount(sub, v);
+    final ship = _shippingFee(loyalty);
+    final disc = _discount(sub, loyalty);
     final total = sub + ship - disc;
 
     if (cart.lines.isEmpty) {
@@ -414,16 +465,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        line.product.imageUrl,
+                      child: AppNetworkImage(
+                        url: line.product.imageUrl,
                         width: 56,
                         height: 56,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 56,
-                          height: 56,
-                          color: Colors.grey.shade200,
-                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -538,6 +584,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       color: Colors.grey.shade600,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    loc.voucherPointHint,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  if (loyalty.unusedRedeemedVoucherCodes().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        loc.voucherRedeemedAvailable,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: loyalty.unusedRedeemedVoucherCodes().map((code) {
+                        return ActionChip(
+                          label: Text(code),
+                          onPressed: () {
+                            _voucherCtrl.text = code;
+                            _applyVoucher();
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   Row(
                     children: [

@@ -67,6 +67,22 @@ class CatalogRtdbService {
     await _productsRef.child(id).remove();
   }
 
+  /// Klaim kepemilikan tanpa menulis ulang foto (data-URL besar).
+  static Future<void> claimProductOwnership({
+    required String productId,
+    required String sellerUid,
+    required String sellerSlug,
+  }) async {
+    if (productId.isEmpty || sellerUid.isEmpty || sellerSlug.isEmpty) return;
+    await _productsRef.child(productId).update({
+      'sellerUid': sellerUid,
+      'sellerSlug': sellerSlug,
+    });
+    if (kDebugMode) {
+      debugPrint('RTDB products/$productId diklaim oleh $sellerUid');
+    }
+  }
+
   static int _asInt(dynamic v, [int fallback = 0]) {
     if (v is int) return v;
     if (v is num) return v.toInt();
@@ -84,6 +100,20 @@ class CatalogRtdbService {
       return int.tryParse(match.group(1)!) ?? 0;
     }
     return 0;
+  }
+
+  /// UID penjual langsung dari node produk RTDB (paling akurat saat checkout).
+  static Future<String?> fetchSellerUidForProduct(String productId) async {
+    if (productId.isEmpty) return null;
+    try {
+      final snap = await _productsRef.child(productId).get();
+      if (!snap.exists || snap.value is! Map) return null;
+      final uid = (snap.value as Map)['sellerUid']?.toString().trim() ?? '';
+      return uid.isNotEmpty ? uid : null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('fetchSellerUidForProduct: $e');
+      return null;
+    }
   }
 
   static Future<int?> fetchStock(String productId) async {

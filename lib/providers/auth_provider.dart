@@ -267,17 +267,35 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void grantSellerRoleForEmail(String email) {
+  /// Tambah email penjual disetujui. [notify] false saat dipanggil dari sinkron Firestore
+  /// agar tidak memicu loop dengan [SellerApplicationsProvider].
+  void grantSellerRoleForEmail(String email, {bool notify = true}) {
     final e = email.trim().toLowerCase();
     if (e.isEmpty) return;
+
+    final hadEmail = _sellerApprovedEmails.contains(e);
+    final wasSeller = _isSeller;
 
     _sellerApprovedEmails.add(e);
     if (_accountEmail != null && _accountEmail == e) {
       _isSeller = true;
     }
+
+    final becameCurrentSeller =
+        _accountEmail == e && _isSeller && !wasSeller;
+    final changed = !hadEmail || becameCurrentSeller;
+    if (!changed) return;
+
     _persistSession();
-    notifyListeners();
+    // Selalu refresh UI bila akun ini baru jadi penjual (hindari tab Profil tetap mode pembeli).
+    if (notify || becameCurrentSeller) notifyListeners();
   }
+
+  /// Penjual disetujui + email login cocok dengan pengajuan.
+  bool get hasApprovedSellerAccess =>
+      _isSeller ||
+      (_accountEmail != null &&
+          _sellerApprovedEmails.contains(_accountEmail));
 
   bool isEmailApprovedAsSeller(String email) =>
       _sellerApprovedEmails.contains(email.trim().toLowerCase());

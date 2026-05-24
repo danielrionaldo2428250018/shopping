@@ -7,6 +7,7 @@ import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/seller_applications_provider.dart';
+import '../providers/reviews_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../utils/app_screen_style.dart';
 import '../utils/green_computing.dart';
@@ -53,6 +54,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         context.select((SettingsPrefsProvider s) => s.ecoMode);
     final loc = context.l10n;
     final product = catalogProductOrNull(widget.productId);
+    final reviewSummary = product == null
+        ? (avg: 0.0, count: 0)
+        : context.watch<ReviewsProvider>().productRatingSummary(product.id);
+    final productReviews = product == null
+        ? <Map<String, dynamic>>[]
+        : context.watch<ReviewsProvider>().reviewsForProduct(product.id);
     if (product == null) {
       return Scaffold(
                 appBar: AppBar(
@@ -374,13 +381,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    product.ratingValue.toStringAsFixed(1),
+                                    (reviewSummary.count > 0
+                                            ? reviewSummary.avg
+                                            : product.ratingValue)
+                                        .toStringAsFixed(1),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    '  (${product.reviewsCount} reviews)',
+                                    '  (${reviewSummary.count > 0 ? reviewSummary.count : product.reviewsCount} reviews)',
                                     style: TextStyle(
                                       color: Colors.grey.shade600,
                                       fontSize: 13,
@@ -513,6 +523,49 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ),
+                        if (productReviews.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          _infoSection(
+                            'Ulasan pembeli',
+                            '',
+                            extra: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: productReviews.take(5).map((r) {
+                                final rating =
+                                    (r['rating'] as num?)?.toInt() ?? 5;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            r['name']?.toString() ?? 'Pembeli',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Text('★' * rating),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        r['review']?.toString() ?? '',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade800,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         _specsCard(product),
                         SizedBox(height: guest ? 32 : 100),
@@ -567,15 +620,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            body,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              height: 1.55,
+          if (body.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              body,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                height: 1.55,
+              ),
             ),
-          ),
-          if (extra != null) extra,
+          ],
+          if (extra != null) ...[
+            if (body.isNotEmpty) const SizedBox(height: 10),
+            extra,
+          ],
         ],
       ),
     );
@@ -774,34 +832,13 @@ class _ProductHeroImage extends StatelessWidget {
       context,
       MediaQuery.sizeOf(context).width,
     );
-    if (ecoMode || imageUrl.trim().startsWith('data:image')) {
-      return AppNetworkImage(
-        url: imageUrl,
-        fit: BoxFit.contain,
-        height: height,
-        width: double.infinity,
-        filterQuality: FilterQuality.low,
-        memCacheWidth: cacheW,
-      );
-    }
-    return Image.network(
-      imageUrl,
+    return AppNetworkImage(
+      url: imageUrl,
       fit: BoxFit.contain,
       height: height,
       width: double.infinity,
-      cacheWidth: cacheW,
       filterQuality: FilterQuality.low,
-      gaplessPlayback: true,
-      errorBuilder: (_, __, ___) => const Center(
-        child: Icon(Icons.image_not_supported_outlined, size: 48),
-      ),
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return ColoredBox(
-          color: Colors.grey.shade200,
-          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        );
-      },
+      memCacheWidth: cacheW,
     );
   }
 }

@@ -7,20 +7,39 @@ import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../styles/app_colors_extension.dart';
 import '../utils/app_screen_style.dart';
+import '../utils/catalog_product_access.dart';
+import '../utils/catalog_save_failure.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/responsive_layout.dart';
 import '../providers/catalog_provider.dart';
+import '../providers/orders_provider.dart';
+import 'seller_orders_screen.dart';
+import '../widgets/app_network_image.dart';
 import '../widgets/store_location_map.dart';
 import '../widgets/store_logo_avatar.dart';
 import 'edit_store_screen.dart';
 
 /// Dashboard penjual — produk dari Realtime Database (toko Anda).
-class StoreDashboardScreen extends StatelessWidget {
+class StoreDashboardScreen extends StatefulWidget {
   const StoreDashboardScreen({
     super.key,
   });
 
+  @override
+  State<StoreDashboardScreen> createState() => _StoreDashboardScreenState();
+}
+
+class _StoreDashboardScreenState extends State<StoreDashboardScreen> {
   static const Color _purple = Color(0xFF7B42F6);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<OrdersProvider>().ensureSellerRtdbLinked();
+    });
+  }
 
   List<CatalogProduct> _productsForStore(
     String storeName,
@@ -39,6 +58,8 @@ class StoreDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.watch<CatalogProvider>();
+    final sellerOrderCount =
+        context.watch<OrdersProvider>().sellerPendingCount;
     final loc = context.l10n;
     final auth = context.watch<AuthProvider>();
     final store = context.watch<SellerApplicationsProvider>().myApprovedStore;
@@ -282,11 +303,15 @@ class StoreDashboardScreen extends StatelessWidget {
                           ),
                           _MiniStatCard(
                             label: loc.orders,
-                            value: '0',
+                            value: '$sellerOrderCount',
                             circleColor:
                                 Colors.green.withValues(alpha: 0.12),
-                            icon: Icons.attach_money_rounded,
+                            icon: Icons.receipt_long_outlined,
                             iconColor: Colors.green.shade700,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              SellerOrdersScreen.route,
+                            ),
                           ),
                           _MiniStatCard(
                             label: loc.active,
@@ -544,8 +569,8 @@ class StoreDashboardScreen extends StatelessWidget {
                               ClipRRect(
                                 borderRadius:
                                     BorderRadius.circular(12),
-                                child: Image.network(
-                                  p.imageUrl,
+                                child: AppNetworkImage(
+                                  url: p.imageUrl,
                                   width: 88,
                                   height: 88,
                                   fit: BoxFit.cover,
@@ -710,12 +735,37 @@ Future<void> _confirmDeleteProduct(
     ),
   );
   if (yes != true || !context.mounted) return;
-  final ok =
-      await context.read<CatalogProvider>().deleteProduct(product.id);
+  final auth = context.read<AuthProvider>();
+  final store = context.read<SellerApplicationsProvider>().myApprovedStore;
+  final storeName = store?.storeName.trim();
+  if (!canManageCatalogProduct(
+    product: product,
+    uid: auth.uid,
+    accountEmail: auth.accountEmail,
+    isSeller: auth.hasApprovedSellerAccess,
+    myStoreName: storeName?.isNotEmpty == true ? storeName : null,
+  )) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(catalogSaveFailureMessage(loc, 'permission-denied')),
+      ),
+    );
+    return;
+  }
+  final catalog = context.read<CatalogProvider>();
+  final ok = await catalog.deleteProduct(
+    product.id,
+    claimSellerUid: auth.uid,
+    sellerStoreName: storeName?.isNotEmpty == true ? storeName : null,
+  );
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(ok ? loc.productDeleted : loc.publishFailed),
+      content: Text(
+        ok
+            ? loc.productDeleted
+            : catalogSaveFailureMessage(loc, catalog.error),
+      ),
     ),
   );
 }
@@ -852,6 +902,7 @@ class _MiniStatCard extends StatelessWidget {
     required this.circleColor,
     required this.icon,
     required this.iconColor,
+    this.onTap,
   });
 
   final String label;
@@ -859,10 +910,11 @@ class _MiniStatCard extends StatelessWidget {
   final Color circleColor;
   final IconData icon;
   final Color iconColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final child = Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -902,6 +954,15 @@ class _MiniStatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    if (onTap == null) return child;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: child,
       ),
     );
   }

@@ -1419,6 +1419,28 @@ class AppLocalizationsAr extends AppLocalizations {
       'NEARMARKET10 (خصم 10%، حد 50 ألف) · GRATISONGKIR';
 
   @override
+  String get voucherPointHint =>
+      'Kode dari tukar poin (Poin & Hadiah): POINONGKIR15, POIN10OFF, POINVIP1M';
+
+  @override
+  String get voucherPointNotOwned =>
+      'Kode tidak dikenali, belum ditukar poin, atau sudah dipakai';
+
+  @override
+  String get voucherRedeemedAvailable =>
+      'Voucher poin Anda (ketuk untuk pakai):';
+
+  @override
+  String voucherApplied(String code) {
+    return 'Voucher $code diterapkan';
+  }
+
+  @override
+  String voucherMinPurchase(String amount) {
+    return 'Voucher ini berlaku minimal belanja $amount';
+  }
+
+  @override
   String get onlineStatus => 'متصل';
 
   @override

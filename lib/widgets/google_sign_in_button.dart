@@ -36,10 +36,14 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
           );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.googleSignInSuccess)),
-      );
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.googleSignInSuccess),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

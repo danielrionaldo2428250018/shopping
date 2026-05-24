@@ -12,6 +12,7 @@ import '../utils/app_screen_style.dart';
 import '../utils/responsive_layout.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/store_name_match.dart';
+import '../widgets/app_network_image.dart';
 import '../widgets/store_location_map.dart';
 import '../widgets/store_logo_avatar.dart';
 
@@ -258,12 +259,9 @@ class _ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Image.network(
-                product.imageUrl,
+              child: AppNetworkImage(
+                url: product.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(Icons.image_not_supported_outlined),
-                ),
               ),
             ),
             Padding(

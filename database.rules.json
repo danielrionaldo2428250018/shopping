@@ -1,40 +1,64 @@
-{
-  "rules": {
-    "products": {
-      ".read": true,
-      "$productId": {
-        ".write": "auth != null && (auth.uid == 'S3zzmx2SJ5WDN8bhzJHep5BTepy1' || (!data.exists() && newData.child('sellerUid').val() == auth.uid) || (data.exists() && data.child('sellerUid').val() == auth.uid && newData.child('sellerUid').val() == auth.uid) || (data.exists() && !data.hasChild('sellerUid') && newData.child('sellerUid').val() == auth.uid) || (data.exists() && newData.child('title').val() == data.child('title').val() && newData.child('unitPrice').val() == data.child('unitPrice').val() && newData.child('sellerName').val() == data.child('sellerName').val() && newData.child('sellerUid').val() == data.child('sellerUid').val() && newData.child('stock').val() < data.child('stock').val() && newData.child('stock').val() >= 0 && (!data.hasChild('soldCount') || newData.child('soldCount').val() >= data.child('soldCount').val())))",
-        ".validate": "newData.hasChildren(['title', 'sellerName']) && (!data.exists() ? newData.hasChild('sellerUid') : true)"
-      }
-    },
-    "sellerAccounts": {
-      ".read": "auth != null",
-      "$slug": {
-        ".write": "auth != null && (!data.exists() || data.child('uid').val() == auth.uid)"
-      }
-    },
-    "chats": {
-      ".read": "auth != null",
-      "$threadId": {
-        "meta": {
-          ".write": "auth != null"
-        },
-        "messages": {
-          "$msgId": {
-            ".read": "auth != null",
-            ".write": "auth != null && newData.child('senderUid').val() == auth.uid"
-          }
-        }
-      }
-    },
-    "sellerThreads": {
-      "$sellerUid": {
-        ".read": "auth != null && auth.uid == $sellerUid",
-        "$threadId": {
-          ".write": "auth != null"
-        }
-      }
-    }
-  }
-}
-
+{
+  "rules": {
+    "products": {
+      ".read": true,
+      "$productId": {
+        ".write": "auth != null && (auth.uid == 'S3zzmx2SJ5WDN8bhzJHep5BTepy1' || (!data.exists() && newData.child('sellerUid').val() == auth.uid) || (data.exists() && data.child('sellerUid').val() == auth.uid && (!newData.exists() || newData.child('sellerUid').val() == auth.uid)) || (data.exists() && !newData.exists() && data.child('sellerSlug').val() != '' && root.child('sellerAccounts').child(data.child('sellerSlug').val()).child('uid').val() == auth.uid) || (data.exists() && newData.exists() && (data.child('sellerUid').val() == '' || !data.hasChild('sellerUid')) && newData.child('sellerUid').val() == auth.uid) || (data.exists() && newData.exists() && newData.child('sellerUid').val() == auth.uid && newData.child('sellerSlug').val() != '' && root.child('sellerAccounts').child(newData.child('sellerSlug').val()).child('uid').val() == auth.uid) || (data.exists() && newData.exists() && newData.child('title').val() == data.child('title').val() && newData.child('unitPrice').val() == data.child('unitPrice').val() && newData.child('sellerName').val() == data.child('sellerName').val() && newData.child('sellerUid').val() == data.child('sellerUid').val() && newData.child('stock').val() < data.child('stock').val() && newData.child('stock').val() >= 0 && (!data.hasChild('soldCount') || newData.child('soldCount').val() >= data.child('soldCount').val())))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['title', 'sellerName']) && (!data.exists() ? newData.hasChild('sellerUid') : true))"
+      }
+    },
+    "sellerAccounts": {
+      ".read": "auth != null",
+      "$slug": {
+        ".write": "auth != null && (!data.exists() || data.child('uid').val() == auth.uid)"
+      }
+    },
+    "chats": {
+      ".read": "auth != null",
+      "$threadId": {
+        "meta": {
+          ".write": "auth != null"
+        },
+        "messages": {
+          "$msgId": {
+            ".read": "auth != null",
+            ".write": "auth != null && newData.child('senderUid').val() == auth.uid"
+          }
+        }
+      }
+    },
+    "sellerThreads": {
+      "$sellerUid": {
+        ".read": "auth != null && auth.uid == $sellerUid",
+        "$threadId": {
+          ".write": "auth != null"
+        }
+      }
+    },
+    "buyerOrders": {
+      "$buyerUid": {
+        ".read": "auth != null && auth.uid == $buyerUid",
+        "$orderId": {
+          ".write": "auth != null && auth.uid == $buyerUid"
+        }
+      }
+    },
+    "sellerOrders": {
+      "$sellerUid": {
+        ".read": "auth != null && auth.uid == $sellerUid",
+        "$orderId": {
+          ".write": "auth != null && ((!data.exists() && newData.child('buyerUid').val() == auth.uid) || auth.uid == $sellerUid)"
+        }
+      }
+    },
+    "sellerOrdersByStore": {
+      "$slug": {
+        ".read": "auth != null && root.child('sellerAccounts').child($slug).child('uid').val() == auth.uid",
+        "$orderId": {
+          ".read": "auth != null && (data.child('sellerUid').val() == auth.uid || root.child('sellerAccounts').child($slug).child('uid').val() == auth.uid)",
+          ".write": "auth != null && ((!data.exists() && newData.child('buyerUid').val() == auth.uid) || root.child('sellerAccounts').child($slug).child('uid').val() == auth.uid || newData.child('sellerUid').val() == auth.uid)"
+        }
+      }
+    }
+  }
+}
