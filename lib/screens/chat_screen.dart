@@ -1,9 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
+import '../models/chat_models.dart';
+import '../providers/auth_provider.dart';
+import '../providers/chat_provider.dart';
+import '../services/chat_rtdb_service.dart';
 import 'seller_store_screen.dart';
 import '../utils/l10n_helpers.dart';
 
@@ -15,6 +18,7 @@ class ChatRouteArgs {
     required this.sellerName,
     this.sellerInitials = 'S',
     this.isOnline = true,
+    this.threadId,
     this.productId,
     this.productTitle,
     this.productPrice,
@@ -24,6 +28,7 @@ class ChatRouteArgs {
   final String sellerName;
   final String sellerInitials;
   final bool isOnline;
+  final String? threadId;
   final String? productId;
   final String? productTitle;
   final String? productPrice;
@@ -59,60 +64,83 @@ class _ChatScreenState extends State<ChatScreen> {
       TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  late List<_ChatBubbleData> _messages;
   String _searchQuery = '';
+  String? _threadId;
+  bool _openingThread = true;
+  String? _headerSellerName;
+  String? _headerInitials;
 
   ChatRouteArgs get _args =>
       widget.args ?? const ChatRouteArgs(sellerName: 'Seller');
 
-  List<_ChatBubbleData> get _visibleMessages {
+  List<ChatMessage> _filterMessages(List<ChatMessage> messages) {
     final q = _searchQuery.trim().toLowerCase();
-    if (q.isEmpty) return _messages;
-    return _messages.where((m) {
-      if (m.text.toLowerCase().contains(q)) return true;
-      return false;
-    }).toList();
-  }
-
-  bool _demoMessagesLoaded = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_demoMessagesLoaded) {
-      final loc = context.l10n;
-      _messages = [
-        _ChatBubbleData(
-          text: loc.demoChatHello,
-          isMe: true,
-          time: '10.02',
-        ),
-        _ChatBubbleData(
-          text: loc.demoChatYes,
-          isMe: false,
-          time: '10.04',
-        ),
-        _ChatBubbleData(
-          text: loc.demoChatNegotiate,
-          isMe: true,
-          time: '10.05',
-        ),
-        _ChatBubbleData(
-          text: loc.demoChatShipping,
-          isMe: false,
-          time: '10.06',
-        ),
-      ];
-      _demoMessagesLoaded = true;
-    }
+    if (q.isEmpty) return messages;
+    return messages
+        .where((m) => m.text.toLowerCase().contains(q))
+        .toList();
   }
 
   @override
   void initState() {
     super.initState();
-    _messages = [];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openThread());
+  }
+
+  Future<void> _openThread() async {
+    final loc = context.l10n;
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) {
+      if (mounted) setState(() => _openingThread = false);
+      return;
+    }
+
+    final chat = context.read<ChatProvider>();
+    final id = _args.threadId ??
+        await chat.openThreadWithSeller(
+          sellerName: _args.sellerName,
+          productId: _args.productId,
+          productTitle: _args.productTitle,
+        );
+
+    if (!mounted) return;
+    if (id == null) {
+      final err = context.read<ChatProvider>().lastError;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            err != null && err.isNotEmpty
+                ? err
+                : loc.chatOpenFailed,
+          ),
+        ),
+      );
+    }
+    if (id != null) {
+      final meta = await ChatRtdbService.getThreadMeta(id);
+      if (meta != null && mounted) {
+        final uid = auth.uid;
+        final headerName = uid != null && meta.buyerUid == uid
+            ? meta.sellerName
+            : meta.buyerName;
+        final letter = headerName.isNotEmpty
+            ? headerName.substring(0, 1).toUpperCase()
+            : _args.sellerInitials;
+        setState(() {
+          _threadId = id;
+          _openingThread = false;
+          _headerSellerName = headerName;
+          _headerInitials = letter.length >= 2
+              ? '${headerName[0]}${headerName.split(' ').last[0]}'
+                  .toUpperCase()
+              : letter;
+        });
+        return;
+      }
+    }
+    setState(() {
+      _threadId = id;
+      _openingThread = false;
     });
   }
 
@@ -132,19 +160,27 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _send() {
+  Future<void> _send() async {
     final t = _messageController.text.trim();
-    if (t.isEmpty) return;
-    setState(() {
-      _messages.add(
-        _ChatBubbleData(
-          text: t,
-          isMe: true,
-          time: _nowTimeLabel(),
+    final threadId = _threadId;
+    if (t.isEmpty || threadId == null) return;
+    _messageController.clear();
+    final chat = context.read<ChatProvider>();
+    final ok = await chat.sendMessage(
+      threadId: threadId,
+      text: t,
+    );
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            chat.lastError ?? context.l10n.chatOpenFailed,
+          ),
         ),
       );
-      _messageController.clear();
-    });
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -159,22 +195,15 @@ class _ChatScreenState extends State<ChatScreen> {
       imageQuality: 82,
     );
     if (file == null) return;
-    setState(() {
-      _messages.add(
-        _ChatBubbleData(
-          imagePath: file.path,
-          isMe: true,
-          time: _nowTimeLabel(),
-        ),
-      );
-    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.chatImageComingSoon)),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
   }
 
-  String _nowTimeLabel() {
-    final n = DateTime.now();
+  String _timeLabel(DateTime n) {
     return '${n.hour.toString().padLeft(2, '0')}.'
         '${n.minute.toString().padLeft(2, '0')}';
   }
@@ -243,34 +272,13 @@ class _ChatScreenState extends State<ChatScreen> {
               title: Text(loc.mediaAndPhotos),
               onTap: () {
                 Navigator.pop(ctx);
-                final imgs = _messages
-                    .where((m) => m.imagePath != null)
-                    .toList();
                 showModalBottomSheet<void>(
                   context: context,
                   builder: (mCtx) => SafeArea(
-                    child: imgs.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Text(loc.noPhotosInChat),
-                          )
-                        : GridView.builder(
-                            padding: const EdgeInsets.all(12),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 6,
-                              mainAxisSpacing: 6,
-                            ),
-                            itemCount: imgs.length,
-                            itemBuilder: (_, i) => ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(imgs[i].imagePath!),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(loc.noPhotosInChat),
+                    ),
                   ),
                 );
               },
@@ -308,10 +316,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 );
                 if (ok == true && mounted) {
-                  setState(() {
-                    _messages.clear();
-                    _searchQuery = '';
-                  });
+                  setState(() => _searchQuery = '');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(loc.chatHistoryLocalOnly)),
+                  );
                 }
               },
             ),
@@ -345,14 +353,44 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     final a = _args;
+    final auth = context.watch<AuthProvider>();
+
+    if (!auth.isLoggedIn) {
+      return Scaffold(
+        appBar: AppBar(title: Text(a.sellerName)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  loc.signInToChat,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => Navigator.pushNamed(context, '/login'),
+                  child: Text(loc.signIn),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F0F5),
       body: Column(
         children: [
           _ChatHeader(
-            sellerName: a.sellerName,
-            initials: a.sellerInitials,
+            sellerName: _headerSellerName ?? a.sellerName,
+            initials: _headerInitials ?? a.sellerInitials,
             isOnline: a.isOnline,
             onMore: () => _showMoreMenu(context),
           ),
@@ -364,39 +402,55 @@ class _ChatScreenState extends State<ChatScreen> {
               imageUrl: a.productImageUrl,
             ),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              itemCount: _visibleMessages.isEmpty
-                  ? 2
-                  : _visibleMessages.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _DateChip(label: loc.today);
-                }
-                if (_visibleMessages.isEmpty && index == 1) {
-                  return Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Text(
-                        _searchQuery.trim().isEmpty
-                            ? loc.noMessagesYet
-                            : loc.noSearchInChat,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ),
-                  );
-                }
-                final m = _visibleMessages[index - 1];
-                return _ChatBubble(
-                  text: m.text,
-                  imagePath: m.imagePath,
-                  isMe: m.isMe,
-                  time: m.time,
-                );
-              },
-            ),
+            child: _openingThread
+                ? const Center(child: CircularProgressIndicator())
+                : _threadId == null
+                    ? Center(child: Text(loc.chatOpenFailed))
+                    : StreamBuilder<List<ChatMessage>>(
+                    stream: ChatRtdbService.watchMessages(_threadId!),
+                    builder: (context, snap) {
+                      final uid = context.watch<AuthProvider>().uid;
+                      final all = snap.data ?? const <ChatMessage>[];
+                      final visible = _filterMessages(all);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (snap.hasData) _scrollToBottom();
+                      });
+
+                      return ListView.builder(
+                        controller: _scrollController,
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        itemCount: visible.isEmpty ? 2 : visible.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return _DateChip(label: loc.today);
+                          }
+                          if (visible.isEmpty && index == 1) {
+                            return Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Center(
+                                child: Text(
+                                  _searchQuery.trim().isEmpty
+                                      ? loc.chatStartHint
+                                      : loc.noSearchInChat,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          final m = visible[index - 1];
+                          return _ChatBubble(
+                            text: m.text,
+                            isMe: uid != null && m.senderUid == uid,
+                            time: _timeLabel(m.sentAt),
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
           _ComposerBar(
             controller: _messageController,
@@ -407,20 +461,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-}
-
-class _ChatBubbleData {
-  _ChatBubbleData({
-    this.text = '',
-    this.imagePath,
-    required this.isMe,
-    required this.time,
-  });
-
-  final String text;
-  final String? imagePath;
-  final bool isMe;
-  final String time;
 }
 
 class _ChatHeader extends StatelessWidget {
@@ -667,13 +707,11 @@ class _DateChip extends StatelessWidget {
 class _ChatBubble extends StatelessWidget {
   const _ChatBubble({
     required this.text,
-    this.imagePath,
     required this.isMe,
     required this.time,
   });
 
   final String text;
-  final String? imagePath;
   final bool isMe;
   final String time;
 
@@ -719,18 +757,6 @@ class _ChatBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (imagePath != null) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(imagePath!),
-                      width: 220,
-                      height: 220,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  if (text.isNotEmpty) const SizedBox(height: 10),
-                ],
                 if (text.isNotEmpty)
                   Text(
                     text,

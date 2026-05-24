@@ -169,6 +169,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get inboxEmptyHint => '주문·프로모션·푸시 메시지가 여기에 표시됩니다.';
 
   @override
+  String get chatListEmptyHint =>
+      'Belum ada obrolan. Buka produk, lalu ketuk Chat dengan penjual untuk memulai.';
+
+  @override
+  String get chatStartHint =>
+      'Ketik pesan di bawah untuk memulai obrolan dengan penjual.';
+
+  @override
+  String get signInToChat => 'Masuk dulu untuk mengirim pesan.';
+
+  @override
+  String get notificationsSection => '알림';
+
+  @override
+  String get chatHistoryLocalOnly =>
+      'Riwayat obrolan disimpan di cloud; hapus lokal tidak menghapus pesan di server.';
+
+  @override
+  String get chatImageComingSoon =>
+      'Kirim foto di chat akan hadir di versi berikutnya.';
+
+  @override
   String get requestNotificationAgain => '알림 권한 다시 요청';
 
   @override
@@ -239,6 +261,73 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get forgotPassword => '비밀번호 찾기';
+
+  @override
+  String get forgotPasswordTitle => 'Lupa kata sandi';
+
+  @override
+  String get forgotPasswordBody =>
+      'Masukkan email akun Anda. Kami akan mengirim link reset kata sandi dari Firebase ke kotak masuk email.';
+
+  @override
+  String get sendResetEmail => 'Kirim link reset';
+
+  @override
+  String get backToLogin => 'Kembali ke login';
+
+  @override
+  String get currentPassword => 'Kata sandi saat ini';
+
+  @override
+  String get newPassword => 'Kata sandi baru';
+
+  @override
+  String get confirmNewPassword => 'Konfirmasi kata sandi baru';
+
+  @override
+  String get newPasswordMismatch => 'Konfirmasi kata sandi baru tidak cocok.';
+
+  @override
+  String get changePasswordSuccess => 'Kata sandi berhasil diubah.';
+
+  @override
+  String get changePasswordGoogleOnly =>
+      'Akun Google tidak bisa ubah sandi di sini. Gunakan Lupa kata sandi atau kelola akun Google.';
+
+  @override
+  String get changePasswordFormHint =>
+      'Masukkan sandi saat ini lalu sandi baru (minimal 6 karakter).';
+
+  @override
+  String get signInToChangePassword => 'Masuk dulu untuk mengubah kata sandi.';
+
+  @override
+  String get authRequiresRecentLogin =>
+      'Demi keamanan, keluar lalu masuk lagi sebelum mengubah kata sandi.';
+
+  @override
+  String get chatOpenFailed =>
+      'Gagal membuka obrolan. Periksa login dan aturan Realtime Database.';
+
+  @override
+  String get sellerChatSyncHint =>
+      'Sebagai penjual: minta pembeli kirim pesan dari produk toko Anda, lalu ketuk Muat obrolan. Deploy aturan RTDB: firebase deploy --only database';
+
+  @override
+  String get buyerMessages => 'Obrolan pembelian';
+
+  @override
+  String get sellerStoreMessages => 'Pesan dari pembeli';
+
+  @override
+  String get buyerChatEmptyHint =>
+      'Belum ada obrolan pembelian. Buka produk lalu ketuk Chat dengan penjual.';
+
+  @override
+  String get reloadChats => 'Muat obrolan';
+
+  @override
+  String get chatSyncing => 'Memuat obrolan…';
 
   @override
   String get signIn => '로그인';
@@ -420,6 +509,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get outOfStock => '품절';
 
   @override
+  String get checkoutStockFailed =>
+      'Stok tidak mencukupi. Perbarui jumlah atau coba lagi nanti.';
+
+  @override
   String soldCount(String label) {
     return '판매: $label';
   }
@@ -471,6 +564,45 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get emptyFavorites => '즐겨찾기 없음';
+
+  @override
+  String get emptyReviews => '리뷰 없음';
+
+  @override
+  String get emptyReviewsHint => '완료된 주문에서 작성한 리뷰가 여기에 표시됩니다.';
+
+  @override
+  String get uploadProductImageFailed => '클라우드에 사진 업로드 실패.';
+
+  @override
+  String get uploadProductImageAuthRequired => '제품 사진 업로드 전에 로그인하세요.';
+
+  @override
+  String get uploadProductImageStorageRules =>
+      'Firebase Storage가 거부했습니다. storage.rules를 배포하세요.';
+
+  @override
+  String get storeSaveFailed =>
+      'Gagal menyimpan profil toko. Deploy aturan Firestore (firestore.rules) dan pastikan login dengan email pemilik toko.';
+
+  @override
+  String storeSaveFailedDetail(String detail) {
+    return 'Gagal menyimpan toko: $detail';
+  }
+
+  @override
+  String get uploadProductImageFileMissing => '사진 파일을 찾을 수 없습니다.';
+
+  @override
+  String get uploadProductImageNetwork => '업로드 중 네트워크 오류.';
+
+  @override
+  String get uploadProductImageTooLarge =>
+      'Foto terlalu besar. Pilih gambar yang lebih kecil atau potong ulang.';
+
+  @override
+  String get photoSavedWithoutStorage =>
+      'Foto disimpan lewat database (plan Spark, tanpa Firebase Storage).';
 
   @override
   String get searchResults => '검색 결과';
@@ -732,6 +864,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get viewSellerStore => '판매자 스토어 보기';
 
   @override
+  String get storeLocationTitle => '매장 위치';
+
+  @override
+  String get storeMapZoomHint => '확대/축소하거나 탭하여 지도 불러오기';
+
+  @override
   String get searchInChat => '채팅에서 검색';
 
   @override
@@ -808,9 +946,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get paymentMethodsDesc => '카드 및 디지털 지갑';
 
   @override
-  String get notificationsSection => '알림';
-
-  @override
   String get emailNotifications => '이메일 알림';
 
   @override
@@ -867,6 +1002,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get storeLogo => '스토어 로고';
+
+  @override
+  String get storeLogoInitialsHint =>
+      'Logo otomatis dari inisial nama toko (huruf pertama setiap kata, maks. 3). Tidak perlu unggah foto.';
 
   @override
   String get uploadLogo => '로고 업로드';
@@ -1279,10 +1418,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeHeroSubtitle => '주변의 양질의 중고를 찾아보세요';
 
   @override
-  String get appBrandName => 'PreLoved';
+  String get appBrandName => 'SECO';
 
   @override
-  String get defaultDisplayName => 'PreLoved 사용자';
+  String get defaultDisplayName => 'SECO 사용자';
 
   @override
   String sortOrderLabel(String sort) {
@@ -1453,7 +1592,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nativeLangChinese => '中文';
 
   @override
-  String get homePrelovedDeal => 'PRELOVED DEAL';
+  String get homePrelovedDeal => 'SECO DEAL';
 
   @override
   String get homeWeekThriftBest => '이번 주 최고의 중고 가격';
@@ -1512,6 +1651,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get orderCancelBtn => '취소';
 
   @override
+  String get orderConfirmReceivedQ => 'Konfirmasi pesanan diterima?';
+
+  @override
+  String get orderConfirmReceivedBody =>
+      'Pastikan barang sudah Anda terima dalam kondisi baik. Status pesanan akan menjadi Selesai.';
+
+  @override
+  String get orderConfirmReceivedBtn => 'Sudah sampai';
+
+  @override
+  String get orderCompletedSnack => 'Pesanan ditandai selesai';
+
+  @override
+  String orderCompletedAt(String date) {
+    return 'Diterima: $date';
+  }
+
+  @override
   String get paymentSavedEarth => '지구를 구했습니다';
 
   @override
@@ -1544,19 +1701,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shimmerFetchingSubtitle => '데이터를 가져오는 중… 잠시만 기다려 주세요.';
 
   @override
-  String ordersTabAll(int count) {
-    return '전체 ($count)';
-  }
+  String get ordersTabAll => '전체';
 
   @override
-  String ordersTabPending(int count) {
-    return '대기 ($count)';
-  }
+  String get ordersTabPending => '대기';
 
   @override
-  String ordersTabCompleted(int count) {
-    return '완료 ($count)';
-  }
+  String get ordersTabCompleted => '완료';
 
   @override
   String orderTotalAmount(String amount) {
@@ -1664,7 +1815,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get viewSellerApplicationStatus => '신청 상태 보기';
 
   @override
-  String get adminAccessDenied => '지정된 관리자 계정만 접근할 수 있습니다.';
+  String get adminAccessDenied => '이 섹션에 대한 접근 권한이 없습니다.';
 
   @override
   String get adminEmailNotConfigured =>
@@ -1686,4 +1837,51 @@ class AppLocalizationsKo extends AppLocalizations {
   String adminLoginHint(String email) {
     return '관리자 패널은 $email 전용입니다. 해당 이메일로 이메일/비밀번호로 로그인하세요(Google 아님).';
   }
+
+  @override
+  String get ecoModeTitle => '경량 모드';
+
+  @override
+  String get ecoModeSubtitle =>
+      '그린 컴퓨팅: 작은 이미지, 홈 항목 축소, 가벼운 시작 — 저사양 RAM에 적합.';
+
+  @override
+  String get clearLocalData => '로컬 데이터 삭제';
+
+  @override
+  String get clearLocalDataSubtitle =>
+      '이 기기에 저장된 주문, 위시리스트, 리뷰를 삭제합니다. 앱을 완전히 종료한 후 다시 실행하세요.';
+
+  @override
+  String get clearLocalDataDone => '로컬 데이터가 삭제되었습니다. 앱을 완전히 종료한 뒤 다시 열어 주세요.';
+
+  @override
+  String get editStore => '스토어 수정';
+
+  @override
+  String get deleteStore => '스토어 삭제';
+
+  @override
+  String get deleteStoreConfirm => '스토어와 모든 상품이 삭제됩니다. 계속할까요?';
+
+  @override
+  String get storeUpdated => '스토어가 업데이트되었습니다.';
+
+  @override
+  String get storeDeleted => '스토어가 삭제되었습니다.';
+
+  @override
+  String get productUpdated => '상품이 업데이트되었습니다.';
+
+  @override
+  String get productDeleted => '상품이 삭제되었습니다.';
+
+  @override
+  String get deleteProductConfirm => '이 상품이 카탈로그에서 영구 삭제됩니다.';
+
+  @override
+  String get manageSellerRequests => '판매자 신청 관리';
+
+  @override
+  String get manageRewards => '리워드 관리';
 }

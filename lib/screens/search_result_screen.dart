@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_branding.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/app_network_image.dart';
 import '../providers/catalog_provider.dart';
 import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
@@ -187,15 +190,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     ),
                   )
                 : GridView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(
+                      ResponsiveLayout.of(context).horizontalPadding,
+                    ),
                     itemCount: results.length,
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 0.68,
-                    ),
+                        ResponsiveLayout.of(context).productGridDelegateFixed(),
                     itemBuilder: (context, index) {
                       final p = results[index];
                       return _ProductTile(
@@ -229,9 +229,9 @@ class _ProductTile extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appCardColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: appBorderColor(context)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -241,9 +241,13 @@ class _ProductTile extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    product.imageUrl,
-                    fit: BoxFit.cover,
+                  LayoutBuilder(
+                    builder: (context, c) => AppNetworkImage(
+                      url: product.imageUrl,
+                      fit: BoxFit.cover,
+                      width: c.maxWidth,
+                      height: c.maxHeight,
+                    ),
                   ),
                   Positioned(
                     left: 8,

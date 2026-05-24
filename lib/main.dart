@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/auth_provider.dart';
 import 'providers/locale_provider.dart';
@@ -14,6 +14,7 @@ import 'services/app_notifications.dart';
 import 'services/cloud_api_service.dart';
 import 'config/google_sign_in_config.dart';
 import 'providers/inbox_messages_provider.dart';
+import 'providers/chat_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/orders_provider.dart';
 import 'providers/seller_applications_provider.dart';
@@ -26,14 +27,20 @@ import 'providers/rewards_catalog_provider.dart';
 import 'styles/app_theme.dart';
 import 'providers/catalog_provider.dart';
 
+import 'bootstrap/app_migration.dart';
+import 'bootstrap/firebase_startup.dart';
 import 'bootstrap/startup_permissions.dart';
-import 'constants/app_branding.dart';
+import 'providers/reviews_provider.dart';
+import 'utils/green_computing.dart';
+import 'widgets/app_width_limiter.dart';
 
 /// NAVIGATION
 import 'screens/main_navigation_screen.dart';
 
 /// AUTH
 import 'screens/login_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/change_password_screen.dart';
 import 'screens/register_screen.dart';
 
 /// GENERAL
@@ -46,9 +53,9 @@ import 'screens/product_detail_screen.dart';
 /// USER
 import 'screens/profile_screen.dart';
 import 'screens/favorites_screen.dart';
-import 'screens/map_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/notification_chat_screen.dart';
+import 'models/chat_inbox_mode.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/edit_profile_screen.dart';
@@ -59,10 +66,10 @@ import 'screens/become_seller_screen.dart';
 import 'screens/store_dashboard.dart';
 import 'screens/add_product_screen.dart';
 import 'screens/edit_product_screen.dart';
+import 'screens/edit_store_screen.dart';
 import 'screens/admin_seller_applications_screen.dart';
 import 'screens/seller_application_status_screen.dart';
 import 'screens/chat_screen.dart';
-import 'screens/chat_list_screen.dart';
 import 'screens/buy_product_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/checkout_screen.dart';
@@ -77,34 +84,10 @@ import 'screens/seller_store_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-
-  var firebaseReady = false;
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    firebaseReady = true;
-  } catch (e, st) {
-    debugPrint('Firebase init gagal: $e\n$st');
-  }
-
-  if (firebaseReady) {
-    await AuthProvider.migrateClearLocalSellerDataForFirestore(prefs);
-  }
-
-  await initializeAppNotifications(firebaseReady: firebaseReady);
-
-  if (kDebugMode) {
-    if (!GoogleSignInConfig.isConfigured) {
-      debugPrint('Google Sign-In: ${GoogleSignInConfig.setupHint}');
-    }
-    final cloud = await CloudApiService.checkHealth();
-    debugPrint(
-      cloud.ok
-          ? 'shopping-cloud OK (${cloud.firebaseProject}, topic ${cloud.topic})'
-          : 'shopping-cloud gagal: ${cloud.statusCode} ${cloud.message}',
-    );
-  }
+  GreenComputing.applyStartupTuning(
+    ecoMode: GreenComputing.readEcoFromPrefs(prefs),
+  );
+  await runAppMigrations(prefs);
 
   runApp(
     MultiProvider(
@@ -119,6 +102,9 @@ Future<void> main() async {
           create: (_) => InboxMessagesProvider(prefs),
         ),
         ChangeNotifierProvider(
+          create: (_) => ChatProvider(firebaseReady: false),
+        ),
+        ChangeNotifierProvider(
           create: (_) => CartProvider(prefs),
         ),
         ChangeNotifierProvider(
@@ -126,6 +112,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => WishlistProvider(prefs),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReviewsProvider(prefs),
         ),
         ChangeNotifierProvider(
           create: (_) => UserProfileProvider(prefs),
@@ -147,46 +136,60 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => CatalogProvider(
-            firebaseReady: firebaseReady,
+            firebaseReady: false,
             prefs: prefs,
           ),
         ),
       ],
-      child: const _FirebaseAuthBinder(
-        child: StartupPermissionsWrapper(
-          child: MyApp(),
+      child: FirebaseStartupHost(
+        prefs: prefs,
+        child: const _DeferredStartup(
+          child: StartupPermissionsWrapper(
+            child: MyApp(),
+          ),
         ),
       ),
     ),
   );
 }
 
-/// Menghubungkan [SellerApplicationsProvider] dengan [AuthProvider] untuk sinkron status seller.
-class _FirebaseAuthBinder extends StatefulWidget {
-  const _FirebaseAuthBinder({required this.child});
+/// Notifikasi FCM diinisialisasi setelah frame pertama agar buka app terasa ringan.
+class _DeferredStartup extends StatefulWidget {
+  const _DeferredStartup({required this.child});
 
   final Widget child;
 
   @override
-  State<_FirebaseAuthBinder> createState() => _FirebaseAuthBinderState();
+  State<_DeferredStartup> createState() => _DeferredStartupState();
 }
 
-class _FirebaseAuthBinderState extends State<_FirebaseAuthBinder> {
+class _DeferredStartupState extends State<_DeferredStartup> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final auth = context.read<AuthProvider>();
-      try {
-        auth.bindFirebase(FirebaseAuth.instance);
-      } catch (e) {
-        debugPrint('bindFirebase: $e');
-      }
-      final apps = context.read<SellerApplicationsProvider>();
-      apps.bindAuth(auth);
-      apps.bindProfile(context.read<UserProfileProvider>());
+      _initHeavyServices();
     });
+  }
+
+  Future<void> _initHeavyServices() async {
+    final firebaseReady = Firebase.apps.isNotEmpty;
+    await initializeAppNotifications(firebaseReady: firebaseReady);
+
+    if (kDebugMode) {
+      if (!GoogleSignInConfig.isConfigured) {
+        debugPrint('Google Sign-In: ${GoogleSignInConfig.setupHint}');
+      }
+      unawaited(
+        CloudApiService.checkHealth().then((cloud) {
+          debugPrint(
+            cloud.ok
+                ? 'shopping-cloud OK (${cloud.firebaseProject}, topic ${cloud.topic})'
+                : 'shopping-cloud gagal: ${cloud.statusCode} ${cloud.message}',
+          );
+        }),
+      );
+    }
   }
 
   @override
@@ -205,8 +208,22 @@ class MyApp extends StatelessWidget {
       builder: (context, themePrefs, localeProvider, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            final mq = MediaQuery.of(context);
+            return MediaQuery(
+              data: mq.copyWith(
+                textScaler: mq.textScaler.clamp(
+                  minScaleFactor: 0.9,
+                  maxScaleFactor: 1.12,
+                ),
+              ),
+              child: AppWidthLimiter(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+          },
           onGenerateTitle: (ctx) =>
-              AppLocalizations.of(ctx)?.appBrandName ?? AppBranding.appName,
+              AppLocalizations.of(ctx).appBrandName,
           locale: localeProvider.locale,
           localeResolutionCallback: (deviceLocale, supported) {
             if (deviceLocale != null) {
@@ -245,6 +262,12 @@ class MyApp extends StatelessWidget {
 
         '/register': (context) =>
             const RegisterScreen(),
+
+        '/forgot-password': (context) =>
+            const ForgotPasswordScreen(),
+
+        '/change-password': (context) =>
+            const ChangePasswordScreen(),
 
         /// SEARCH
         '/search': (context) =>
@@ -422,7 +445,7 @@ class MyApp extends StatelessWidget {
 
         '/chats':
             (context) =>
-                const ChatListScreen(),
+                const NotificationsScreen(),
 
         /// USER
         '/profile': (context) =>
@@ -438,9 +461,6 @@ class MyApp extends StatelessWidget {
 
         '/favorites': (context) =>
             const FavoritesScreen(),
-
-        '/map': (context) =>
-            const MapScreen(),
 
         '/orders': (context) =>
             const OrdersScreen(),
@@ -458,9 +478,11 @@ class MyApp extends StatelessWidget {
           return ReviewsScreen(orderId: oid);
         },
 
-        '/notifications':
-            (context) =>
-                const NotificationsScreen(),
+        '/notifications': (context) {
+          final raw = ModalRoute.of(context)?.settings.arguments;
+          final mode = raw is ChatInboxMode ? raw : ChatInboxMode.buyer;
+          return NotificationsScreen(mode: mode);
+        },
 
         NotificationChatScreen.route:
             (context) {
@@ -486,9 +508,13 @@ class MyApp extends StatelessWidget {
             (context) =>
                 const AddProductScreen(),
 
-        '/edit-product':
-            (context) =>
-                const EditProductScreen(),
+        '/edit-product': (context) {
+          final raw = ModalRoute.of(context)?.settings.arguments;
+          final id = raw is String ? raw : null;
+          return EditProductScreen(productId: id);
+        },
+
+        EditStoreScreen.route: (context) => const EditStoreScreen(),
 
         /// ADMIN
         SellerApplicationStatusScreen.route: (context) =>

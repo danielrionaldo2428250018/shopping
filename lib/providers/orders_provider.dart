@@ -150,6 +150,19 @@ class OrdersProvider extends ChangeNotifier {
     return (orderId: id, total: total, pointsEarned: eco);
   }
 
+  /// Pembeli konfirmasi barang sudah diterima → status Selesai.
+  bool completeOrder(String orderId) {
+    final i = _orders.indexWhere((o) => o.id == orderId);
+    if (i < 0) return false;
+    final o = _orders[i];
+    if (o.status != 'Processing') return false;
+    o.status = 'Completed';
+    o.completedAt = DateTime.now();
+    _persist();
+    notifyListeners();
+    return true;
+  }
+
   /// Batalkan pesanan yang masih diproses.
   void cancelOrder(String orderId) {
     final i = _orders.indexWhere((o) => o.id == orderId);
@@ -162,6 +175,13 @@ class OrdersProvider extends ChangeNotifier {
   }
 
   /// Untuk demo: beri nomor resi jika belum ada (lacak paket).
+  void clearAll() {
+    _orders.clear();
+    _nextId = 1;
+    _persist();
+    notifyListeners();
+  }
+
   void ensureTracking(String orderId) {
     final i = _orders.indexWhere((o) => o.id == orderId);
     if (i < 0) return;

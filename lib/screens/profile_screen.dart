@@ -7,9 +7,11 @@ import '../constants/app_branding.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../providers/loyalty_points_provider.dart';
+import '../models/chat_inbox_mode.dart';
 import '../providers/inbox_messages_provider.dart';
-import '../providers/orders_provider.dart';
+import '../providers/chat_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../styles/app_colors_extension.dart';
 import '../utils/app_screen_style.dart';
 import '../utils/loyalty_points.dart';
 import '../utils/l10n_helpers.dart';
@@ -27,6 +29,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final colors = appColors(context);
     return Scaffold(
       backgroundColor: appScaffoldBackground(context),
       body: SingleChildScrollView(
@@ -38,16 +41,12 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 100),
-                  decoration: const BoxDecoration(
+                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 28),
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF8E44AD),
-                        Color(0xFFD7B8F3),
-                        Colors.white,
-                      ],
+                      colors: colors.profileHeaderGradient,
                     ),
                   ),
                   child: Column(
@@ -61,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
                           final avatarPath = path;
                           return CircleAvatar(
                             radius: 48,
-                            backgroundColor: Colors.white,
+                            backgroundColor: appCardColor(context),
                             backgroundImage:
                                 hasAvatar && avatarPath != null
                                 ? FileImage(File(avatarPath))
@@ -81,8 +80,8 @@ class ProfileScreen extends StatelessWidget {
                         builder: (context, profile, _) {
                           return Text(
                             profile.displayNameOrDefault,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: colors.onHeader,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
@@ -95,8 +94,7 @@ class ProfileScreen extends StatelessWidget {
                           return Text(
                             profile.handleOrDefault,
                             style: TextStyle(
-                              color:
-                                  Colors.white.withValues(alpha: 0.9),
+                              color: colors.onHeader.withValues(alpha: 0.9),
                               fontSize: 14,
                             ),
                           );
@@ -116,17 +114,16 @@ class ProfileScreen extends StatelessWidget {
                                 avatar: Icon(
                                   Icons.eco_rounded,
                                   size: 18,
-                                  color: Colors.green.shade200,
+                                  color: Colors.green.shade300,
                                 ),
                                 label: Text(
                                   loc.levelLine(level.index, level.name),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: colors.headerPillText,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                backgroundColor:
-                                    Colors.white.withValues(alpha: 0.18),
+                                backgroundColor: colors.headerPillBg,
                                 side: BorderSide.none,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
@@ -134,18 +131,17 @@ class ProfileScreen extends StatelessWidget {
                               );
                             },
                           ),
-                          OutlinedButton(
+                          FilledButton(
                             onPressed: () {
                               Navigator.pushNamed(
                                 context,
                                 '/edit-profile',
                               );
                             },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colors.headerPillBg,
+                              foregroundColor: colors.headerPillText,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(22),
                               ),
@@ -161,62 +157,11 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  bottom: -56,
-                  child: Material(
-                    elevation: 6,
-                    borderRadius: BorderRadius.circular(18),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          Consumer<OrdersProvider>(
-                            builder: (context, orders, _) {
-                              final n = orders.orders
-                                  .where((o) => o.status != 'Cancelled')
-                                  .length;
-                              return _statCol(
-                                icon: Icons.shopping_bag_outlined,
-                                value: '$n',
-                                label: loc.orders,
-                              );
-                            },
-                          ),
-                          VerticalDivider(
-                            width: 1,
-                            thickness: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                          _statCol(
-                            icon: Icons.rate_review_outlined,
-                            value: '8',
-                            label: loc.reviews,
-                          ),
-                          VerticalDivider(
-                            width: 1,
-                            thickness: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                          _statCol(
-                            icon: Icons.favorite_border_rounded,
-                            value: '24',
-                            label: loc.wishlist,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
-            const SizedBox(height: 76),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: appPageInsets(context),
               child: Consumer<LoyaltyPointsProvider>(
                 builder: (context, loyalty, _) {
                   final level =
@@ -327,7 +272,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: appPageInsets(context),
               child: Container(
                 decoration: BoxDecoration(
                   color: appCardColor(context),
@@ -354,35 +299,28 @@ class ProfileScreen extends StatelessWidget {
                         LoyaltyRewardsScreen.route,
                       ),
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
-                    Consumer<InboxMessagesProvider>(
-                      builder: (context, inbox, _) {
-                        final unread = inbox.unreadCount;
+                    Divider(height: 1, color: appBorderColor(context)),
+                    Consumer2<InboxMessagesProvider, ChatProvider>(
+                      builder: (context, inbox, chat, _) {
+                        final unread =
+                            inbox.unreadCount +
+                            chat.unreadForMode(ChatInboxMode.buyer);
                         return _menuRow(
                           context,
                           iconBg: Colors.purple.shade50,
                           iconColor: _purple,
-                          icon: Icons.notifications_none_rounded,
-                          title: loc.pushNotifications,
+                          icon: Icons.chat_bubble_outline_rounded,
+                          title: loc.messages,
                           badge: unread > 0 ? '$unread' : null,
                           onTap: () => Navigator.pushNamed(
                             context,
                             '/notifications',
+                            arguments: ChatInboxMode.buyer,
                           ),
                         );
                       },
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
-                    _menuRow(
-                      context,
-                      iconBg: Colors.purple.shade50,
-                      iconColor: _purple,
-                      icon: Icons.chat_bubble_outline_rounded,
-                      title: loc.messages,
-                      onTap: () =>
-                          Navigator.pushNamed(context, '/chats'),
-                    ),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: appBorderColor(context)),
                     _menuRow(
                       context,
                       iconBg: Colors.purple.shade50,
@@ -392,7 +330,7 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, '/cart'),
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: appBorderColor(context)),
                     _menuRow(
                       context,
                       iconBg: Colors.purple.shade50,
@@ -402,42 +340,37 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, '/orders'),
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: appBorderColor(context)),
                     Consumer3<AuthProvider, SellerApplicationsProvider,
                         UserProfileProvider>(
                       builder: (context, auth, apps, profile, _) {
                         if (!auth.isLoggedIn) {
                           return const SizedBox.shrink();
                         }
-                        final isAdmin =
-                            auth.isAdminWithProfileEmail(profile.email);
-                        if (isAdmin) {
+                        if (auth.isAdmin) {
                           return Column(
                             children: [
-                              Container(
-                                color: Colors.orange.shade50,
-                                child: _menuRow(
+                              _menuRow(
+                                context,
+                                iconBg: Colors.purple.shade50,
+                                iconColor: _purple,
+                                icon: Icons.fact_check_outlined,
+                                title: loc.manageSellerRequests,
+                                onTap: () => Navigator.pushNamed(
                                   context,
-                                  iconBg: Colors.orange.shade100,
-                                  iconColor: Colors.orange.shade800,
-                                  icon: Icons.admin_panel_settings_outlined,
-                                  title: loc.adminSellerApps,
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    '/admin-seller-applications',
-                                  ),
+                                  '/admin-seller-applications',
                                 ),
                               ),
                               Divider(
                                 height: 1,
-                                color: Colors.grey.shade200,
+                                color: appBorderColor(context),
                               ),
                               _menuRow(
                                 context,
-                                iconBg: Colors.orange.shade50,
-                                iconColor: Colors.orange.shade800,
-                                icon: Icons.card_membership_outlined,
-                                title: loc.adminRewards,
+                                iconBg: Colors.purple.shade50,
+                                iconColor: _purple,
+                                icon: Icons.card_giftcard_outlined,
+                                title: loc.manageRewards,
                                 onTap: () => Navigator.pushNamed(
                                   context,
                                   AdminRewardsScreen.route,
@@ -445,7 +378,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               Divider(
                                 height: 1,
-                                color: Colors.grey.shade200,
+                                color: appBorderColor(context),
                               ),
                             ],
                           );
@@ -499,7 +432,7 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: appBorderColor(context)),
                     InkWell(
                       onTap: () {
                         Provider.of<AuthProvider>(
@@ -556,35 +489,6 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 110),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _statCol({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: _purple),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-          Text(
-            label,
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-          ),
-        ],
       ),
     );
   }

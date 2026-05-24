@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../data/catalog_data.dart';
 import '../models/shop_order.dart';
 import '../providers/orders_provider.dart';
+import '../utils/app_screen_style.dart';
+import '../widgets/app_network_image.dart';
+import '../styles/app_colors_extension.dart';
 import '../utils/l10n_helpers.dart';
 import 'order_invoice_screen.dart';
 
@@ -62,27 +65,55 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return all.where((o) => o.status == 'Completed').toList();
   }
 
+  Future<void> _confirmOrderReceived(
+    BuildContext context,
+    String orderId,
+  ) async {
+    final loc = context.l10n;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.orderConfirmReceivedQ),
+        content: Text(loc.orderConfirmReceivedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(loc.no),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(loc.orderConfirmReceivedBtn),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final done =
+        context.read<OrdersProvider>().completeOrder(orderId);
+    if (!context.mounted) return;
+    if (done) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.orderCompletedSnack)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
     final orders = context.watch<OrdersProvider>().orders;
     final list = _filtered(orders);
-    final pending =
-        orders.where((o) => o.status == 'Processing').length;
-    final done =
-        orders.where((o) => o.status == 'Completed').length;
+    final colors = appColors(context);
 
     return Scaffold(
-            body: Column(
+      backgroundColor: appScaffoldBackground(context),
+      body: Column(
         children: [
           Container(
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF7435F8),
-                  Color(0xFFA97DFF),
-                ],
+                colors: colors.profileHeaderGradient,
               ),
             ),
             padding: EdgeInsets.fromLTRB(
@@ -96,12 +127,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
               children: [
                 IconButton(
                   style: IconButton.styleFrom(
-                    backgroundColor:
-                        Colors.white.withValues(alpha: 0.2),
+                    backgroundColor: colors.headerIconButtonBg,
                   ),
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  color: Colors.white,
+                  color: colors.onHeader,
                   iconSize: 18,
                 ),
                 const SizedBox(width: 6),
@@ -111,8 +141,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     children: [
                       Text(
                         loc.myOrders,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: colors.onHeader,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -120,8 +150,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       const SizedBox(height: 4),
                       Text(
                         loc.orders,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: colors.onHeader.withValues(alpha: 0.85),
                           fontSize: 13,
                         ),
                       ),
@@ -132,23 +162,48 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+            padding: appPageInsets(context, top: 14, bottom: 6),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _pill(loc.ordersTabAll(orders.length), 0),
+                  _pill(loc.ordersTabAll, 0),
                   const SizedBox(width: 10),
-                  _pill(loc.ordersTabPending(pending), 1),
+                  _pill(loc.ordersTabPending, 1),
                   const SizedBox(width: 10),
-                  _pill(loc.ordersTabCompleted(done), 2),
+                  _pill(loc.ordersTabCompleted, 2),
                 ],
               ),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+            child: list.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.shopping_bag_outlined,
+                            size: 72,
+                            color: appMutedTextColor(context),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            loc.noOrders,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: appPrimaryText(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+              padding: appPageInsets(context, top: 8, bottom: 28),
               itemCount: list.length,
               itemBuilder: (context, i) {
                 final itemLoc = context.l10n;
@@ -185,13 +240,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appCardColor(context),
                     borderRadius:
                         BorderRadius.circular(16),
+                    border: Border.all(color: appBorderColor(context)),
                     boxShadow: [
                       BoxShadow(
                         color:
-                            Colors.black.withValues(alpha: 0.04),
+                            Colors.black.withValues(alpha: appIsDark(context) ? 0.2 : 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -265,17 +321,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ClipRRect(
                             borderRadius:
                                 BorderRadius.circular(12),
-                            child: Image.network(
-                              line.imageUrl,
+                            child: AppNetworkImage(
+                              url: line.imageUrl,
                               width: 72,
                               height: 72,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  Container(
-                                width: 72,
-                                height: 72,
-                                color: Colors.grey.shade200,
-                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -343,7 +393,45 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                         ),
                       ],
+                      if (o.status == 'Completed' &&
+                          o.completedAt != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          itemLoc.orderCompletedAt(
+                            _fmtDate(o.completedAt!),
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 14),
+                      if (o.status == 'Processing') ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () =>
+                                _confirmOrderReceived(context, o.id),
+                            icon: const Icon(
+                              Icons.check_circle_outline_rounded,
+                            ),
+                            label: Text(itemLoc.orderConfirmReceivedBtn),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.green.shade600,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       Row(
                         children: [
                           if (o.status ==
@@ -540,16 +628,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
           vertical: 9,
         ),
         decoration: BoxDecoration(
-          color: selected ? _purple : Colors.white,
+          color: selected
+              ? Theme.of(context).colorScheme.primary
+              : appCardColor(context),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: selected ? _purple : Colors.grey.shade300,
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : appBorderColor(context),
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : Colors.black87,
+            color: selected
+                ? Theme.of(context).colorScheme.onPrimary
+                : appPrimaryText(context),
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),

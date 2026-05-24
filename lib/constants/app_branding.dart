@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Identitas aplikasi: marketplace barang bekas / preloved.
+/// Identitas aplikasi: marketplace barang bekas (SECO).
 abstract final class AppBranding {
-  static const String appName = 'PreLoved';
+  static const String appName = 'SECO';
 
   /// Tagline singkat (hero home, splash mental model).
   static const String tagline = 'Barang second, cerita baru';
@@ -18,7 +18,8 @@ abstract final class AppBranding {
   static const Color accentDeep = Color(0xFF8B5A2B);
 
   static const Color scaffoldLight = Color(0xFFF7F3EE);
-  static const Color scaffoldDark = Color(0xFF1C1917);
+  /// Abu-abu gelap (bukan hitam pekat).
+  static const Color scaffoldDark = Color(0xFF2E2E32);
 
   /// Header beranda — gradasi hangat “thrift / vintage”.
   static const List<Color> heroGradient = [
@@ -40,5 +41,5 @@ abstract final class AppBranding {
     Color(0xFFD4A574),
   ];
 
-  static const String defaultDisplayName = 'Pengguna PreLoved';
+  static const String defaultDisplayName = 'Pengguna SECO';
 }

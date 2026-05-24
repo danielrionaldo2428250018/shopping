@@ -172,6 +172,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inboxEmptyHint => 'ستظهر رسائل الطلبات والعروض هنا.';
 
   @override
+  String get chatListEmptyHint =>
+      'Belum ada obrolan. Buka produk, lalu ketuk Chat dengan penjual untuk memulai.';
+
+  @override
+  String get chatStartHint =>
+      'Ketik pesan di bawah untuk memulai obrolan dengan penjual.';
+
+  @override
+  String get signInToChat => 'Masuk dulu untuk mengirim pesan.';
+
+  @override
+  String get notificationsSection => 'الإشعارات';
+
+  @override
+  String get chatHistoryLocalOnly =>
+      'Riwayat obrolan disimpan di cloud; hapus lokal tidak menghapus pesan di server.';
+
+  @override
+  String get chatImageComingSoon =>
+      'Kirim foto di chat akan hadir di versi berikutnya.';
+
+  @override
   String get requestNotificationAgain => 'طلب الإذن مرة أخرى';
 
   @override
@@ -242,6 +264,73 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get forgotPasswordTitle => 'Lupa kata sandi';
+
+  @override
+  String get forgotPasswordBody =>
+      'Masukkan email akun Anda. Kami akan mengirim link reset kata sandi dari Firebase ke kotak masuk email.';
+
+  @override
+  String get sendResetEmail => 'Kirim link reset';
+
+  @override
+  String get backToLogin => 'Kembali ke login';
+
+  @override
+  String get currentPassword => 'Kata sandi saat ini';
+
+  @override
+  String get newPassword => 'Kata sandi baru';
+
+  @override
+  String get confirmNewPassword => 'Konfirmasi kata sandi baru';
+
+  @override
+  String get newPasswordMismatch => 'Konfirmasi kata sandi baru tidak cocok.';
+
+  @override
+  String get changePasswordSuccess => 'Kata sandi berhasil diubah.';
+
+  @override
+  String get changePasswordGoogleOnly =>
+      'Akun Google tidak bisa ubah sandi di sini. Gunakan Lupa kata sandi atau kelola akun Google.';
+
+  @override
+  String get changePasswordFormHint =>
+      'Masukkan sandi saat ini lalu sandi baru (minimal 6 karakter).';
+
+  @override
+  String get signInToChangePassword => 'Masuk dulu untuk mengubah kata sandi.';
+
+  @override
+  String get authRequiresRecentLogin =>
+      'Demi keamanan, keluar lalu masuk lagi sebelum mengubah kata sandi.';
+
+  @override
+  String get chatOpenFailed =>
+      'Gagal membuka obrolan. Periksa login dan aturan Realtime Database.';
+
+  @override
+  String get sellerChatSyncHint =>
+      'Sebagai penjual: minta pembeli kirim pesan dari produk toko Anda, lalu ketuk Muat obrolan. Deploy aturan RTDB: firebase deploy --only database';
+
+  @override
+  String get buyerMessages => 'Obrolan pembelian';
+
+  @override
+  String get sellerStoreMessages => 'Pesan dari pembeli';
+
+  @override
+  String get buyerChatEmptyHint =>
+      'Belum ada obrolan pembelian. Buka produk lalu ketuk Chat dengan penjual.';
+
+  @override
+  String get reloadChats => 'Muat obrolan';
+
+  @override
+  String get chatSyncing => 'Memuat obrolan…';
 
   @override
   String get signIn => 'تسجيل الدخول';
@@ -423,6 +512,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get outOfStock => 'نفد';
 
   @override
+  String get checkoutStockFailed =>
+      'Stok tidak mencukupi. Perbarui jumlah atau coba lagi nanti.';
+
+  @override
   String soldCount(String label) {
     return 'مباع: $label';
   }
@@ -474,6 +567,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get emptyFavorites => 'لا مفضلات';
+
+  @override
+  String get emptyReviews => 'لا توجد مراجعات';
+
+  @override
+  String get emptyReviewsHint => 'ستظهر مراجعاتك هنا بعد إرسالها من طلب مكتمل.';
+
+  @override
+  String get uploadProductImageFailed => 'فشل رفع الصورة إلى السحابة.';
+
+  @override
+  String get uploadProductImageAuthRequired =>
+      'سجّل الدخول قبل رفع صور المنتج.';
+
+  @override
+  String get uploadProductImageStorageRules =>
+      'رفض Firebase Storage. انشر storage.rules.';
+
+  @override
+  String get storeSaveFailed =>
+      'Gagal menyimpan profil toko. Deploy aturan Firestore (firestore.rules) dan pastikan login dengan email pemilik toko.';
+
+  @override
+  String storeSaveFailedDetail(String detail) {
+    return 'Gagal menyimpan toko: $detail';
+  }
+
+  @override
+  String get uploadProductImageFileMissing => 'ملف الصورة غير موجود.';
+
+  @override
+  String get uploadProductImageNetwork => 'خطأ في الشبكة أثناء الرفع.';
+
+  @override
+  String get uploadProductImageTooLarge =>
+      'Foto terlalu besar. Pilih gambar yang lebih kecil atau potong ulang.';
+
+  @override
+  String get photoSavedWithoutStorage =>
+      'Foto disimpan lewat database (plan Spark, tanpa Firebase Storage).';
 
   @override
   String get searchResults => 'نتائج البحث';
@@ -736,6 +869,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get viewSellerStore => 'عرض متجر البائع';
 
   @override
+  String get storeLocationTitle => 'موقع المتجر';
+
+  @override
+  String get storeMapZoomHint => 'قرّب أو اضغط لتحميل الخريطة';
+
+  @override
   String get searchInChat => 'بحث في الدردشة';
 
   @override
@@ -812,9 +951,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentMethodsDesc => 'البطاقات والمحافظ الرقمية';
 
   @override
-  String get notificationsSection => 'الإشعارات';
-
-  @override
   String get emailNotifications => 'إشعارات البريد';
 
   @override
@@ -872,6 +1008,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get storeLogo => 'شعار المتجر';
+
+  @override
+  String get storeLogoInitialsHint =>
+      'Logo otomatis dari inisial nama toko (huruf pertama setiap kata, maks. 3). Tidak perlu unggah foto.';
 
   @override
   String get uploadLogo => 'رفع الشعار';
@@ -1291,10 +1431,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeHeroSubtitle => 'اعثر على مستعملات جيدة بالقرب منك';
 
   @override
-  String get appBrandName => 'PreLoved';
+  String get appBrandName => 'SECO';
 
   @override
-  String get defaultDisplayName => 'مستخدم PreLoved';
+  String get defaultDisplayName => 'مستخدم SECO';
 
   @override
   String sortOrderLabel(String sort) {
@@ -1472,7 +1612,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nativeLangChinese => '中文';
 
   @override
-  String get homePrelovedDeal => 'PRELOVED DEAL';
+  String get homePrelovedDeal => 'SECO DEAL';
 
   @override
   String get homeWeekThriftBest => 'أفضل أسعار التوفيق هذا الأسبوع';
@@ -1532,6 +1672,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderCancelBtn => 'إلغاء';
 
   @override
+  String get orderConfirmReceivedQ => 'Konfirmasi pesanan diterima?';
+
+  @override
+  String get orderConfirmReceivedBody =>
+      'Pastikan barang sudah Anda terima dalam kondisi baik. Status pesanan akan menjadi Selesai.';
+
+  @override
+  String get orderConfirmReceivedBtn => 'Sudah sampai';
+
+  @override
+  String get orderCompletedSnack => 'Pesanan ditandai selesai';
+
+  @override
+  String orderCompletedAt(String date) {
+    return 'Diterima: $date';
+  }
+
+  @override
   String get paymentSavedEarth => 'لقد ساعدت في إنقاذ الكوكب';
 
   @override
@@ -1564,19 +1722,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shimmerFetchingSubtitle => 'جاري جلب البيانات… انتظر.';
 
   @override
-  String ordersTabAll(int count) {
-    return 'الكل ($count)';
-  }
+  String get ordersTabAll => 'الكل';
 
   @override
-  String ordersTabPending(int count) {
-    return 'قيد الانتظار ($count)';
-  }
+  String get ordersTabPending => 'قيد الانتظار';
 
   @override
-  String ordersTabCompleted(int count) {
-    return 'مكتمل ($count)';
-  }
+  String get ordersTabCompleted => 'مكتمل';
 
   @override
   String orderTotalAmount(String amount) {
@@ -1690,7 +1842,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get viewSellerApplicationStatus => 'عرض حالة الطلب';
 
   @override
-  String get adminAccessDenied => 'حساب المسؤول المحدد فقط يمكنه الوصول.';
+  String get adminAccessDenied => 'ليس لديك صلاحية الوصول إلى هذا القسم.';
 
   @override
   String get adminEmailNotConfigured =>
@@ -1712,4 +1864,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String adminLoginHint(String email) {
     return 'لوحة الإدارة لـ $email فقط. سجّل الدخول بالبريد/كلمة المرور (ليس Google).';
   }
+
+  @override
+  String get ecoModeTitle => 'الوضع الخفيف';
+
+  @override
+  String get ecoModeSubtitle =>
+      'حوسبة خضراء: صور أصغر، عناصر أقل في الرئيسية، تشغيل أخف — للهواتف ذات الذاكرة المحدودة.';
+
+  @override
+  String get clearLocalData => 'مسح البيانات المحلية';
+
+  @override
+  String get clearLocalDataSubtitle =>
+      'إزالة الطلبات والمفضلة والمراجعات المحفوظة على هذا الجهاز. أعد تشغيل التطبيق بعد ذلك.';
+
+  @override
+  String get clearLocalDataDone =>
+      'تم مسح البيانات المحلية. أغلق التطبيق بالكامل ثم افتحه مرة أخرى.';
+
+  @override
+  String get editStore => 'تعديل المتجر';
+
+  @override
+  String get deleteStore => 'حذف المتجر';
+
+  @override
+  String get deleteStoreConfirm => 'سيتم حذف المتجر وجميع المنتجات. متابعة؟';
+
+  @override
+  String get storeUpdated => 'تم تحديث المتجر.';
+
+  @override
+  String get storeDeleted => 'تم حذف المتجر.';
+
+  @override
+  String get productUpdated => 'تم تحديث المنتج.';
+
+  @override
+  String get productDeleted => 'تم حذف المنتج.';
+
+  @override
+  String get deleteProductConfirm => 'سيُحذف هذا المنتج نهائياً.';
+
+  @override
+  String get manageSellerRequests => 'إدارة طلبات البائعين';
+
+  @override
+  String get manageRewards => 'إدارة المكافآت';
 }

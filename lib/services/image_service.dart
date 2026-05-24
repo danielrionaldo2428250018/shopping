@@ -4,14 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// Pilih & unggah gambar — izin galeri/kamera (Android 13+ & lama).
+/// Pilih gambar produk — utamakan photo picker (tanpa blok izin yang tidak perlu).
 class ImageService {
   ImageService._();
 
   static final ImagePicker picker = ImagePicker();
   static const int maxProductPhotos = 8;
 
-  /// `true` jika boleh membuka galeri; `false` = ditolak permanen.
   static Future<bool> ensureGalleryAccess() async {
     if (kIsWeb) return true;
     if (!Platform.isAndroid && !Platform.isIOS) return true;
@@ -27,9 +26,7 @@ class ImageService {
       if (!storage.isGranted) {
         storage = await Permission.storage.request();
       }
-      if (storage.isGranted) return true;
-
-      return false;
+      return storage.isGranted;
     }
 
     var ios = await Permission.photos.status;
@@ -61,31 +58,46 @@ class ImageService {
   }
 
   static Future<List<File>> pickMultipleFromGallery({int max = 8}) async {
-    final picked = await picker.pickMultiImage(
-      imageQuality: 72,
-      maxWidth: 1920,
-    );
-    if (picked.isEmpty) return [];
-    return picked.take(max).map((e) => File(e.path)).toList();
+    try {
+      final picked = await picker.pickMultiImage(
+        imageQuality: 65,
+        maxWidth: 1280,
+      );
+      if (picked.isEmpty) return [];
+      return picked.take(max).map((e) => File(e.path)).toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('pickMultiImage: $e');
+      return [];
+    }
   }
 
   static Future<File?> pickFromGallery() async {
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 72,
-      maxWidth: 1920,
-    );
-    if (picked == null) return null;
-    return File(picked.path);
+    try {
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 65,
+        maxWidth: 1280,
+      );
+      if (picked == null) return null;
+      return File(picked.path);
+    } catch (e) {
+      if (kDebugMode) debugPrint('pickImage gallery: $e');
+      return null;
+    }
   }
 
   static Future<File?> pickFromCamera() async {
-    final picked = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 72,
-      maxWidth: 1920,
-    );
-    if (picked == null) return null;
-    return File(picked.path);
+    try {
+      final picked = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 65,
+        maxWidth: 1280,
+      );
+      if (picked == null) return null;
+      return File(picked.path);
+    } catch (e) {
+      if (kDebugMode) debugPrint('pickImage camera: $e');
+      return null;
+    }
   }
 }

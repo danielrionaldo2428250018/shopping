@@ -2,18 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shimmer/shimmer.dart';
-
 import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/seller_applications_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../utils/app_screen_style.dart';
+import '../utils/green_computing.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/app_network_image.dart';
+import '../widgets/store_logo_avatar.dart';
+import '../providers/settings_prefs_provider.dart';
 import '../utils/l10n_helpers.dart';
 
 import 'buy_product_screen.dart';
 import 'chat_screen.dart';
 import 'seller_store_screen.dart';
+
+String _resolveChatSellerName(BuildContext context, String sellerName) {
+  final app = context
+      .read<SellerApplicationsProvider>()
+      .approvedStoreBySellerName(sellerName);
+  final canonical = app?.storeName.trim();
+  return (canonical != null && canonical.isNotEmpty) ? canonical : sellerName;
+}
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({
@@ -32,25 +45,12 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   static const Color _purple = Color(0xFF7B39FD);
 
-  late final PageController _pageController;
-  int _page = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
+    final auth = context.read<AuthProvider>();
     final guest = !auth.isLoggedIn;
+    final ecoMode =
+        context.select((SettingsPrefsProvider s) => s.ecoMode);
     final loc = context.l10n;
     final product = catalogProductOrNull(widget.productId);
     if (product == null) {
@@ -89,7 +89,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return Scaffold(
-            appBar: guest
+      backgroundColor: appScaffoldBackground(context),
+      appBar: guest
           ? null
           : AppBar(
               elevation: 0,
@@ -153,11 +154,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             )
           : _LoggedInBottomBar(
               onChat: () {
+                final seller = _resolveChatSellerName(
+                  context,
+                  product.sellerName,
+                );
                 Navigator.pushNamed(
                   context,
                   '/chat',
                   arguments: ChatRouteArgs(
-                    sellerName: product.sellerName,
+                    sellerName: seller,
                     sellerInitials: product.sellerInitials,
                     productId: product.id,
                     productTitle: product.title,
@@ -241,41 +246,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     clipBehavior: Clip.none,
                     children: [
                       ColoredBox(
-                        color: const Color(0xFFFFD93D),
+                        color: Colors.white,
                         child: SizedBox(
-                          height: 320,
+                          height: context.r.productHeroHeight,
                           width: double.infinity,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: 3,
-                            onPageChanged: (i) =>
-                                setState(() => _page = i),
-                            itemBuilder: (context, i) {
-                              return Image.network(
-                                product.imageUrl,
-                                fit: BoxFit.contain,
-                                loadingBuilder: (context, child, progress) {
-                                  if (progress == null) {
-                                    return AnimatedOpacity(
-                                      opacity: 1,
-                                      duration:
-                                          const Duration(milliseconds: 280),
-                                      curve: Curves.easeOut,
-                                      child: child,
-                                    );
-                                  }
-                                  return Shimmer.fromColors(
-                                    baseColor: Colors.grey.shade300,
-                                    highlightColor: Colors.grey.shade100,
-                                    child: Container(
-                                      height: 280,
-                                      width: double.infinity,
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
+                          child: _ProductHeroImage(
+                            imageUrl: product.imageUrl,
+                            ecoMode: ecoMode,
+                            height: context.r.productHeroHeight,
                           ),
                         ),
                       ),
@@ -366,36 +344,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ),
-                      Positioned(
-                        bottom: 12,
-                        left: 0,
-                        right: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            3,
-                            (i) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 3,
-                              ),
-                              height: 6,
-                              width: _page == i ? 22 : 6,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.circular(20),
-                                color: _page == i
-                                    ? Colors.white
-                                    : Colors.white70,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(18),
+                    padding: appPageInsets(context, top: 18, bottom: 18),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -519,8 +471,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const SizedBox(height: 14),
                           _SellerInfoCard(product: product),
                         ],
-                        const SizedBox(height: 14),
-                        _ShippingCard(),
                         const SizedBox(height: 14),
                         _infoSection(
                           loc.description,
@@ -673,9 +623,9 @@ class _InfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appCardColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: appBorderColor(context)),
       ),
       child: child,
     );
@@ -687,23 +637,18 @@ class _SellerInfoCard extends StatelessWidget {
 
   final CatalogProduct product;
 
-  static const Color _purple = Color(0xFF7B39FD);
-
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
-    final initials = product.sellerInitials.length > 2
-        ? product.sellerInitials.substring(0, 2)
-        : product.sellerInitials;
     return Material(
-      color: Colors.white,
+      color: appCardColor(context),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: appBorderColor(context)),
         ),
         child: Row(
           children: [
@@ -719,17 +664,9 @@ class _SellerInfoCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircleAvatar(
+                  StoreLogoAvatar(
+                    storeName: product.sellerName,
                     radius: 28,
-                    backgroundColor: _purple,
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
                   ),
                   const SizedBox(width: 14),
                   ConstrainedBox(
@@ -789,15 +726,19 @@ class _SellerInfoCard extends StatelessWidget {
             const Spacer(),
             IconButton.filledTonal(
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF3EEFF),
-                foregroundColor: _purple,
+                backgroundColor: appAccentTint(context),
+                foregroundColor: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () {
+                final seller = _resolveChatSellerName(
+                  context,
+                  product.sellerName,
+                );
                 Navigator.pushNamed(
                   context,
                   '/chat',
                   arguments: ChatRouteArgs(
-                    sellerName: product.sellerName,
+                    sellerName: seller,
                     sellerInitials: product.sellerInitials,
                     productId: product.id,
                     productTitle: product.title,
@@ -816,55 +757,51 @@ class _SellerInfoCard extends StatelessWidget {
   }
 }
 
-class _ShippingCard extends StatelessWidget {
+class _ProductHeroImage extends StatelessWidget {
+  const _ProductHeroImage({
+    required this.imageUrl,
+    required this.ecoMode,
+    required this.height,
+  });
+
+  final String imageUrl;
+  final bool ecoMode;
+  final double height;
+
   @override
   Widget build(BuildContext context) {
-    final loc = context.l10n;
-    return Container(
+    final cacheW = GreenComputing.memCacheWidth(
+      context,
+      MediaQuery.sizeOf(context).width,
+    );
+    if (ecoMode || imageUrl.trim().startsWith('data:image')) {
+      return AppNetworkImage(
+        url: imageUrl,
+        fit: BoxFit.contain,
+        height: height,
+        width: double.infinity,
+        filterQuality: FilterQuality.low,
+        memCacheWidth: cacheW,
+      );
+    }
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.contain,
+      height: height,
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3EEFF),
-        borderRadius: BorderRadius.circular(16),
+      cacheWidth: cacheW,
+      filterQuality: FilterQuality.low,
+      gaplessPlayback: true,
+      errorBuilder: (_, __, ___) => const Center(
+        child: Icon(Icons.image_not_supported_outlined, size: 48),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.local_shipping_outlined,
-              color: Color(0xFF7B39FD),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  loc.freeShipping,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  loc.estimatedDelivery,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return ColoredBox(
+          color: Colors.grey.shade200,
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      },
     );
   }
 }
@@ -886,7 +823,7 @@ class _GuestBottomActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Material(
-      color: Colors.white,
+      color: appCardElevated(context),
       elevation: 12,
       child: SafeArea(
         top: false,
@@ -897,8 +834,8 @@ class _GuestBottomActions extends StatelessWidget {
               IconButton(
                 onPressed: onAddToCart,
                 style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF3EEFF),
-                  foregroundColor: _purple,
+                  backgroundColor: appAccentTint(context),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 icon: const Icon(Icons.add_shopping_cart_outlined),
               ),
@@ -975,7 +912,7 @@ class _LoggedInBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
     return Material(
-      color: Colors.white,
+      color: appCardElevated(context),
       elevation: 12,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 12, 10, 16),

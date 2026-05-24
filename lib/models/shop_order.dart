@@ -49,6 +49,7 @@ class ShopOrder {
     required this.status,
     this.trackingNumber,
     this.ecoPointsEarned = 0,
+    this.completedAt,
   });
 
   final String id;
@@ -62,6 +63,9 @@ class ShopOrder {
   /// Processing | Completed | Cancelled
   String status;
   String? trackingNumber;
+
+  /// Waktu pembeli konfirmasi barang sudah diterima.
+  DateTime? completedAt;
 
   /// Poin simbolis dampak lingkungan untuk pembelian ini.
   final int ecoPointsEarned;
@@ -86,6 +90,8 @@ class ShopOrder {
         'status': status,
         'trackingNumber': trackingNumber,
         'ecoPointsEarned': ecoPointsEarned,
+        if (completedAt != null)
+          'completedAt': completedAt!.toIso8601String(),
       };
 
   factory ShopOrder.fromJson(Map<String, dynamic> m) {
@@ -102,6 +108,9 @@ class ShopOrder {
       status: m['status'] as String,
       trackingNumber: m['trackingNumber'] as String?,
       ecoPointsEarned: (m['ecoPointsEarned'] as num?)?.toInt() ?? 0,
+      completedAt: m['completedAt'] != null
+          ? DateTime.tryParse(m['completedAt'] as String)
+          : null,
     );
   }
 }

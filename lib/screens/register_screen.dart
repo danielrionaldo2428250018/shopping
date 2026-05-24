@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../constants/app_branding.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../styles/app_colors_extension.dart';
+import '../utils/app_screen_style.dart';
+import '../utils/responsive_layout.dart';
 import '../utils/l10n_helpers.dart';
 import '../widgets/google_sign_in_button.dart';
 
@@ -90,7 +93,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  InputDecoration _deco({
+  InputDecoration _deco(
+    BuildContext context, {
     required String hint,
     required Widget prefix,
     Widget? suffix,
@@ -100,21 +104,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       hintText: hint,
       helperText: helper,
       helperStyle: TextStyle(
-        color: Colors.grey.shade500,
+        color: appMutedTextColor(context),
         fontSize: 11,
       ),
-      hintStyle: TextStyle(color: Colors.grey.shade400),
+      hintStyle: TextStyle(color: appMutedTextColor(context)),
       prefixIcon: prefix,
       suffixIcon: suffix,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 14,
         vertical: 14,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        borderSide: BorderSide(color: appBorderColor(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -127,7 +131,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final colors = appColors(context);
     return Scaffold(
+      backgroundColor: appScaffoldBackground(context),
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
@@ -137,9 +143,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 72),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: AppBranding.authGradient,
+                    colors: appAuthGradient(context),
                   ),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(28),
@@ -153,13 +159,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color:
-                              Colors.white.withValues(alpha: 0.2),
+                          color: colors.headerIconButtonBg,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white,
+                          color: colors.onHeader,
                           size: 18,
                         ),
                       ),
@@ -169,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: appCardColor(context),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Stack(
@@ -197,8 +202,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 18),
                     Text(
                       loc.createAccount,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colors.onHeader,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -207,7 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       loc.registerSubtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: colors.onHeader.withValues(alpha: 0.9),
                         fontSize: 15,
                       ),
                     ),
@@ -216,12 +221,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               Transform.translate(
                 offset: const Offset(0, -48),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ResponsiveContent(
+                  child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.r.horizontalPadding,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: appCardColor(context),
                       borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
@@ -247,6 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextField(
                           controller: nameCtrl,
                           decoration: _deco(
+                            context,
                             hint: 'John Doe',
                             prefix: Icon(
                               Icons.person_outline_rounded,
@@ -268,6 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                           decoration: _deco(
+                            context,
                             hint: 'your.email@example.com',
                             prefix: Icon(
                               Icons.mail_outline_rounded,
@@ -289,6 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: passCtrl,
                           obscureText: obscure1,
                           decoration: _deco(
+                            context,
                             hint: '••••••••',
                             helper: loc.passwordMinHint,
                             prefix: Icon(
@@ -322,6 +333,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: confirmCtrl,
                           obscureText: obscure2,
                           decoration: _deco(
+                            context,
                             hint: '••••••••',
                             prefix: Icon(
                               Icons.lock_outline_rounded,
@@ -451,9 +463,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
+                ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                padding: EdgeInsets.fromLTRB(
+                  context.r.horizontalPadding,
+                  8,
+                  context.r.horizontalPadding,
+                  28,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

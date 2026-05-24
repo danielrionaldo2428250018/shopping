@@ -21,7 +21,7 @@ class AdminRewardsScreen extends StatelessWidget {
 
     if (!isAppAdminConfigured || !auth.isAdmin) {
       return Scaffold(
-        appBar: AppBar(title: Text(loc.adminRewards)),
+        appBar: AppBar(title: Text(loc.manageRewards)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -38,7 +38,7 @@ class AdminRewardsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.adminRewards),
+        title: Text(loc.manageRewards),
         backgroundColor: AppBranding.seedColor,
         foregroundColor: Colors.white,
       ),

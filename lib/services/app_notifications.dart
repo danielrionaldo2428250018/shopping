@@ -47,7 +47,7 @@ Future<void> requestFcmNotificationPermission() async {
 Future<void> showBasicNotification(String? title, String? body) async {
   const android = AndroidNotificationDetails(
     'preloved_default',
-    'Notifikasi PreLoved',
+    'Notifikasi SECO',
     channelDescription: 'Pesan & update dari FCM',
     importance: Importance.high,
     priority: Priority.high,
@@ -65,7 +65,7 @@ Future<void> showBasicNotification(String? title, String? body) async {
 Future<void> showNotificationFromData(Map<String, dynamic> data) async {
   final title = data['title']?.toString() ?? 'Pesan baru';
   final body = data['body']?.toString() ?? '';
-  final sender = data['senderName']?.toString() ?? 'PreLoved';
+  final sender = data['senderName']?.toString() ?? 'SECO';
   final time = data['sentAt']?.toString() ?? '';
   final photoUrl = data['senderPhotoUrl']?.toString() ?? '';
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,14 +31,11 @@ class _StartupPermissionsWrapperState extends State<StartupPermissionsWrapper> {
   }
 
   Future<void> _requestCore() async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(_kDone) == true) return;
 
-    await Permission.photos.request();
-
+    // Non-blocking: jangan menunda UI pertama.
+    unawaited(Permission.photos.request());
     await prefs.setBool(_kDone, true);
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/chat_models.dart';
 import '../models/inbox_thread.dart';
 
 /// Pesan / notifikasi gaya percakapan (WhatsApp), disimpan lokal.
@@ -72,6 +73,63 @@ class InboxMessagesProvider extends ChangeNotifier {
     _threads[i] = t.copyWith(unreadCount: 0);
     _persist();
     notifyListeners();
+  }
+
+  static const _chatMirrorPrefix = 'rtdb-chat-';
+
+  /// Salin thread obrolan RTDB ke daftar Pesan (satu tempat di profil).
+  void syncFromChatThreads(
+    List<ChatThreadMeta> chats,
+    String? myUid,
+    String Function(ChatThreadMeta) titleFor,
+  ) {
+    final keepIds = chats.map((c) => '$_chatMirrorPrefix${c.id}').toSet();
+    _threads.removeWhere(
+      (t) => t.id.startsWith(_chatMirrorPrefix) && !keepIds.contains(t.id),
+    );
+
+    for (final c in chats) {
+      final inboxId = '$_chatMirrorPrefix${c.id}';
+      final title = titleFor(c);
+      final letter = title.isNotEmpty ? title[0].toUpperCase() : '?';
+      final unread = c.isUnreadForUid(myUid);
+      final preview = c.lastMessage.isNotEmpty ? c.lastMessage : '—';
+      final msg = InboxMessage(
+        id: 'mirror-${c.updatedAt.millisecondsSinceEpoch}',
+        text: preview,
+        sentAt: c.updatedAt,
+        isOutbound: c.lastSenderUid == myUid,
+      );
+
+      final i = _threads.indexWhere((t) => t.id == inboxId);
+      if (i >= 0) {
+        _threads[i] = InboxThread(
+          id: inboxId,
+          title: title,
+          avatarLetter: letter,
+          messages: [msg],
+          unreadCount: unread ? 1 : 0,
+        );
+      } else {
+        _threads.add(
+          InboxThread(
+            id: inboxId,
+            title: title,
+            avatarLetter: letter,
+            messages: [msg],
+            unreadCount: unread ? 1 : 0,
+          ),
+        );
+      }
+    }
+    _persist();
+    notifyListeners();
+  }
+
+  /// Buka obrolan RTDB dari baris di daftar Pesan.
+  String? chatThreadIdFromInboxId(String inboxId) {
+    if (!inboxId.startsWith(_chatMirrorPrefix)) return null;
+    return inboxId.substring(_chatMirrorPrefix.length);
   }
 
   /// Kosongkan semua percakapan notifikasi.

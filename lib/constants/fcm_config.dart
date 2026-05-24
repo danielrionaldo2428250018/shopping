@@ -1,10 +1,13 @@
 /// Konfigurasi FCM + REST API [shopping-cloud] (pola sama fasum-cloud / fasum).
 abstract final class FcmConfig {
-  /// Topic yang disubscribe di [app_notifications.dart].
+  /// Topic yang disubscribe di [app_notifications.dart] (broadcast umum).
   static const String topic = 'preloved-shopping';
+
+  /// Awalan topic per toko: `preloved-seller-{slug}` — penjual subscribe saat login.
+  static const String sellerTopicPrefix = 'preloved-seller-';
 
   /// URL deploy Vercel shopping-cloud (ganti setelah deploy).
   static const String cloudApiBaseUrl = 'https://shopping-cloud-vert.vercel.app';
 
-  static const String defaultSenderName = 'PreLoved';
+  static const String defaultSenderName = 'SECO';
 }

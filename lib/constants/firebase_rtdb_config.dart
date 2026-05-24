@@ -8,4 +8,13 @@ abstract final class FirebaseRtdbConfig {
 
   /// Node utama daftar barang di RTDB.
   static const String productsPath = 'products';
+
+  /// Obrolan pembeli ↔ penjual: `chats/{threadId}/meta` + `messages`.
+  static const String chatsPath = 'chats';
+
+  /// Pemetaan nama toko → UID penjual (set saat penjual login).
+  static const String sellerAccountsPath = 'sellerAccounts';
+
+  /// Indeks thread obrolan per UID penjual: `sellerThreads/{uid}/{threadId}`.
+  static const String sellerThreadsPath = 'sellerThreads';
 }

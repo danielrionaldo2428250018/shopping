@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
+import '../models/chat_inbox_mode.dart';
 import '../providers/inbox_messages_provider.dart';
-import '../providers/seller_applications_provider.dart';
+import '../providers/chat_provider.dart';
 import '../providers/user_profile_provider.dart';
-import '../widgets/store_logo_avatar.dart';
+import '../styles/app_colors_extension.dart';
 import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 import 'admin_rewards_screen.dart';
@@ -22,6 +23,7 @@ class SellerProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final colors = appColors(context);
     return Scaffold(
       backgroundColor: appScaffoldBackground(context),
       body: SingleChildScrollView(
@@ -33,40 +35,27 @@ class SellerProfileScreen extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 100),
-                  decoration: const BoxDecoration(
+                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 28),
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF8E44AD),
-                        Color(0xFFC9A3E8),
-                        Colors.white,
-                      ],
+                      colors: colors.profileHeaderGradient,
                     ),
                   ),
                   child: Column(
                     children: [
-                      Consumer2<SellerApplicationsProvider, UserProfileProvider>(
-                        builder: (context, apps, profile, _) {
-                          final store = apps.myApprovedStore;
-                          if (store != null) {
-                            return StoreLogoAvatar(
-                              storeName: store.storeName,
-                              logoUrl: store.logoUrl,
-                              logoPath: store.logoPath,
-                              radius: 48,
-                            );
-                          }
+                      Consumer<UserProfileProvider>(
+                        builder: (context, profile, _) {
                           final path = profile.avatarLocalPath;
                           final hasAvatar = path != null &&
                               path.isNotEmpty &&
                               File(path).existsSync();
                           return CircleAvatar(
                             radius: 48,
-                            backgroundColor: Colors.white,
+                            backgroundColor: appCardColor(context),
                             backgroundImage: hasAvatar
-                                ? FileImage(File(path!))
+                                ? FileImage(File(path))
                                 : null,
                             child: !hasAvatar
                                 ? const Icon(
@@ -79,18 +68,12 @@ class SellerProfileScreen extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 14),
-                      Consumer2<SellerApplicationsProvider, UserProfileProvider>(
-                        builder: (context, apps, profile, _) {
-                          final name = apps.myApprovedStore?.storeName
-                                  .trim()
-                                  .isNotEmpty ==
-                              true
-                              ? apps.myApprovedStore!.storeName.trim()
-                              : profile.displayNameOrDefault;
+                      Consumer<UserProfileProvider>(
+                        builder: (context, profile, _) {
                           return Text(
-                            name,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            profile.displayNameOrDefault,
+                            style: TextStyle(
+                              color: colors.onHeader,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
@@ -103,8 +86,7 @@ class SellerProfileScreen extends StatelessWidget {
                           return Text(
                             profile.handleOrDefault,
                             style: TextStyle(
-                              color:
-                                  Colors.white.withValues(alpha: 0.92),
+                              color: colors.onHeader.withValues(alpha: 0.92),
                               fontSize: 14,
                             ),
                           );
@@ -120,31 +102,29 @@ class SellerProfileScreen extends StatelessWidget {
                             avatar: Icon(
                               Icons.workspace_premium_rounded,
                               size: 18,
-                              color: Colors.amber.shade700,
+                              color: Colors.amber.shade300,
                             ),
                             label: Text(
                               loc.proSellerBadge,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: colors.headerPillText,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.2),
+                            backgroundColor: colors.headerPillBg,
                             side: BorderSide.none,
                           ),
-                          OutlinedButton(
+                          FilledButton(
                             onPressed: () {
                               Navigator.pushNamed(
                                 context,
                                 '/edit-profile',
                               );
                             },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.65),
-                              ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: colors.headerPillBg,
+                              foregroundColor: colors.headerPillText,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(22),
                               ),
@@ -160,58 +140,14 @@ class SellerProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  bottom: -56,
-                  child: Material(
-                    elevation: 6,
-                    borderRadius: BorderRadius.circular(18),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          _stat(
-                            Icons.shopping_bag_outlined,
-                            '12',
-                            loc.orders,
-                          ),
-                          VerticalDivider(
-                            width: 1,
-                            thickness: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                          _stat(
-                            Icons.military_tech_outlined,
-                            '8',
-                            loc.reviews,
-                          ),
-                          VerticalDivider(
-                            width: 1,
-                            thickness: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                          _stat(
-                            Icons.inventory_2_outlined,
-                            '24',
-                            loc.wishlist,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
-            const SizedBox(height: 76),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: appCardColor(context),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
@@ -223,19 +159,21 @@ class SellerProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Consumer<InboxMessagesProvider>(
-                      builder: (context, inbox, _) {
-                        final unread = inbox.unreadCount;
+                    Consumer2<InboxMessagesProvider, ChatProvider>(
+                      builder: (context, inbox, chat, _) {
+                        final unread =
+                            chat.unreadForMode(ChatInboxMode.seller);
                         return _row(
                           context,
-                          icon: Icons.notifications_none_rounded,
-                          iconBg: Colors.blue.shade50,
-                          iconColor: Colors.blue.shade700,
-                          title: loc.sellerNotifications,
+                          icon: Icons.chat_bubble_outline_rounded,
+                          iconBg: Colors.purple.shade50,
+                          iconColor: _purple,
+                          title: loc.messages,
                           badge: unread > 0 ? '$unread' : null,
                           onTap: () => Navigator.pushNamed(
                             context,
                             '/notifications',
+                            arguments: ChatInboxMode.seller,
                           ),
                         );
                       },
@@ -262,31 +200,26 @@ class SellerProfileScreen extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, '/orders'),
                     ),
-                    if (context.watch<AuthProvider>().isAdminWithProfileEmail(
-                      context.watch<UserProfileProvider>().email,
-                    )) ...[
-                      Divider(height: 1, color: Colors.grey.shade200),
-                      Container(
-                        color: Colors.orange.shade50,
-                        child: _row(
-                          context,
-                          icon: Icons.admin_panel_settings_outlined,
-                          iconBg: Colors.orange.shade100,
-                          iconColor: Colors.orange.shade800,
-                          title: loc.adminSellerApps,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/admin-seller-applications',
-                          ),
-                        ),
-                      ),
-                      Divider(height: 1, color: Colors.grey.shade200),
+                    if (context.watch<AuthProvider>().isAdmin) ...[
+                      Divider(height: 1, color: appBorderColor(context)),
                       _row(
                         context,
-                        icon: Icons.card_membership_outlined,
-                        iconBg: Colors.orange.shade50,
-                        iconColor: Colors.orange.shade800,
-                        title: loc.adminRewards,
+                        icon: Icons.fact_check_outlined,
+                        iconBg: Colors.purple.shade50,
+                        iconColor: _purple,
+                        title: loc.manageSellerRequests,
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          '/admin-seller-applications',
+                        ),
+                      ),
+                      Divider(height: 1, color: appBorderColor(context)),
+                      _row(
+                        context,
+                        icon: Icons.card_giftcard_outlined,
+                        iconBg: Colors.purple.shade50,
+                        iconColor: _purple,
+                        title: loc.manageRewards,
                         onTap: () => Navigator.pushNamed(
                           context,
                           AdminRewardsScreen.route,
@@ -366,34 +299,6 @@ class SellerProfileScreen extends StatelessWidget {
             const SizedBox(height: 110),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _stat(IconData icon, String value, String label) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: _purple),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-          Text(
-            label,
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 11,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/green_computing.dart';
+
 /// Preferensi toggle di Settings (tersimpan lokal).
 class SettingsPrefsProvider extends ChangeNotifier {
   SettingsPrefsProvider(this._prefs) {
@@ -9,6 +11,7 @@ class SettingsPrefsProvider extends ChangeNotifier {
     _sms = _prefs.getBool(_kSms) ?? true;
     _fingerprint = _prefs.getBool(_kFinger) ?? false;
     _locationPref = _prefs.getBool(_kLocPref) ?? true;
+    _ecoMode = GreenComputing.readEcoFromPrefs(_prefs);
   }
 
   final SharedPreferences _prefs;
@@ -24,12 +27,14 @@ class SettingsPrefsProvider extends ChangeNotifier {
   bool _sms = true;
   bool _fingerprint = false;
   bool _locationPref = true;
+  bool _ecoMode = false;
 
   bool get pushNotifications => _push;
   bool get emailNotifications => _email;
   bool get smsNotifications => _sms;
   bool get fingerprintAuth => _fingerprint;
   bool get locationFeatureEnabled => _locationPref;
+  bool get ecoMode => _ecoMode;
 
   void setPush(bool v) {
     _push = v;
@@ -58,6 +63,13 @@ class SettingsPrefsProvider extends ChangeNotifier {
   void setLocationFeature(bool v) {
     _locationPref = v;
     _prefs.setBool(_kLocPref, v);
+    notifyListeners();
+  }
+
+  void setEcoMode(bool v) {
+    _ecoMode = v;
+    _prefs.setBool(GreenComputing.prefsKeyEco, v);
+    GreenComputing.tuneImageCacheForEco(v);
     notifyListeners();
   }
 }

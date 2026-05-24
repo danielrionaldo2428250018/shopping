@@ -176,6 +176,28 @@ class AppLocalizationsId extends AppLocalizations {
       'Pesan dari pesanan, promo, atau push akan muncul di sini.';
 
   @override
+  String get chatListEmptyHint =>
+      'Belum ada obrolan. Buka produk, lalu ketuk Chat dengan penjual untuk memulai.';
+
+  @override
+  String get chatStartHint =>
+      'Ketik pesan di bawah untuk memulai obrolan dengan penjual.';
+
+  @override
+  String get signInToChat => 'Masuk dulu untuk mengirim pesan.';
+
+  @override
+  String get notificationsSection => 'Notifikasi';
+
+  @override
+  String get chatHistoryLocalOnly =>
+      'Riwayat obrolan disimpan di cloud; hapus lokal tidak menghapus pesan di server.';
+
+  @override
+  String get chatImageComingSoon =>
+      'Kirim foto di chat akan hadir di versi berikutnya.';
+
+  @override
   String get requestNotificationAgain => 'Minta izin notifikasi lagi';
 
   @override
@@ -246,6 +268,73 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get forgotPassword => 'Lupa kata sandi?';
+
+  @override
+  String get forgotPasswordTitle => 'Lupa kata sandi';
+
+  @override
+  String get forgotPasswordBody =>
+      'Masukkan email akun Anda. Kami akan mengirim link reset kata sandi dari Firebase ke kotak masuk email.';
+
+  @override
+  String get sendResetEmail => 'Kirim link reset';
+
+  @override
+  String get backToLogin => 'Kembali ke login';
+
+  @override
+  String get currentPassword => 'Kata sandi saat ini';
+
+  @override
+  String get newPassword => 'Kata sandi baru';
+
+  @override
+  String get confirmNewPassword => 'Konfirmasi kata sandi baru';
+
+  @override
+  String get newPasswordMismatch => 'Konfirmasi kata sandi baru tidak cocok.';
+
+  @override
+  String get changePasswordSuccess => 'Kata sandi berhasil diubah.';
+
+  @override
+  String get changePasswordGoogleOnly =>
+      'Akun Google tidak bisa ubah sandi di sini. Gunakan Lupa kata sandi atau kelola akun Google.';
+
+  @override
+  String get changePasswordFormHint =>
+      'Masukkan sandi saat ini lalu sandi baru (minimal 6 karakter).';
+
+  @override
+  String get signInToChangePassword => 'Masuk dulu untuk mengubah kata sandi.';
+
+  @override
+  String get authRequiresRecentLogin =>
+      'Demi keamanan, keluar lalu masuk lagi sebelum mengubah kata sandi.';
+
+  @override
+  String get chatOpenFailed =>
+      'Gagal membuka obrolan. Periksa login dan aturan Realtime Database.';
+
+  @override
+  String get sellerChatSyncHint =>
+      'Sebagai penjual: minta pembeli kirim pesan dari produk toko Anda, lalu ketuk Muat obrolan. Deploy aturan RTDB: firebase deploy --only database';
+
+  @override
+  String get buyerMessages => 'Obrolan pembelian';
+
+  @override
+  String get sellerStoreMessages => 'Pesan dari pembeli';
+
+  @override
+  String get buyerChatEmptyHint =>
+      'Belum ada obrolan pembelian. Buka produk lalu ketuk Chat dengan penjual.';
+
+  @override
+  String get reloadChats => 'Muat obrolan';
+
+  @override
+  String get chatSyncing => 'Memuat obrolan…';
 
   @override
   String get signIn => 'Masuk';
@@ -429,6 +518,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get outOfStock => 'Habis';
 
   @override
+  String get checkoutStockFailed =>
+      'Stok tidak mencukupi. Perbarui jumlah atau coba lagi nanti.';
+
+  @override
   String soldCount(String label) {
     return 'Terjual: $label';
   }
@@ -482,6 +575,50 @@ class AppLocalizationsId extends AppLocalizations {
   String get emptyFavorites => 'Belum ada favorit';
 
   @override
+  String get emptyReviews => 'Belum ada ulasan';
+
+  @override
+  String get emptyReviewsHint =>
+      'Ulasan Anda akan muncul di sini setelah menulis dari pesanan selesai.';
+
+  @override
+  String get uploadProductImageFailed =>
+      'Gagal mengunggah foto ke cloud. Coba lagi atau hubungi admin.';
+
+  @override
+  String get uploadProductImageAuthRequired =>
+      'Masuk dengan akun (email/Google) dulu agar foto bisa diunggah.';
+
+  @override
+  String get uploadProductImageStorageRules =>
+      'Unggah foto ditolak. Pastikan sudah login, Storage aktif di Firebase, lalu jalankan: firebase deploy --only storage (lihat docs/FIREBASE_STORAGE.md).';
+
+  @override
+  String get storeSaveFailed =>
+      'Gagal menyimpan profil toko. Deploy aturan Firestore (firestore.rules) dan pastikan login dengan email pemilik toko.';
+
+  @override
+  String storeSaveFailedDetail(String detail) {
+    return 'Gagal menyimpan toko: $detail';
+  }
+
+  @override
+  String get uploadProductImageFileMissing =>
+      'File foto tidak ditemukan. Pilih ulang dari galeri.';
+
+  @override
+  String get uploadProductImageNetwork =>
+      'Koneksi gagal saat mengunggah. Periksa internet lalu coba lagi.';
+
+  @override
+  String get uploadProductImageTooLarge =>
+      'Foto terlalu besar. Pilih gambar yang lebih kecil atau potong ulang.';
+
+  @override
+  String get photoSavedWithoutStorage =>
+      'Foto disimpan lewat database (plan Spark, tanpa Firebase Storage).';
+
+  @override
   String get searchResults => 'Hasil pencarian';
 
   @override
@@ -529,7 +666,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Masukkan email di atas untuk reset kata sandi.';
 
   @override
-  String get splashTagline => 'Marketplace preloved ramah bumi';
+  String get splashTagline => 'Marketplace second ramah bumi';
 
   @override
   String get onboardingSellTitle => 'Jual barang tidak terpakai';
@@ -746,6 +883,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get viewSellerStore => 'Lihat halaman toko';
 
   @override
+  String get storeLocationTitle => 'Lokasi toko';
+
+  @override
+  String get storeMapZoomHint =>
+      'Cubit (zoom) atau ketuk untuk memuat peta lokasi';
+
+  @override
   String get searchInChat => 'Cari dalam chat';
 
   @override
@@ -808,8 +952,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get changePassword => 'Ubah kata sandi';
 
   @override
-  String get changePasswordHint =>
-      'Gunakan \"Lupa sandi\" di halaman login, atau reset via email Firebase.';
+  String get changePasswordHint => 'Ubah sandi akun email/password Anda.';
 
   @override
   String get privacySecurity => 'Privasi & keamanan';
@@ -822,9 +965,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get paymentMethodsDesc => 'Kartu & dompet digital';
-
-  @override
-  String get notificationsSection => 'Notifikasi';
 
   @override
   String get emailNotifications => 'Notifikasi email';
@@ -886,6 +1026,10 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get storeLogo => 'Logo toko';
+
+  @override
+  String get storeLogoInitialsHint =>
+      'Logo otomatis dari inisial nama toko (huruf pertama setiap kata, maks. 3). Tidak perlu unggah foto.';
 
   @override
   String get uploadLogo => 'Unggah logo';
@@ -1310,10 +1454,10 @@ class AppLocalizationsId extends AppLocalizations {
       'Temukan barang bekas berkualitas di sekitarmu';
 
   @override
-  String get appBrandName => 'PreLoved';
+  String get appBrandName => 'SECO';
 
   @override
-  String get defaultDisplayName => 'Pengguna PreLoved';
+  String get defaultDisplayName => 'Pengguna SECO';
 
   @override
   String sortOrderLabel(String sort) {
@@ -1501,7 +1645,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get nativeLangChinese => '中文';
 
   @override
-  String get homePrelovedDeal => 'PRELOVED DEAL';
+  String get homePrelovedDeal => 'PENAWARAN SECO';
 
   @override
   String get homeWeekThriftBest => 'Harga thrifting terbaik minggu ini';
@@ -1563,6 +1707,24 @@ class AppLocalizationsId extends AppLocalizations {
   String get orderCancelBtn => 'Batal';
 
   @override
+  String get orderConfirmReceivedQ => 'Konfirmasi pesanan diterima?';
+
+  @override
+  String get orderConfirmReceivedBody =>
+      'Pastikan barang sudah Anda terima dalam kondisi baik. Status pesanan akan menjadi Selesai.';
+
+  @override
+  String get orderConfirmReceivedBtn => 'Sudah sampai';
+
+  @override
+  String get orderCompletedSnack => 'Pesanan ditandai selesai';
+
+  @override
+  String orderCompletedAt(String date) {
+    return 'Diterima: $date';
+  }
+
+  @override
   String get paymentSavedEarth => 'Anda telah menyelamatkan bumi';
 
   @override
@@ -1595,19 +1757,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get shimmerFetchingSubtitle => 'Mengambil data… mohon tunggu.';
 
   @override
-  String ordersTabAll(int count) {
-    return 'Semua ($count)';
-  }
+  String get ordersTabAll => 'Semua';
 
   @override
-  String ordersTabPending(int count) {
-    return 'Menunggu ($count)';
-  }
+  String get ordersTabPending => 'Menunggu';
 
   @override
-  String ordersTabCompleted(int count) {
-    return 'Selesai ($count)';
-  }
+  String get ordersTabCompleted => 'Selesai';
 
   @override
   String orderTotalAmount(String amount) {
@@ -1724,8 +1880,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get viewSellerApplicationStatus => 'Lihat status pengajuan';
 
   @override
-  String get adminAccessDenied =>
-      'Hanya akun admin yang ditentukan yang dapat mengakses ini.';
+  String get adminAccessDenied => 'Anda tidak memiliki akses ke bagian ini.';
 
   @override
   String get adminEmailNotConfigured =>
@@ -1747,4 +1902,54 @@ class AppLocalizationsId extends AppLocalizations {
   String adminLoginHint(String email) {
     return 'Panel admin hanya untuk $email. Masuk dengan Email/Kata sandi (bukan Google) memakai alamat itu.';
   }
+
+  @override
+  String get ecoModeTitle => 'Mode ringan';
+
+  @override
+  String get ecoModeSubtitle =>
+      'Green computing: gambar lebih kecil, beranda lebih sedikit item, startup lebih ringan — cocok HP RAM kecil.';
+
+  @override
+  String get clearLocalData => 'Hapus data lokal';
+
+  @override
+  String get clearLocalDataSubtitle =>
+      'Hapus pesanan, favorit, dan ulasan tersimpan di HP ini. Tutup lalu buka lagi aplikasinya.';
+
+  @override
+  String get clearLocalDataDone =>
+      'Data lokal dihapus. Tutup aplikasi sepenuhnya lalu buka lagi.';
+
+  @override
+  String get editStore => 'Edit toko';
+
+  @override
+  String get deleteStore => 'Hapus toko';
+
+  @override
+  String get deleteStoreConfirm =>
+      'Toko dan semua produk Anda akan dihapus dari aplikasi. Lanjutkan?';
+
+  @override
+  String get storeUpdated => 'Profil toko diperbarui.';
+
+  @override
+  String get storeDeleted => 'Toko dihapus.';
+
+  @override
+  String get productUpdated => 'Produk diperbarui.';
+
+  @override
+  String get productDeleted => 'Produk dihapus.';
+
+  @override
+  String get deleteProductConfirm =>
+      'Produk ini akan dihapus permanen dari katalog.';
+
+  @override
+  String get manageSellerRequests => 'Kelola pengajuan penjual';
+
+  @override
+  String get manageRewards => 'Kelola hadiah';
 }

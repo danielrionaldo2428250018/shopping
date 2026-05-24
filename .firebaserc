@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "project-uas-44504"
+  },
+  "targets": {
+    "project-uas-44504": {
+      "database": {
+        "project-uas-44504-default-rtdb": [
+          "project-uas-44504-default-rtdb"
+        ]
+      }
+    }
+  }
+}

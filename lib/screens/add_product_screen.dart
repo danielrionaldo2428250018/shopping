@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
@@ -12,6 +14,9 @@ import '../providers/user_profile_provider.dart';
 import '../services/image_service.dart';
 import '../services/upload_service.dart';
 import '../utils/l10n_helpers.dart';
+import '../config/media_upload_config.dart';
+import '../utils/store_initials.dart';
+import '../utils/upload_error_l10n.dart';
 import '../l10n/app_localizations.dart';
 
 /// Form tambah produk — penjual (simpan ke Realtime Database).
@@ -129,17 +134,29 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    final profile = context.read<UserProfileProvider>();
     final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) {
+      _showSnack(loc.uploadProductImageAuthRequired);
+      return;
+    }
+    if (!auth.usesFirebaseAuth) {
+      _showSnack(loc.uploadProductImageAuthRequired);
+      return;
+    }
+    final sellerUid = auth.uid;
+    if (sellerUid == null || sellerUid.isEmpty) {
+      _showSnack(loc.uploadProductImageAuthRequired);
+      return;
+    }
+
+    final profile = context.read<UserProfileProvider>();
     final approvedStore = context.read<SellerApplicationsProvider>().myApprovedStore;
     final sellerName = approvedStore?.storeName.trim().isNotEmpty == true
         ? approvedStore!.storeName.trim()
         : (auth.displayName?.trim().isNotEmpty == true
             ? auth.displayName!.trim()
             : profile.displayNameOrDefault);
-    final initials = sellerName.isNotEmpty
-        ? sellerName.substring(0, 1).toUpperCase()
-        : 'P';
+    final initials = storeInitialsFromName(sellerName);
 
     var imageUrl =
         'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400';
@@ -149,9 +166,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (urls.isNotEmpty) {
         imageUrl = urls.first;
       }
-    } catch (_) {
+    } on UploadFailure catch (e) {
       if (!mounted) return;
-      _showSnack(loc.publishFailed);
+      if (kDebugMode) debugPrint('upload product image: $e');
+      _showSnack(uploadFailureMessage(loc, e));
+      return;
+    } catch (e) {
+      if (!mounted) return;
+      if (kDebugMode) debugPrint('upload product image: $e');
+      _showSnack(loc.uploadProductImageFailed);
       return;
     }
 
@@ -161,12 +184,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
       unitPrice: price,
       imageUrl: imageUrl,
       sellerName: sellerName,
+      sellerUid: sellerUid,
       sellerInitials: initials,
       sellerRating: 4.8,
       locationLabel: 'Indonesia',
       ratingValue: 4.5,
       reviewsCount: 0,
-      soldLabel: '0 terjual',
+      soldCount: 0,
+      soldLabel: formatProductSoldLabel(0),
       stock: stock,
       category: category!,
       condition: condition,
@@ -181,7 +206,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() => _publishing = false);
 
     if (ok) {
-      _showSnack(loc.productPublished);
+      _showSnack(
+        MediaUploadConfig.useFirebaseStorage
+            ? loc.productPublished
+            : '${loc.productPublished} — ${loc.photoSavedWithoutStorage}',
+      );
       Navigator.pop(context);
     } else {
       _showSnack(loc.publishFailed);
@@ -220,18 +249,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Future<void> _pickFromGallery() async {
     final loc = context.l10n;
-    final granted = await ImageService.ensureGalleryAccess();
-    if (!granted) {
-      if (!mounted) return;
-      if (await ImageService.isGalleryPermanentlyDenied()) {
-        _showSnack(loc.galleryPermissionOpenSettings);
-        await openAppSettings();
-      } else {
-        _showSnack(loc.galleryPermissionRequired);
-      }
-      return;
-    }
-
     final remaining =
         ImageService.maxProductPhotos - _productImages.length;
     if (remaining <= 0) {
@@ -239,9 +256,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    final files =
+    var files =
         await ImageService.pickMultipleFromGallery(max: remaining);
-    if (!mounted || files.isEmpty) return;
+    if (!mounted) return;
+
+    if (files.isEmpty) {
+      final granted = await ImageService.ensureGalleryAccess();
+      if (!mounted) return;
+      if (!granted) {
+        if (await ImageService.isGalleryPermanentlyDenied()) {
+          _showSnack(loc.galleryPermissionOpenSettings);
+          await openAppSettings();
+        } else {
+          _showSnack(loc.galleryPermissionRequired);
+        }
+        return;
+      }
+      files = await ImageService.pickMultipleFromGallery(max: remaining);
+      if (!mounted || files.isEmpty) return;
+    }
+
     setState(() => _productImages.addAll(files));
     _showSnack(loc.productPhotosAdded(files.length));
   }

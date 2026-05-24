@@ -30,6 +30,12 @@ class WishlistProvider extends ChangeNotifier {
     _prefs.setStringList(_kIds, _ids.toList());
   }
 
+  void clearAll() {
+    _ids.clear();
+    _prefs.remove(_kIds);
+    notifyListeners();
+  }
+
   void toggle(String productId) {
     if (_ids.contains(productId)) {
       _ids.remove(productId);

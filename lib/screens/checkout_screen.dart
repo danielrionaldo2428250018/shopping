@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/catalog_data.dart';
+import '../data/catalog_data.dart' show catalogProductById, formatIdr;
 import '../l10n/app_localizations.dart';
 import '../providers/cart_provider.dart';
+import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
 import '../providers/orders_provider.dart';
 import '../providers/settings_prefs_provider.dart';
 import '../services/biometric_auth_service.dart';
 import '../utils/app_screen_style.dart';
+import '../utils/responsive_layout.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/phone_order_gate.dart';
 import '../utils/quick_payment.dart';
@@ -237,6 +239,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final cart = context.read<CartProvider>();
     final orders = context.read<OrdersProvider>();
+    final catalog = context.read<CatalogProvider>();
     final sub = cart.subtotal;
     final v = _appliedVoucher;
     final ship = _shippingFee(v);
@@ -244,6 +247,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final total = sub + ship - disc;
 
     if (total < 0 || cart.lines.isEmpty) return;
+
+    for (final line in cart.lines) {
+      final fresh =
+          catalogProductById(line.product.id) ?? line.product;
+      if (line.quantity > fresh.stock) {
+        cart.setQuantity(line.product.id, fresh.stock);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.checkoutStockFailed)),
+        );
+        return;
+      }
+    }
+
+    final stockLines = cart.lines
+        .map((l) => (productId: l.product.id, quantity: l.quantity))
+        .toList();
+
+    final stockOk = await catalog.fulfillPurchaseStock(stockLines);
+    if (!context.mounted) return;
+    if (!stockOk) {
+      final msg = catalog.error == 'auth'
+          ? loc.signInToContinue
+          : loc.checkoutStockFailed;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+      return;
+    }
 
     final result = orders.addFromCheckout(
       cart: cart,
@@ -364,8 +395,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: ResponsivePage(
+        child: SingleChildScrollView(
+        padding: appPageInsets(context, top: 12, bottom: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -625,6 +657,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 24),
           ],
+        ),
         ),
       ),
     );

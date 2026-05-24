@@ -175,6 +175,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Order updates, promos, and push messages will appear here.';
 
   @override
+  String get chatListEmptyHint =>
+      'No chats yet. Open a product and tap Chat with seller to start.';
+
+  @override
+  String get chatStartHint =>
+      'Type a message below to start chatting with the seller.';
+
+  @override
+  String get signInToChat => 'Sign in to send messages.';
+
+  @override
+  String get notificationsSection => 'Notifications';
+
+  @override
+  String get chatHistoryLocalOnly =>
+      'Chat history is stored in the cloud; clearing local data does not delete server messages.';
+
+  @override
+  String get chatImageComingSoon =>
+      'Sending photos in chat is coming in a future update.';
+
+  @override
   String get requestNotificationAgain =>
       'Request notification permission again';
 
@@ -246,6 +268,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get forgotPasswordTitle => 'Forgot password';
+
+  @override
+  String get forgotPasswordBody =>
+      'Enter your account email. Firebase will send a password reset link to your inbox.';
+
+  @override
+  String get sendResetEmail => 'Send reset link';
+
+  @override
+  String get backToLogin => 'Back to login';
+
+  @override
+  String get currentPassword => 'Current password';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmNewPassword => 'Confirm new password';
+
+  @override
+  String get newPasswordMismatch => 'New passwords do not match.';
+
+  @override
+  String get changePasswordSuccess => 'Password updated successfully.';
+
+  @override
+  String get changePasswordGoogleOnly =>
+      'Google sign-in accounts cannot change password here. Use Forgot password or manage your Google account.';
+
+  @override
+  String get changePasswordFormHint =>
+      'Enter your current password, then a new one (at least 6 characters).';
+
+  @override
+  String get signInToChangePassword => 'Sign in first to change your password.';
+
+  @override
+  String get authRequiresRecentLogin =>
+      'For security, sign out and sign in again before changing your password.';
+
+  @override
+  String get chatOpenFailed =>
+      'Could not open chat. Check login and Realtime Database rules.';
+
+  @override
+  String get sellerChatSyncHint =>
+      'As a seller: have a buyer send a message from your product, then tap Reload chats. Deploy RTDB rules: firebase deploy --only database';
+
+  @override
+  String get buyerMessages => 'Purchase chats';
+
+  @override
+  String get sellerStoreMessages => 'Messages from buyers';
+
+  @override
+  String get buyerChatEmptyHint =>
+      'No purchase chats yet. Open a product and tap Chat with seller.';
+
+  @override
+  String get reloadChats => 'Reload chats';
+
+  @override
+  String get chatSyncing => 'Loading chats…';
 
   @override
   String get signIn => 'Sign in';
@@ -427,6 +516,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outOfStock => 'Out of stock';
 
   @override
+  String get checkoutStockFailed =>
+      'Not enough stock. Update quantity or try again later.';
+
+  @override
   String soldCount(String label) {
     return 'Sold: $label';
   }
@@ -480,6 +573,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyFavorites => 'No favorites yet';
 
   @override
+  String get emptyReviews => 'No reviews yet';
+
+  @override
+  String get emptyReviewsHint =>
+      'Your reviews will appear here after you submit them from a completed order.';
+
+  @override
+  String get uploadProductImageFailed =>
+      'Failed to upload photo to cloud. Try again or contact admin.';
+
+  @override
+  String get uploadProductImageAuthRequired =>
+      'Sign in with email or Google before uploading product photos.';
+
+  @override
+  String get uploadProductImageStorageRules =>
+      'Photo upload was rejected. Sign in, enable Storage in Firebase, then run: firebase deploy --only storage (see docs/FIREBASE_STORAGE.md).';
+
+  @override
+  String get storeSaveFailed =>
+      'Could not save store profile. Deploy Firestore rules (firestore.rules) and sign in with the store owner email.';
+
+  @override
+  String storeSaveFailedDetail(String detail) {
+    return 'Could not save store: $detail';
+  }
+
+  @override
+  String get uploadProductImageFileMissing =>
+      'Photo file not found. Pick the image again from gallery.';
+
+  @override
+  String get uploadProductImageNetwork =>
+      'Network error while uploading. Check your connection and retry.';
+
+  @override
+  String get uploadProductImageTooLarge =>
+      'Photo is too large. Choose a smaller image.';
+
+  @override
+  String get photoSavedWithoutStorage =>
+      'Photo saved via database (Spark plan, no Firebase Storage).';
+
+  @override
   String get searchResults => 'Search results';
 
   @override
@@ -526,7 +663,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterEmailForReset => 'Enter your email above to reset password.';
 
   @override
-  String get splashTagline => 'Eco-friendly preloved marketplace';
+  String get splashTagline => 'Eco-friendly second-hand marketplace';
 
   @override
   String get onboardingSellTitle => 'Sell unused items';
@@ -743,6 +880,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewSellerStore => 'View seller store';
 
   @override
+  String get storeLocationTitle => 'Store location';
+
+  @override
+  String get storeMapZoomHint => 'Pinch to zoom or tap to load the store map';
+
+  @override
   String get searchInChat => 'Search in chat';
 
   @override
@@ -805,7 +948,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePasswordHint =>
-      'Use \"Forgot password\" on login, or reset via Firebase email.';
+      'Update your email/password account password.';
 
   @override
   String get privacySecurity => 'Privacy & security';
@@ -818,9 +961,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentMethodsDesc => 'Cards & digital wallets';
-
-  @override
-  String get notificationsSection => 'Notifications';
 
   @override
   String get emailNotifications => 'Email notifications';
@@ -881,6 +1021,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storeLogo => 'Store logo';
+
+  @override
+  String get storeLogoInitialsHint =>
+      'Logo is generated from your store name initials (first letter of each word, up to 3). No photo upload needed.';
 
   @override
   String get uploadLogo => 'Upload logo';
@@ -1301,10 +1445,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeroSubtitle => 'Find quality secondhand items near you';
 
   @override
-  String get appBrandName => 'PreLoved';
+  String get appBrandName => 'SECO';
 
   @override
-  String get defaultDisplayName => 'PreLoved user';
+  String get defaultDisplayName => 'SECO user';
 
   @override
   String sortOrderLabel(String sort) {
@@ -1492,7 +1636,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nativeLangChinese => '中文';
 
   @override
-  String get homePrelovedDeal => 'PRELOVED DEAL';
+  String get homePrelovedDeal => 'SECO DEAL';
 
   @override
   String get homeWeekThriftBest => 'Best thrift prices this week';
@@ -1553,6 +1697,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderCancelBtn => 'Cancel';
 
   @override
+  String get orderConfirmReceivedQ => 'Confirm order received?';
+
+  @override
+  String get orderConfirmReceivedBody =>
+      'Make sure you received the item in good condition. The order will be marked as completed.';
+
+  @override
+  String get orderConfirmReceivedBtn => 'Received';
+
+  @override
+  String get orderCompletedSnack => 'Order marked as completed';
+
+  @override
+  String orderCompletedAt(String date) {
+    return 'Received: $date';
+  }
+
+  @override
   String get paymentSavedEarth => 'You helped save the planet';
 
   @override
@@ -1586,19 +1748,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shimmerFetchingSubtitle => 'Fetching data… please wait.';
 
   @override
-  String ordersTabAll(int count) {
-    return 'All ($count)';
-  }
+  String get ordersTabAll => 'All';
 
   @override
-  String ordersTabPending(int count) {
-    return 'Pending ($count)';
-  }
+  String get ordersTabPending => 'Pending';
 
   @override
-  String ordersTabCompleted(int count) {
-    return 'Completed ($count)';
-  }
+  String get ordersTabCompleted => 'Completed';
 
   @override
   String orderTotalAmount(String amount) {
@@ -1714,8 +1870,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewSellerApplicationStatus => 'View application status';
 
   @override
-  String get adminAccessDenied =>
-      'Only the designated admin account can access this.';
+  String get adminAccessDenied => 'You don\'t have access to this section.';
 
   @override
   String get adminEmailNotConfigured =>
@@ -1737,4 +1892,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminLoginHint(String email) {
     return 'Admin panel is only for $email. Sign in with Email/Password (not Google) using that address.';
   }
+
+  @override
+  String get ecoModeTitle => 'Lightweight mode';
+
+  @override
+  String get ecoModeSubtitle =>
+      'Green computing: smaller images, fewer items on home, lighter startup — for low-RAM phones.';
+
+  @override
+  String get clearLocalData => 'Clear local data';
+
+  @override
+  String get clearLocalDataSubtitle =>
+      'Remove saved orders, wishlist, and reviews on this device. Restart the app after.';
+
+  @override
+  String get clearLocalDataDone =>
+      'Local data cleared. Please fully close and reopen the app.';
+
+  @override
+  String get editStore => 'Edit store';
+
+  @override
+  String get deleteStore => 'Delete store';
+
+  @override
+  String get deleteStoreConfirm =>
+      'Your store and all its products will be removed. Continue?';
+
+  @override
+  String get storeUpdated => 'Store profile updated.';
+
+  @override
+  String get storeDeleted => 'Store deleted.';
+
+  @override
+  String get productUpdated => 'Product updated.';
+
+  @override
+  String get productDeleted => 'Product deleted.';
+
+  @override
+  String get deleteProductConfirm =>
+      'This product will be permanently removed from the catalog.';
+
+  @override
+  String get manageSellerRequests => 'Manage seller requests';
+
+  @override
+  String get manageRewards => 'Manage rewards';
 }

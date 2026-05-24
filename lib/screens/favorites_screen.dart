@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import '../data/catalog_data.dart';
 import '../l10n/app_localizations.dart';
 import '../models/catalog_product.dart';
-import '../providers/wishlist_provider.dart';
 import '../providers/catalog_provider.dart';
+import '../providers/wishlist_provider.dart';
+import '../utils/app_screen_style.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/app_network_image.dart';
 import '../utils/l10n_helpers.dart';
 
 /// Wishlist user biasa — grid + filter ringkas.
@@ -39,9 +42,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<CatalogProvider>();
     final loc = context.l10n;
     final wl = context.watch<WishlistProvider>();
+    context.watch<CatalogProvider>();
     var items = kCatalogProducts
         .where((p) => wl.has(p.id))
         .toList();
@@ -59,13 +62,21 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         break;
     }
 
+    final scheme = Theme.of(context).colorScheme;
+    final r = ResponsiveLayout.of(context);
     return Scaffold(
-            body: SafeArea(
+      backgroundColor: appScaffoldBackground(context),
+      body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              padding: EdgeInsets.fromLTRB(
+                r.horizontalPadding,
+                16,
+                r.horizontalPadding,
+                8,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -78,14 +89,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          loc.productCount(items.length),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
+                            color: appPrimaryText(context),
                           ),
                         ),
                       ],
@@ -94,29 +98,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor:
-                          _gridView ? _purple : Colors.grey.shade200,
+                          _gridView ? scheme.primary : appAccentTint(context),
                     ),
                     onPressed: () =>
                         setState(() => _gridView = true),
                     icon: Icon(
                       Icons.grid_view_rounded,
-                      color:
-                          _gridView ? Colors.white : Colors.grey.shade700,
+                      color: _gridView
+                          ? scheme.onPrimary
+                          : appMutedTextColor(context),
                     ),
                   ),
                   const SizedBox(width: 6),
                   IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor:
-                          !_gridView ? _purple : Colors.grey.shade200,
+                          !_gridView ? scheme.primary : appAccentTint(context),
                     ),
                     onPressed: () =>
                         setState(() => _gridView = false),
                     icon: Icon(
                       Icons.view_list_rounded,
                       color: !_gridView
-                          ? Colors.white
-                          : Colors.grey.shade700,
+                          ? scheme.onPrimary
+                          : appMutedTextColor(context),
                     ),
                   ),
                 ],
@@ -233,17 +238,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildGrid(List<CatalogProduct> items) {
+    final r = ResponsiveLayout.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: r.horizontalPadding),
       child: GridView.builder(
         itemCount: items.length,
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 0.64,
-        ),
+        gridDelegate: r.productGridDelegateFixed(),
         itemBuilder: (context, i) =>
             _ProductTile(product: items[i]),
       ),
@@ -251,8 +251,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildList(List<CatalogProduct> items) {
+    final r = ResponsiveLayout.of(context);
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: r.horizontalPadding),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final item = items[i];
@@ -265,20 +266,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               arguments: item.id,
             ),
             child: Container(
-              height: 132,
+              height: r.productListTileHeight,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: appCardColor(context),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: appBorderColor(context)),
               ),
               clipBehavior: Clip.antiAlias,
               child: Row(
                 children: [
                   Expanded(
                     flex: 4,
-                    child: Image.network(
-                      item.imageUrl,
+                    child: AppNetworkImage(
+                      url: item.imageUrl,
                       fit: BoxFit.cover,
-                      height: 132,
+                      height: r.productListTileHeight,
+                      width: double.infinity,
                     ),
                   ),
                   Expanded(
@@ -358,8 +361,9 @@ class _ProductTile extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appCardColor(context),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: appBorderColor(context)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -370,16 +374,18 @@ class _ProductTile extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    product.imageUrl,
+                  AppNetworkImage(
+                    url: product.imageUrl,
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                   ),
                   Positioned(
                     top: 8,
                     right: 8,
                     child: CircleAvatar(
                       radius: 16,
-                      backgroundColor: Colors.white,
+                      backgroundColor: appCardElevated(context),
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         onPressed: () {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import '../constants/app_admin_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../providers/locale_provider.dart';
@@ -9,7 +9,9 @@ import '../providers/settings_prefs_provider.dart';
 import '../providers/theme_prefs_provider.dart';
 import '../services/app_notifications.dart';
 import '../services/biometric_auth_service.dart';
+import '../styles/app_colors_extension.dart';
 import '../utils/app_screen_style.dart';
+import '../bootstrap/app_migration.dart';
 import '../utils/l10n_helpers.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class _SettingsScreenState
     final themePrefs = context.watch<ThemePrefsProvider>();
     final setPrefs = context.watch<SettingsPrefsProvider>();
     final selectedLang = localeProvider.locale.languageCode;
+    final colors = appColors(context);
 
     return Scaffold(
       backgroundColor: appScaffoldBackground(context),
@@ -46,12 +49,9 @@ class _SettingsScreenState
                 20,
                 26,
               ),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF7F3DFF),
-                    Color(0xFFEDE7FF),
-                  ],
+                  colors: colors.profileHeaderGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -99,10 +99,10 @@ class _SettingsScreenState
 
                       Text(
                         loc.settings,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: colors.onHeader,
                         ),
                       ),
                     ],
@@ -112,8 +112,8 @@ class _SettingsScreenState
 
                   Text(
                     loc.settingsSubtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
+                    style: TextStyle(
+                      color: colors.onHeader.withValues(alpha: 0.85),
                       fontSize: 15,
                     ),
                   ),
@@ -124,7 +124,7 @@ class _SettingsScreenState
             /// ================= BODY =================
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: appPageInsets(context, top: 12, bottom: 24),
                 child: Column(
                   children: [
 
@@ -171,45 +171,18 @@ class _SettingsScreenState
                             if (!auth.isLoggedIn) {
                               return const SizedBox.shrink();
                             }
-                            final isAdmin = auth.isAdminWithProfileEmail(
-                              profile.email,
-                            );
                             final email = auth.resolvedAccountEmail ??
                                 profile.email ??
                                 '-';
-                            final role =
-                                isAdmin ? loc.roleAdmin : loc.roleUser;
                             return Column(
                               children: [
                                 _settingTile(
                                   icon: Icons.badge_outlined,
                                   iconColor: Colors.indigo,
                                   title: loc.accountLoginLabel,
-                                  subtitle: '$email · $role',
+                                  subtitle: email,
                                   onTap: null,
                                 ),
-                                if (!isAdmin) ...[
-                                  Divider(
-                                    color: Colors.grey.shade200,
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16,
-                                      8,
-                                      16,
-                                      12,
-                                    ),
-                                    child: Text(
-                                      loc.adminLoginHint(kAppAdminEmail),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade700,
-                                        height: 1.35,
-                                      ),
-                                    ),
-                                  ),
-                                ],
                                 Divider(
                                   color: Colors.grey.shade200,
                                   height: 1,
@@ -240,18 +213,9 @@ class _SettingsScreenState
                           iconColor: const Color(0xFF7B42F6),
                           title: loc.changePassword,
                           subtitle: loc.changePasswordHint,
-                          onTap: () => showDialog<void>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: Text(loc.changePasswordTitle),
-                              content: Text(loc.changePasswordHint),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: Text(loc.understand),
-                                ),
-                              ],
-                            ),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/change-password',
                           ),
                         ),
 
@@ -380,6 +344,63 @@ class _SettingsScreenState
                           title: loc.darkMode,
                           value: themePrefs.isDark,
                           onChanged: themePrefs.setDark,
+                        ),
+
+                        Divider(
+                          color: Colors.grey.shade200,
+                          height: 1,
+                        ),
+
+                        _switchTile(
+                          icon: Icons.energy_savings_leaf_outlined,
+                          iconColor: Colors.green.shade700,
+                          title: loc.ecoModeTitle,
+                          subtitle: loc.ecoModeSubtitle,
+                          value: setPrefs.ecoMode,
+                          onChanged: setPrefs.setEcoMode,
+                        ),
+
+                        Divider(
+                          color: Colors.grey.shade200,
+                          height: 1,
+                        ),
+
+                        _settingTile(
+                          icon: Icons.delete_sweep_outlined,
+                          iconColor: Colors.orange.shade800,
+                          title: loc.clearLocalData,
+                          subtitle: loc.clearLocalDataSubtitle,
+                          onTap: () async {
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(loc.clearLocalData),
+                                content: Text(loc.clearLocalDataSubtitle),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, false),
+                                    child: Text(loc.cancel),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, true),
+                                    child: Text(loc.yes),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (ok != true || !context.mounted) return;
+                            final prefs =
+                                await SharedPreferences.getInstance();
+                            await forceLocalDataReset(prefs);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(loc.clearLocalDataDone),
+                              ),
+                            );
+                          },
                         ),
 
                         Divider(

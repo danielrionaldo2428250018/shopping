@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/reviews_provider.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
 
 class ReviewsScreen extends StatelessWidget {
@@ -8,192 +11,110 @@ class ReviewsScreen extends StatelessWidget {
     this.orderId,
   });
 
-  /// Dari My Orders → Review (opsional).
   final String? orderId;
 
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
-    final List<Map<String, dynamic>> reviews = [
-      {
-        'name': 'Andi',
-        'review': loc.reviewSample1,
-        'rating': 5,
-      },
-      {
-        'name': 'Rina',
-        'review': loc.reviewSample2,
-        'rating': 4,
-      },
-      {
-        'name': 'Budi',
-        'review': loc.reviewSample3,
-        'rating': 5,
-      },
-    ];
+    final reviews = context.watch<ReviewsProvider>().items;
+    final filtered = orderId == null
+        ? reviews
+        : reviews
+            .where((r) => r['orderId']?.toString() == orderId)
+            .toList();
 
     return Scaffold(
       appBar: AppBar(
-
         centerTitle: true,
-
-        iconTheme:
-            const IconThemeData(
-          color: Colors.black,
-        ),
-
         title: Text(
           orderId != null ? '${loc.reviews} • $orderId' : loc.reviews,
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-
-      body: ListView.builder(
-
-        padding:
-            const EdgeInsets.all(
-          16,
-        ),
-
-        itemCount:
-            reviews.length,
-
-        itemBuilder:
-            (context, index) {
-
-          final review =
-              reviews[index];
-
-          return Container(
-
-            margin:
-                const EdgeInsets.only(
-              bottom: 16,
-            ),
-
-            padding:
-                const EdgeInsets.all(
-              20,
-            ),
-
-            decoration:
-                BoxDecoration(
-              color: Colors.white,
-
-              borderRadius:
-                  BorderRadius.circular(
-                24,
-              ),
-            ),
-
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
-
-              children: [
-
-                Row(
+      body: filtered.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
-                    Container(
-                      height: 50,
-                      width: 50,
-
-                      decoration:
-                          const BoxDecoration(
-                        color: Color(
-                          0xFFE4D7FF,
-                        ),
-
-                        shape:
-                            BoxShape.circle,
-                      ),
-
-                      child: const Icon(
-                        Icons.person,
-                        color: Color(
-                          0xFF7F3DFF,
-                        ),
+                    Icon(
+                      Icons.rate_review_outlined,
+                      size: 72,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      loc.emptyReviews,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: appMutedTextColor(context),
                       ),
                     ),
-
-                    const SizedBox(width: 14),
-
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-
-                        children: [
-
-                          Text(
-                            review['name']
-                                as String,
-
-                            style:
-                                const TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-
-                              fontSize:
-                                  18,
-                            ),
-                          ),
-
-                          const SizedBox(
-                              height:
-                                  6),
-
-                          Row(
-                            children:
-                                List.generate(
-
-                              review['rating']
-                                  as int,
-
-                              (index) {
-
-                                return const Icon(
-                                  Icons.star,
-
-                                  size: 18,
-
-                                  color:
-                                      Colors.orange,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 8),
+                    Text(
+                      loc.emptyReviewsHint,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: appMutedTextColor(context),
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 18),
-
-                Text(
-                  review['review'] as String,
-
-                  style: TextStyle(
-                    color:
-                        Colors.grey
-                            .shade700,
-
-                    height: 1.6,
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: filtered.length,
+              itemBuilder: (context, index) {
+                final review = filtered[index];
+                final rating = review['rating'] as int? ?? 0;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: appCardColor(context),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: appBorderColor(context)),
                   ),
-                ),
-              ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        review['name']?.toString() ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: List.generate(5, (i) {
+                          return Icon(
+                            i < rating
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 18,
+                            color: Colors.amber.shade700,
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        review['review']?.toString() ?? '',
+                        style: TextStyle(
+                          color: appMutedTextColor(context),
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

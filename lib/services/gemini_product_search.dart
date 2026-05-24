@@ -27,8 +27,11 @@ class GeminiProductSearch {
   static Future<GeminiPhotoSearchResult> searchByPhotoBytes(
     Uint8List bytes,
   ) async {
-    if (GeminiConfig.apiKey.isEmpty) {
-      throw StateError('GEMINI_API_KEY belum diatur');
+    if (!GeminiConfig.isConfigured) {
+      throw StateError(
+        'GEMINI_API_KEY belum diatur. Jalankan dengan '
+        '--dart-define=GEMINI_API_KEY=...',
+      );
     }
     if (kCatalogProducts.isEmpty) {
       throw StateError(

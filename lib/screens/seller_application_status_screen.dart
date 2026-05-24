@@ -64,8 +64,6 @@ class SellerApplicationStatusScreen extends StatelessWidget {
                 Center(
                   child: StoreLogoAvatar(
                     storeName: app.storeName,
-                    logoUrl: app.logoUrl,
-                    logoPath: app.logoPath,
                     radius: 44,
                   ),
                 ),

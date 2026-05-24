@@ -1,6 +1,15 @@
 {
+  "database": [
+    {
+      "target": "project-uas-44504-default-rtdb",
+      "rules": "database.rules.json"
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   },
   "flutter": {
     "platforms": {

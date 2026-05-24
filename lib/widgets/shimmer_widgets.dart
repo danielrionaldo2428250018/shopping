@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../utils/responsive_layout.dart';
 
 Color _shimmerBase(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark
@@ -51,29 +53,59 @@ class ProductGridShimmer extends StatelessWidget {
   const ProductGridShimmer({
     super.key,
     this.itemCount = 4,
+    this.ecoMode = false,
   });
 
   final int itemCount;
+  final bool ecoMode;
 
   @override
   Widget build(BuildContext context) {
     final base = _shimmerBase(context);
     final hi = _shimmerHi(context);
+    final r = ResponsiveLayout.of(context);
+    final count = ecoMode ? (itemCount > 4 ? 4 : itemCount) : itemCount;
+
+    if (ecoMode) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: count,
+        gridDelegate: r.productGridDelegateFixed(ecoMode: true),
+        itemBuilder: (_, __) => Container(
+          decoration: BoxDecoration(
+            color: appCardColor(context),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Expanded(child: Container(color: base)),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(height: 12, width: 120, color: base),
+                    const SizedBox(height: 8),
+                    Container(height: 10, width: 80, color: base),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: itemCount,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-        childAspectRatio: 0.68,
-      ),
+      itemCount: count,
+      gridDelegate: r.productGridDelegateFixed(ecoMode: false),
       itemBuilder: (_, __) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: appCardColor(context),
             borderRadius: BorderRadius.circular(16),
           ),
           clipBehavior: Clip.antiAlias,

@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +6,7 @@ import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/store_logo_avatar.dart';
 
 Future<bool> runApproveSellerFlow(
   BuildContext context,
@@ -167,7 +165,7 @@ class AdminSellerApplicationsScreen extends StatelessWidget {
 
     if (!isAppAdminConfigured) {
       return Scaffold(
-        appBar: AppBar(title: Text(loc.adminSellerApps)),
+        appBar: AppBar(title: Text(loc.manageSellerRequests)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -182,7 +180,7 @@ class AdminSellerApplicationsScreen extends StatelessWidget {
 
     if (!auth.isAdmin) {
       return Scaffold(
-        appBar: AppBar(title: Text(loc.adminSellerApps)),
+        appBar: AppBar(title: Text(loc.manageSellerRequests)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -205,7 +203,7 @@ class AdminSellerApplicationsScreen extends StatelessWidget {
           elevation: 0,
 
           title: Text(
-            loc.adminSellerApps,
+            loc.manageSellerRequests,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
@@ -629,29 +627,13 @@ class AdminSellerDetailScreen extends StatelessWidget {
         ),
 
         children: [
-          if (a.logoUrl != null && a.logoUrl!.trim().isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                a.logoUrl!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            )
-          else if (a.logoPath != null && !kIsWeb)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                File(a.logoPath!),
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+          Center(
+            child: StoreLogoAvatar(
+              storeName: a.storeName,
+              radius: 48,
             ),
-          if ((a.logoUrl != null && a.logoUrl!.isNotEmpty) ||
-              (a.logoPath != null && !kIsWeb))
-            const SizedBox(height: 14),
+          ),
+          const SizedBox(height: 14),
 
           _detailCard(
             loc.storeInfo,

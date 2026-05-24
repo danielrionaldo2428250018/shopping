@@ -1,5 +1,8 @@
 import '../models/catalog_product.dart';
 
+/// Label terjual untuk katalog (mis. `12 terjual`).
+String formatProductSoldLabel(int soldCount) => '$soldCount terjual';
+
 String formatIdr(int amount) {
   final digits = amount.abs().toString();
   final buf = StringBuffer();

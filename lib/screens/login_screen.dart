@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../constants/app_branding.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../styles/app_colors_extension.dart';
+import '../utils/app_screen_style.dart';
+import '../utils/responsive_layout.dart';
 import '../utils/l10n_helpers.dart';
 import '../widgets/google_sign_in_button.dart';
 
@@ -59,29 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _resetPassword() async {
-    final loc = context.l10n;
-    final email = emailController.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.enterEmailForReset)),
-      );
-      return;
-    }
-    try {
-      await context.read<AuthProvider>().sendPasswordResetEmail(email);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.resetPasswordSent(email))),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AuthProvider.messageFor(e, context.l10n))),
-      );
-    }
-  }
-
   @override
   void dispose() {
     emailController.dispose();
@@ -89,25 +69,26 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  InputDecoration _fieldDecoration({
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
     required String hint,
     required Widget prefix,
     Widget? suffix,
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey.shade400),
+      hintStyle: TextStyle(color: appMutedTextColor(context)),
       prefixIcon: prefix,
       suffixIcon: suffix,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 16,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        borderSide: BorderSide(color: appBorderColor(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -120,7 +101,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final colors = appColors(context);
     return Scaffold(
+      backgroundColor: appScaffoldBackground(context),
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
@@ -130,11 +113,11 @@ class _LoginScreenState extends State<LoginScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 72),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: AppBranding.authGradient,
+                    colors: appAuthGradient(context),
                   ),
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(28),
@@ -150,13 +133,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.2),
+                              color: colors.headerIconButtonBg,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.arrow_back_ios_new_rounded,
-                              color: Colors.white,
+                              color: colors.onHeader,
                               size: 18,
                             ),
                           ),
@@ -168,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: appCardColor(context),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       clipBehavior: Clip.none,
@@ -199,8 +181,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     Text(
                       loc.welcomeBack,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colors.onHeader,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -209,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       loc.signInSubtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.92),
+                        color: colors.onHeader.withValues(alpha: 0.92),
                         fontSize: 15,
                       ),
                     ),
@@ -219,11 +201,14 @@ class _LoginScreenState extends State<LoginScreen> {
               Transform.translate(
                 offset: const Offset(0, -48),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveLayout.of(context).horizontalPadding,
+                  ),
+                  child: ResponsiveContent(
+                    child: Container(
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: appCardColor(context),
                       borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
@@ -241,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade800,
+                            color: appPrimaryText(context),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -249,6 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: _fieldDecoration(
+                            context,
                             hint: 'your.email@example.com',
                             prefix: Icon(
                               Icons.mail_outline_rounded,
@@ -262,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade800,
+                            color: appPrimaryText(context),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -270,6 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: passwordController,
                           obscureText: obscure,
                           decoration: _fieldDecoration(
+                            context,
                             hint: '••••••••',
                             prefix: Icon(
                               Icons.lock_outline_rounded,
@@ -290,7 +277,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: _resetPassword,
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              '/forgot-password',
+                            ),
                             child: Text(
                               loc.forgotPassword,
                               style: const TextStyle(
@@ -366,10 +356,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
+                    ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                padding: EdgeInsets.fromLTRB(
+                  ResponsiveLayout.of(context).horizontalPadding,
+                  0,
+                  ResponsiveLayout.of(context).horizontalPadding,
+                  32,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

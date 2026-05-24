@@ -404,6 +404,42 @@ abstract class AppLocalizations {
   /// **'Pesan dari pesanan, promo, atau push akan muncul di sini.'**
   String get inboxEmptyHint;
 
+  /// No description provided for @chatListEmptyHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada obrolan. Buka produk, lalu ketuk Chat dengan penjual untuk memulai.'**
+  String get chatListEmptyHint;
+
+  /// No description provided for @chatStartHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Ketik pesan di bawah untuk memulai obrolan dengan penjual.'**
+  String get chatStartHint;
+
+  /// No description provided for @signInToChat.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk dulu untuk mengirim pesan.'**
+  String get signInToChat;
+
+  /// No description provided for @notificationsSection.
+  ///
+  /// In id, this message translates to:
+  /// **'Notifikasi'**
+  String get notificationsSection;
+
+  /// No description provided for @chatHistoryLocalOnly.
+  ///
+  /// In id, this message translates to:
+  /// **'Riwayat obrolan disimpan di cloud; hapus lokal tidak menghapus pesan di server.'**
+  String get chatHistoryLocalOnly;
+
+  /// No description provided for @chatImageComingSoon.
+  ///
+  /// In id, this message translates to:
+  /// **'Kirim foto di chat akan hadir di versi berikutnya.'**
+  String get chatImageComingSoon;
+
   /// No description provided for @requestNotificationAgain.
   ///
   /// In id, this message translates to:
@@ -547,6 +583,126 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Lupa kata sandi?'**
   String get forgotPassword;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Lupa kata sandi'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Masukkan email akun Anda. Kami akan mengirim link reset kata sandi dari Firebase ke kotak masuk email.'**
+  String get forgotPasswordBody;
+
+  /// No description provided for @sendResetEmail.
+  ///
+  /// In id, this message translates to:
+  /// **'Kirim link reset'**
+  String get sendResetEmail;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali ke login'**
+  String get backToLogin;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata sandi saat ini'**
+  String get currentPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata sandi baru'**
+  String get newPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In id, this message translates to:
+  /// **'Konfirmasi kata sandi baru'**
+  String get confirmNewPassword;
+
+  /// No description provided for @newPasswordMismatch.
+  ///
+  /// In id, this message translates to:
+  /// **'Konfirmasi kata sandi baru tidak cocok.'**
+  String get newPasswordMismatch;
+
+  /// No description provided for @changePasswordSuccess.
+  ///
+  /// In id, this message translates to:
+  /// **'Kata sandi berhasil diubah.'**
+  String get changePasswordSuccess;
+
+  /// No description provided for @changePasswordGoogleOnly.
+  ///
+  /// In id, this message translates to:
+  /// **'Akun Google tidak bisa ubah sandi di sini. Gunakan Lupa kata sandi atau kelola akun Google.'**
+  String get changePasswordGoogleOnly;
+
+  /// No description provided for @changePasswordFormHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Masukkan sandi saat ini lalu sandi baru (minimal 6 karakter).'**
+  String get changePasswordFormHint;
+
+  /// No description provided for @signInToChangePassword.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk dulu untuk mengubah kata sandi.'**
+  String get signInToChangePassword;
+
+  /// No description provided for @authRequiresRecentLogin.
+  ///
+  /// In id, this message translates to:
+  /// **'Demi keamanan, keluar lalu masuk lagi sebelum mengubah kata sandi.'**
+  String get authRequiresRecentLogin;
+
+  /// No description provided for @chatOpenFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal membuka obrolan. Periksa login dan aturan Realtime Database.'**
+  String get chatOpenFailed;
+
+  /// No description provided for @sellerChatSyncHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Sebagai penjual: minta pembeli kirim pesan dari produk toko Anda, lalu ketuk Muat obrolan. Deploy aturan RTDB: firebase deploy --only database'**
+  String get sellerChatSyncHint;
+
+  /// No description provided for @buyerMessages.
+  ///
+  /// In id, this message translates to:
+  /// **'Obrolan pembelian'**
+  String get buyerMessages;
+
+  /// No description provided for @sellerStoreMessages.
+  ///
+  /// In id, this message translates to:
+  /// **'Pesan dari pembeli'**
+  String get sellerStoreMessages;
+
+  /// No description provided for @buyerChatEmptyHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada obrolan pembelian. Buka produk lalu ketuk Chat dengan penjual.'**
+  String get buyerChatEmptyHint;
+
+  /// No description provided for @reloadChats.
+  ///
+  /// In id, this message translates to:
+  /// **'Muat obrolan'**
+  String get reloadChats;
+
+  /// No description provided for @chatSyncing.
+  ///
+  /// In id, this message translates to:
+  /// **'Memuat obrolan…'**
+  String get chatSyncing;
 
   /// No description provided for @signIn.
   ///
@@ -902,6 +1058,12 @@ abstract class AppLocalizations {
   /// **'Habis'**
   String get outOfStock;
 
+  /// No description provided for @checkoutStockFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Stok tidak mencukupi. Perbarui jumlah atau coba lagi nanti.'**
+  String get checkoutStockFailed;
+
   /// No description provided for @soldCount.
   ///
   /// In id, this message translates to:
@@ -1004,6 +1166,72 @@ abstract class AppLocalizations {
   /// **'Belum ada favorit'**
   String get emptyFavorites;
 
+  /// No description provided for @emptyReviews.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada ulasan'**
+  String get emptyReviews;
+
+  /// No description provided for @emptyReviewsHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulasan Anda akan muncul di sini setelah menulis dari pesanan selesai.'**
+  String get emptyReviewsHint;
+
+  /// No description provided for @uploadProductImageFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal mengunggah foto ke cloud. Coba lagi atau hubungi admin.'**
+  String get uploadProductImageFailed;
+
+  /// No description provided for @uploadProductImageAuthRequired.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk dengan akun (email/Google) dulu agar foto bisa diunggah.'**
+  String get uploadProductImageAuthRequired;
+
+  /// No description provided for @uploadProductImageStorageRules.
+  ///
+  /// In id, this message translates to:
+  /// **'Unggah foto ditolak. Pastikan sudah login, Storage aktif di Firebase, lalu jalankan: firebase deploy --only storage (lihat docs/FIREBASE_STORAGE.md).'**
+  String get uploadProductImageStorageRules;
+
+  /// No description provided for @storeSaveFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal menyimpan profil toko. Deploy aturan Firestore (firestore.rules) dan pastikan login dengan email pemilik toko.'**
+  String get storeSaveFailed;
+
+  /// No description provided for @storeSaveFailedDetail.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal menyimpan toko: {detail}'**
+  String storeSaveFailedDetail(String detail);
+
+  /// No description provided for @uploadProductImageFileMissing.
+  ///
+  /// In id, this message translates to:
+  /// **'File foto tidak ditemukan. Pilih ulang dari galeri.'**
+  String get uploadProductImageFileMissing;
+
+  /// No description provided for @uploadProductImageNetwork.
+  ///
+  /// In id, this message translates to:
+  /// **'Koneksi gagal saat mengunggah. Periksa internet lalu coba lagi.'**
+  String get uploadProductImageNetwork;
+
+  /// No description provided for @uploadProductImageTooLarge.
+  ///
+  /// In id, this message translates to:
+  /// **'Foto terlalu besar. Pilih gambar yang lebih kecil atau potong ulang.'**
+  String get uploadProductImageTooLarge;
+
+  /// No description provided for @photoSavedWithoutStorage.
+  ///
+  /// In id, this message translates to:
+  /// **'Foto disimpan lewat database (plan Spark, tanpa Firebase Storage).'**
+  String get photoSavedWithoutStorage;
+
   /// No description provided for @searchResults.
   ///
   /// In id, this message translates to:
@@ -1091,7 +1319,7 @@ abstract class AppLocalizations {
   /// No description provided for @splashTagline.
   ///
   /// In id, this message translates to:
-  /// **'Marketplace preloved ramah bumi'**
+  /// **'Marketplace second ramah bumi'**
   String get splashTagline;
 
   /// No description provided for @onboardingSellTitle.
@@ -1502,6 +1730,18 @@ abstract class AppLocalizations {
   /// **'Lihat halaman toko'**
   String get viewSellerStore;
 
+  /// No description provided for @storeLocationTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Lokasi toko'**
+  String get storeLocationTitle;
+
+  /// No description provided for @storeMapZoomHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Cubit (zoom) atau ketuk untuk memuat peta lokasi'**
+  String get storeMapZoomHint;
+
   /// No description provided for @searchInChat.
   ///
   /// In id, this message translates to:
@@ -1625,7 +1865,7 @@ abstract class AppLocalizations {
   /// No description provided for @changePasswordHint.
   ///
   /// In id, this message translates to:
-  /// **'Gunakan \"Lupa sandi\" di halaman login, atau reset via email Firebase.'**
+  /// **'Ubah sandi akun email/password Anda.'**
   String get changePasswordHint;
 
   /// No description provided for @privacySecurity.
@@ -1651,12 +1891,6 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Kartu & dompet digital'**
   String get paymentMethodsDesc;
-
-  /// No description provided for @notificationsSection.
-  ///
-  /// In id, this message translates to:
-  /// **'Notifikasi'**
-  String get notificationsSection;
 
   /// No description provided for @emailNotifications.
   ///
@@ -1771,6 +2005,12 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Logo toko'**
   String get storeLogo;
+
+  /// No description provided for @storeLogoInitialsHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Logo otomatis dari inisial nama toko (huruf pertama setiap kata, maks. 3). Tidak perlu unggah foto.'**
+  String get storeLogoInitialsHint;
 
   /// No description provided for @uploadLogo.
   ///
@@ -2525,13 +2765,13 @@ abstract class AppLocalizations {
   /// No description provided for @appBrandName.
   ///
   /// In id, this message translates to:
-  /// **'PreLoved'**
+  /// **'SECO'**
   String get appBrandName;
 
   /// No description provided for @defaultDisplayName.
   ///
   /// In id, this message translates to:
-  /// **'Pengguna PreLoved'**
+  /// **'Pengguna SECO'**
   String get defaultDisplayName;
 
   /// No description provided for @sortOrderLabel.
@@ -2849,7 +3089,7 @@ abstract class AppLocalizations {
   /// No description provided for @homePrelovedDeal.
   ///
   /// In id, this message translates to:
-  /// **'PRELOVED DEAL'**
+  /// **'PENAWARAN SECO'**
   String get homePrelovedDeal;
 
   /// No description provided for @homeWeekThriftBest.
@@ -2960,6 +3200,36 @@ abstract class AppLocalizations {
   /// **'Batal'**
   String get orderCancelBtn;
 
+  /// No description provided for @orderConfirmReceivedQ.
+  ///
+  /// In id, this message translates to:
+  /// **'Konfirmasi pesanan diterima?'**
+  String get orderConfirmReceivedQ;
+
+  /// No description provided for @orderConfirmReceivedBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Pastikan barang sudah Anda terima dalam kondisi baik. Status pesanan akan menjadi Selesai.'**
+  String get orderConfirmReceivedBody;
+
+  /// No description provided for @orderConfirmReceivedBtn.
+  ///
+  /// In id, this message translates to:
+  /// **'Sudah sampai'**
+  String get orderConfirmReceivedBtn;
+
+  /// No description provided for @orderCompletedSnack.
+  ///
+  /// In id, this message translates to:
+  /// **'Pesanan ditandai selesai'**
+  String get orderCompletedSnack;
+
+  /// No description provided for @orderCompletedAt.
+  ///
+  /// In id, this message translates to:
+  /// **'Diterima: {date}'**
+  String orderCompletedAt(String date);
+
   /// No description provided for @paymentSavedEarth.
   ///
   /// In id, this message translates to:
@@ -3017,20 +3287,20 @@ abstract class AppLocalizations {
   /// No description provided for @ordersTabAll.
   ///
   /// In id, this message translates to:
-  /// **'Semua ({count})'**
-  String ordersTabAll(int count);
+  /// **'Semua'**
+  String get ordersTabAll;
 
   /// No description provided for @ordersTabPending.
   ///
   /// In id, this message translates to:
-  /// **'Menunggu ({count})'**
-  String ordersTabPending(int count);
+  /// **'Menunggu'**
+  String get ordersTabPending;
 
   /// No description provided for @ordersTabCompleted.
   ///
   /// In id, this message translates to:
-  /// **'Selesai ({count})'**
-  String ordersTabCompleted(int count);
+  /// **'Selesai'**
+  String get ordersTabCompleted;
 
   /// No description provided for @orderTotalAmount.
   ///
@@ -3227,7 +3497,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminAccessDenied.
   ///
   /// In id, this message translates to:
-  /// **'Hanya akun admin yang ditentukan yang dapat mengakses ini.'**
+  /// **'Anda tidak memiliki akses ke bagian ini.'**
   String get adminAccessDenied;
 
   /// No description provided for @adminEmailNotConfigured.
@@ -3265,6 +3535,96 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Panel admin hanya untuk {email}. Masuk dengan Email/Kata sandi (bukan Google) memakai alamat itu.'**
   String adminLoginHint(String email);
+
+  /// No description provided for @ecoModeTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Mode ringan'**
+  String get ecoModeTitle;
+
+  /// No description provided for @ecoModeSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Green computing: gambar lebih kecil, beranda lebih sedikit item, startup lebih ringan — cocok HP RAM kecil.'**
+  String get ecoModeSubtitle;
+
+  /// No description provided for @clearLocalData.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus data lokal'**
+  String get clearLocalData;
+
+  /// No description provided for @clearLocalDataSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus pesanan, favorit, dan ulasan tersimpan di HP ini. Tutup lalu buka lagi aplikasinya.'**
+  String get clearLocalDataSubtitle;
+
+  /// No description provided for @clearLocalDataDone.
+  ///
+  /// In id, this message translates to:
+  /// **'Data lokal dihapus. Tutup aplikasi sepenuhnya lalu buka lagi.'**
+  String get clearLocalDataDone;
+
+  /// No description provided for @editStore.
+  ///
+  /// In id, this message translates to:
+  /// **'Edit toko'**
+  String get editStore;
+
+  /// No description provided for @deleteStore.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus toko'**
+  String get deleteStore;
+
+  /// No description provided for @deleteStoreConfirm.
+  ///
+  /// In id, this message translates to:
+  /// **'Toko dan semua produk Anda akan dihapus dari aplikasi. Lanjutkan?'**
+  String get deleteStoreConfirm;
+
+  /// No description provided for @storeUpdated.
+  ///
+  /// In id, this message translates to:
+  /// **'Profil toko diperbarui.'**
+  String get storeUpdated;
+
+  /// No description provided for @storeDeleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Toko dihapus.'**
+  String get storeDeleted;
+
+  /// No description provided for @productUpdated.
+  ///
+  /// In id, this message translates to:
+  /// **'Produk diperbarui.'**
+  String get productUpdated;
+
+  /// No description provided for @productDeleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Produk dihapus.'**
+  String get productDeleted;
+
+  /// No description provided for @deleteProductConfirm.
+  ///
+  /// In id, this message translates to:
+  /// **'Produk ini akan dihapus permanen dari katalog.'**
+  String get deleteProductConfirm;
+
+  /// No description provided for @manageSellerRequests.
+  ///
+  /// In id, this message translates to:
+  /// **'Kelola pengajuan penjual'**
+  String get manageSellerRequests;
+
+  /// No description provided for @manageRewards.
+  ///
+  /// In id, this message translates to:
+  /// **'Kelola hadiah'**
+  String get manageRewards;
 }
 
 class _AppLocalizationsDelegate

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_branding.dart';
+import '../utils/app_screen_style.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 import 'auth_required_screen.dart';
 import 'favorites_screen.dart';
 import 'home_screen.dart';
-import 'map_screen.dart';
 import 'profile_screen.dart';
 import 'seller_profile_screen.dart';
 
@@ -25,27 +25,53 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
 
+  /// Tab selain beranda baru dibangun setelah pengguna membukannya.
+  final Set<int> _builtTabs = {0};
+
+  void _selectTab(int index) {
+    setState(() {
+      _builtTabs.add(index);
+      currentIndex = index;
+    });
+  }
+
+  Widget _lazyTab(int index, Widget child) {
+    if (!_builtTabs.contains(index)) {
+      return const SizedBox.shrink();
+    }
+    return child;
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final auth = Provider.of<AuthProvider>(context);
-
-    final screens = [
-      const HomeScreen(),
-      auth.isLoggedIn ? const MapScreen() : const AuthRequiredScreen(),
-      auth.isLoggedIn ? const FavoritesScreen() : const AuthRequiredScreen(),
-      auth.isLoggedIn
-          ? (auth.isSeller
-              ? const SellerProfileScreen()
-              : const ProfileScreen())
-          : const AuthRequiredScreen(),
-    ];
+    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
-      body: screens[currentIndex],
+      backgroundColor: appScaffoldBackground(context),
+      body: IndexedStack(
+        index: currentIndex,
+        children: [
+          _lazyTab(0, const HomeScreen()),
+          _lazyTab(
+            1,
+            auth.isLoggedIn
+                ? const FavoritesScreen()
+                : const AuthRequiredScreen(),
+          ),
+          _lazyTab(
+            2,
+            auth.isLoggedIn
+                ? (auth.isSeller
+                    ? const SellerProfileScreen()
+                    : const ProfileScreen())
+                : const AuthRequiredScreen(),
+          ),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: appCardElevated(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.06),
@@ -65,28 +91,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   activeIcon: Icons.home_rounded,
                   label: loc.home,
                   selected: currentIndex == 0,
-                  onTap: () => setState(() => currentIndex = 0),
-                ),
-                _NavItem(
-                  icon: Icons.location_on_outlined,
-                  activeIcon: Icons.location_on_rounded,
-                  label: loc.map,
-                  selected: currentIndex == 1,
-                  onTap: () => setState(() => currentIndex = 1),
+                  onTap: () => _selectTab(0),
                 ),
                 _NavItem(
                   icon: Icons.favorite_border_rounded,
                   activeIcon: Icons.favorite_rounded,
                   label: loc.saved,
-                  selected: currentIndex == 2,
-                  onTap: () => setState(() => currentIndex = 2),
+                  selected: currentIndex == 1,
+                  onTap: () => _selectTab(1),
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,
                   activeIcon: Icons.person_rounded,
                   label: loc.profile,
-                  selected: currentIndex == 3,
-                  onTap: () => setState(() => currentIndex = 3),
+                  selected: currentIndex == 2,
+                  onTap: () => _selectTab(2),
                 ),
               ],
             ),
@@ -133,7 +152,9 @@ class _NavItem extends StatelessWidget {
               child: Icon(
                 selected ? activeIcon : icon,
                 size: 24,
-                color: selected ? AppBranding.seedColor : Colors.grey.shade600,
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : appMutedTextColor(context),
               ),
             ),
             const SizedBox(height: 4),
@@ -142,7 +163,9 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected ? AppBranding.seedColor : Colors.grey.shade600,
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : appMutedTextColor(context),
               ),
             ),
           ],

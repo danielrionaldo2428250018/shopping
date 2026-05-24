@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../constants/app_branding.dart';
 import '../utils/l10n_helpers.dart';
 
-/// Splash animasi saat masuk aplikasi — lalu ke beranda.
+/// Splash branding singkat — Firebase lanjut di background (tidak ditahan di sini).
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -13,54 +16,35 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late final AnimationController _pulse;
-  late final AnimationController _fade;
-  late final Animation<double> _scale;
-  late final Animation<double> _opacity;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
-
-    _fade = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-
-    _scale = Tween<double>(begin: 0.88, end: 1.0).animate(
-      CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
-    );
-    _opacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _fade, curve: Curves.easeOut),
-    );
-
-    _fade.forward();
-    _navigateToMain();
+    _goHome();
   }
 
-  Future<void> _navigateToMain() async {
-    await Future<void>.delayed(const Duration(milliseconds: 2100));
-    if (!mounted) return;
-    await _fade.reverse();
+  Future<void> _goHome() async {
+    // Jangan tunggu Firebase.initializeApp — itu bisa 3–10+ detik (jaringan/device).
+    // Katalog & auth disambungkan di [FirebaseStartupHost] sambil beranda tampil.
+    await Future.wait<void>([
+      _waitUntilFirstFrame(),
+      Future<void>.delayed(const Duration(milliseconds: 350)),
+    ]);
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/');
   }
 
-  @override
-  void dispose() {
-    _pulse.dispose();
-    _fade.dispose();
-    super.dispose();
+  Future<void> _waitUntilFirstFrame() {
+    final completer = Completer<void>();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!completer.isCompleted) completer.complete();
+    });
+    return completer.future;
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.l10n;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -69,84 +53,55 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF4A3728),
-              Color(0xFF8B6914),
-              Color(0xFFC9A882),
-            ],
+            colors: AppBranding.authGradient,
           ),
         ),
         child: SafeArea(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_pulse, _fade]),
-            builder: (context, _) {
-              return Opacity(
-                opacity: _opacity.value,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Transform.scale(
-                      scale: _scale.value,
-                      child: Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 28,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.recycling_rounded,
-                          size: 72,
-                          color: Colors.white.withValues(alpha: 0.95),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    Text(
-                      context.l10n.appBrandName,
-                      style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        color: Colors.white.withValues(alpha: 0.98),
-                        shadows: const [
-                          Shadow(
-                            blurRadius: 12,
-                            color: Colors.black38,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      context.l10n.splashTagline,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white.withValues(alpha: 0.88),
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    SizedBox(
-                      width: 36,
-                      height: 36,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: Colors.white.withValues(alpha: 0.85),
-                      ),
-                    ),
-                  ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.recycling_rounded,
+                size: 72,
+                color: Colors.white.withValues(alpha: 0.95),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                loc.appBrandName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
                 ),
-              );
-            },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                loc.splashTagline,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                loc.loading,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -169,6 +169,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get inboxEmptyHint => '订单、促销和推送消息将显示在这里。';
 
   @override
+  String get chatListEmptyHint =>
+      'Belum ada obrolan. Buka produk, lalu ketuk Chat dengan penjual untuk memulai.';
+
+  @override
+  String get chatStartHint =>
+      'Ketik pesan di bawah untuk memulai obrolan dengan penjual.';
+
+  @override
+  String get signInToChat => 'Masuk dulu untuk mengirim pesan.';
+
+  @override
+  String get notificationsSection => '通知';
+
+  @override
+  String get chatHistoryLocalOnly =>
+      'Riwayat obrolan disimpan di cloud; hapus lokal tidak menghapus pesan di server.';
+
+  @override
+  String get chatImageComingSoon =>
+      'Kirim foto di chat akan hadir di versi berikutnya.';
+
+  @override
   String get requestNotificationAgain => '再次请求通知权限';
 
   @override
@@ -239,6 +261,73 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get forgotPassword => '忘记密码？';
+
+  @override
+  String get forgotPasswordTitle => 'Lupa kata sandi';
+
+  @override
+  String get forgotPasswordBody =>
+      'Masukkan email akun Anda. Kami akan mengirim link reset kata sandi dari Firebase ke kotak masuk email.';
+
+  @override
+  String get sendResetEmail => 'Kirim link reset';
+
+  @override
+  String get backToLogin => 'Kembali ke login';
+
+  @override
+  String get currentPassword => 'Kata sandi saat ini';
+
+  @override
+  String get newPassword => 'Kata sandi baru';
+
+  @override
+  String get confirmNewPassword => 'Konfirmasi kata sandi baru';
+
+  @override
+  String get newPasswordMismatch => 'Konfirmasi kata sandi baru tidak cocok.';
+
+  @override
+  String get changePasswordSuccess => 'Kata sandi berhasil diubah.';
+
+  @override
+  String get changePasswordGoogleOnly =>
+      'Akun Google tidak bisa ubah sandi di sini. Gunakan Lupa kata sandi atau kelola akun Google.';
+
+  @override
+  String get changePasswordFormHint =>
+      'Masukkan sandi saat ini lalu sandi baru (minimal 6 karakter).';
+
+  @override
+  String get signInToChangePassword => 'Masuk dulu untuk mengubah kata sandi.';
+
+  @override
+  String get authRequiresRecentLogin =>
+      'Demi keamanan, keluar lalu masuk lagi sebelum mengubah kata sandi.';
+
+  @override
+  String get chatOpenFailed =>
+      'Gagal membuka obrolan. Periksa login dan aturan Realtime Database.';
+
+  @override
+  String get sellerChatSyncHint =>
+      'Sebagai penjual: minta pembeli kirim pesan dari produk toko Anda, lalu ketuk Muat obrolan. Deploy aturan RTDB: firebase deploy --only database';
+
+  @override
+  String get buyerMessages => 'Obrolan pembelian';
+
+  @override
+  String get sellerStoreMessages => 'Pesan dari pembeli';
+
+  @override
+  String get buyerChatEmptyHint =>
+      'Belum ada obrolan pembelian. Buka produk lalu ketuk Chat dengan penjual.';
+
+  @override
+  String get reloadChats => 'Muat obrolan';
+
+  @override
+  String get chatSyncing => 'Memuat obrolan…';
 
   @override
   String get signIn => '登录';
@@ -420,6 +509,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get outOfStock => '缺货';
 
   @override
+  String get checkoutStockFailed =>
+      'Stok tidak mencukupi. Perbarui jumlah atau coba lagi nanti.';
+
+  @override
   String soldCount(String label) {
     return '已售：$label';
   }
@@ -471,6 +564,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get emptyFavorites => '暂无收藏';
+
+  @override
+  String get emptyReviews => '暂无评价';
+
+  @override
+  String get emptyReviewsHint => '完成订单后提交的评价将显示在这里。';
+
+  @override
+  String get uploadProductImageFailed => '上传照片到云端失败。';
+
+  @override
+  String get uploadProductImageAuthRequired => '上传产品照片前请先登录。';
+
+  @override
+  String get uploadProductImageStorageRules =>
+      'Firebase Storage 拒绝上传，请部署 storage.rules。';
+
+  @override
+  String get storeSaveFailed =>
+      'Gagal menyimpan profil toko. Deploy aturan Firestore (firestore.rules) dan pastikan login dengan email pemilik toko.';
+
+  @override
+  String storeSaveFailedDetail(String detail) {
+    return 'Gagal menyimpan toko: $detail';
+  }
+
+  @override
+  String get uploadProductImageFileMissing => '找不到照片文件，请重新选择。';
+
+  @override
+  String get uploadProductImageNetwork => '上传时网络错误。';
+
+  @override
+  String get uploadProductImageTooLarge =>
+      'Foto terlalu besar. Pilih gambar yang lebih kecil atau potong ulang.';
+
+  @override
+  String get photoSavedWithoutStorage =>
+      'Foto disimpan lewat database (plan Spark, tanpa Firebase Storage).';
 
   @override
   String get searchResults => '搜索结果';
@@ -732,6 +864,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewSellerStore => '查看卖家店铺';
 
   @override
+  String get storeLocationTitle => '店铺位置';
+
+  @override
+  String get storeMapZoomHint => '双指缩放或点击加载地图';
+
+  @override
   String get searchInChat => '在聊天中搜索';
 
   @override
@@ -807,9 +945,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paymentMethodsDesc => '银行卡与电子钱包';
 
   @override
-  String get notificationsSection => '通知';
-
-  @override
   String get emailNotifications => '邮件通知';
 
   @override
@@ -865,6 +1000,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get storeLogo => '店铺标志';
+
+  @override
+  String get storeLogoInitialsHint =>
+      'Logo otomatis dari inisial nama toko (huruf pertama setiap kata, maks. 3). Tidak perlu unggah foto.';
 
   @override
   String get uploadLogo => '上传标志';
@@ -1275,10 +1414,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeHeroSubtitle => '发现身边优质二手商品';
 
   @override
-  String get appBrandName => 'PreLoved';
+  String get appBrandName => 'SECO';
 
   @override
-  String get defaultDisplayName => 'PreLoved 用户';
+  String get defaultDisplayName => 'SECO 用户';
 
   @override
   String sortOrderLabel(String sort) {
@@ -1448,7 +1587,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nativeLangChinese => '中文';
 
   @override
-  String get homePrelovedDeal => 'PRELOVED DEAL';
+  String get homePrelovedDeal => 'SECO DEAL';
 
   @override
   String get homeWeekThriftBest => '本周最佳二手价';
@@ -1507,6 +1646,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orderCancelBtn => '取消';
 
   @override
+  String get orderConfirmReceivedQ => 'Konfirmasi pesanan diterima?';
+
+  @override
+  String get orderConfirmReceivedBody =>
+      'Pastikan barang sudah Anda terima dalam kondisi baik. Status pesanan akan menjadi Selesai.';
+
+  @override
+  String get orderConfirmReceivedBtn => 'Sudah sampai';
+
+  @override
+  String get orderCompletedSnack => 'Pesanan ditandai selesai';
+
+  @override
+  String orderCompletedAt(String date) {
+    return 'Diterima: $date';
+  }
+
+  @override
   String get paymentSavedEarth => '您为地球出了一份力';
 
   @override
@@ -1538,19 +1695,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shimmerFetchingSubtitle => '正在获取数据… 请稍候。';
 
   @override
-  String ordersTabAll(int count) {
-    return '全部 ($count)';
-  }
+  String get ordersTabAll => '全部';
 
   @override
-  String ordersTabPending(int count) {
-    return '待处理 ($count)';
-  }
+  String get ordersTabPending => '待处理';
 
   @override
-  String ordersTabCompleted(int count) {
-    return '已完成 ($count)';
-  }
+  String get ordersTabCompleted => '已完成';
 
   @override
   String orderTotalAmount(String amount) {
@@ -1656,7 +1807,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewSellerApplicationStatus => '查看申请状态';
 
   @override
-  String get adminAccessDenied => '仅指定的管理员账号可访问。';
+  String get adminAccessDenied => '您无权访问此部分。';
 
   @override
   String get adminEmailNotConfigured => '未配置管理员邮箱。请编辑 app_admin_local.dart。';
@@ -1677,4 +1828,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String adminLoginHint(String email) {
     return '管理面板仅限 $email。请使用该邮箱的邮箱/密码登录（不要用 Google）。';
   }
+
+  @override
+  String get ecoModeTitle => '轻量模式';
+
+  @override
+  String get ecoModeSubtitle => '绿色计算：更小图片、首页更少商品、更轻启动——适合低内存手机。';
+
+  @override
+  String get clearLocalData => '清除本地数据';
+
+  @override
+  String get clearLocalDataSubtitle => '删除本机保存的订单、收藏和评价。完成后请完全关闭并重新打开应用。';
+
+  @override
+  String get clearLocalDataDone => '本地数据已清除。请完全关闭应用后重新打开。';
+
+  @override
+  String get editStore => '编辑店铺';
+
+  @override
+  String get deleteStore => '删除店铺';
+
+  @override
+  String get deleteStoreConfirm => '将删除店铺及所有商品，是否继续？';
+
+  @override
+  String get storeUpdated => '店铺已更新。';
+
+  @override
+  String get storeDeleted => '店铺已删除。';
+
+  @override
+  String get productUpdated => '商品已更新。';
+
+  @override
+  String get productDeleted => '商品已删除。';
+
+  @override
+  String get deleteProductConfirm => '该商品将从目录中永久删除。';
+
+  @override
+  String get manageSellerRequests => '管理卖家申请';
+
+  @override
+  String get manageRewards => '管理奖励';
 }

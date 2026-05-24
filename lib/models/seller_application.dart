@@ -82,6 +82,40 @@ class SellerApplication {
         if (longitude != null) 'longitude': longitude,
       };
 
+  SellerApplication copyWith({
+    String? storeName,
+    String? storeDescription,
+    String? phone,
+    String? streetAddress,
+    String? city,
+    String? logoPath,
+    String? logoUrl,
+    SellerApplicationStatus? status,
+    String? rejectReason,
+    DateTime? reviewedAt,
+    double? latitude,
+    double? longitude,
+  }) {
+    return SellerApplication(
+      id: id,
+      submittedAt: submittedAt,
+      storeName: storeName ?? this.storeName,
+      storeDescription: storeDescription ?? this.storeDescription,
+      email: email,
+      phone: phone ?? this.phone,
+      streetAddress: streetAddress ?? this.streetAddress,
+      city: city ?? this.city,
+      agreedToTerms: agreedToTerms,
+      logoPath: logoPath ?? this.logoPath,
+      logoUrl: logoUrl ?? this.logoUrl,
+      status: status ?? this.status,
+      rejectReason: rejectReason ?? this.rejectReason,
+      reviewedAt: reviewedAt ?? this.reviewedAt,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+    );
+  }
+
   factory SellerApplication.fromJson(Map<String, dynamic> m) {
     return SellerApplication(
       id: m['id'] as String,

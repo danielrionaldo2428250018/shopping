@@ -1,16 +1,13 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_branding.dart';
 import '../models/seller_application.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
-import '../services/upload_service.dart';
+import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../widgets/store_logo_avatar.dart';
 import 'seller_application_status_screen.dart';
 
 /// Form pengajuan menjadi penjual barang bekas — data ke antrian admin.
@@ -31,9 +28,6 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
   final phoneCtrl = TextEditingController();
   final streetCtrl = TextEditingController();
   final cityCtrl = TextEditingController();
-
-  final picker = ImagePicker();
-  String? logoPath;
 
   bool agreedTerms = false;
 
@@ -69,23 +63,6 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
     streetCtrl.dispose();
     cityCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickLogo()
-  async {
-
-    final x = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1600,
-    );
-
-    if (x != null) {
-
-      setState(() {
-
-        logoPath = x.path;
-      });
-    }
   }
 
   InputDecoration _outline(String hint) {
@@ -185,30 +162,10 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
     final loc = context.l10n;
 
     final appId = 'SELL-${DateTime.now().millisecondsSinceEpoch}';
-    String? logoUrl;
-    if (logoPath != null && logoPath!.isNotEmpty) {
-      try {
-        logoUrl = await UploadService.uploadStoreLogo(
-          File(logoPath!),
-          appId,
-        );
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(loc.uploadLogoFailedKeepLocal),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
-    }
 
     final app = SellerApplication(
       id: appId,
       submittedAt: DateTime.now(),
-      logoPath: logoPath,
-      logoUrl: logoUrl,
       storeName:
           storeNameCtrl.text.trim(),
       storeDescription:
@@ -479,7 +436,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: appPageInsets(context, top: 12, bottom: 16),
 
               child: Column(
                 crossAxisAlignment:
@@ -488,116 +445,25 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                   _card(
                     title: loc.storeLogo,
                     children: [
-                      Row(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-
-                        children: [
-                          Container(
-                            width:
-                                88,
-
-                            height:
-                                88,
-
-                            decoration:
-                                BoxDecoration(
-                              color:
-                                  Colors.grey.shade200,
-
-                              borderRadius:
-                                  BorderRadius.circular(
-                                14,
-                              ),
-                            ),
-
-                            clipBehavior:
-                                Clip.antiAlias,
-
-                            child: logoPath !=
-                                    null &&
-                                    !kIsWeb
-                                ? Image.file(
-                                  File(
-                                    logoPath!,
-                                  ),
-
-                                  fit:
-                                      BoxFit.cover,
-                                )
-
-                                : Icon(
-                                  Icons.storefront,
-
-                                  color:
-                                      Colors.grey.shade500,
-
-                                  size:
-                                      42,
-                                ),
+                      Center(
+                        child: ListenableBuilder(
+                          listenable: storeNameCtrl,
+                          builder: (_, __) => StoreLogoAvatar(
+                            storeName: storeNameCtrl.text.trim().isNotEmpty
+                                ? storeNameCtrl.text.trim()
+                                : '?',
+                            radius: 44,
                           ),
-
-                          const SizedBox(
-                            width:
-                                14,
-                          ),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start,
-
-                              children: [
-                                OutlinedButton.icon(
-                                  onPressed:
-                                      kIsWeb
-                                      ? null
-                                      : _pickLogo,
-
-                                  icon:
-                                      const Icon(
-                                    Icons.upload,
-                                    size:
-                                        18,
-                                  ),
-
-                                  label: Text(loc.uploadLogo),
-
-                                  style:
-                                      OutlinedButton.styleFrom(
-                                    foregroundColor:
-                                        AppBranding.seedColor,
-                                    side:
-                                        const BorderSide(
-                                      color:
-                                          AppBranding.seedColor,
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                  height:
-                                      10,
-                                ),
-
-                                Text(
-                                  kIsWeb
-                                      ? loc.uploadLogoWebHint
-                                      : loc.uploadLogoHint,
-
-                                  style:
-                                      TextStyle(
-                                    fontSize:
-                                        11,
-                                    color:
-                                        Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        loc.storeLogoInitialsHint,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -705,7 +571,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                             14,
                       ),
 
-                      _label(loc.catHome),
+                      _label(loc.cityLabel),
                       TextField(
                         controller: cityCtrl,
                         decoration: _outline(loc.cityHint).copyWith(

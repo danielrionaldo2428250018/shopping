@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../data/catalog_data.dart';
 import '../providers/cart_provider.dart';
+import '../utils/app_screen_style.dart';
+import '../utils/responsive_layout.dart';
+import '../widgets/app_network_image.dart';
 import '../utils/l10n_helpers.dart';
 import '../widgets/cart_qty_field.dart';
 
@@ -15,8 +18,10 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-            appBar: AppBar(
+      backgroundColor: appScaffoldBackground(context),
+      appBar: AppBar(
         title: Text(
           loc.cart,
           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -43,14 +48,14 @@ class CartScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        color: appPrimaryText(context),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       loc.startShoppingHint,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: appMutedTextColor(context)),
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
@@ -58,7 +63,7 @@ class CartScreen extends StatelessWidget {
                         Navigator.popUntil(context, (r) => r.isFirst);
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: _purple,
+                        backgroundColor: scheme.primary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 28,
                           vertical: 14,
@@ -72,11 +77,14 @@ class CartScreen extends StatelessWidget {
             );
           }
 
+          final r = ResponsiveLayout.of(context);
+          final thumb = r.isCompact ? 84.0 : 100.0;
+
           return Column(
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: appPageInsets(context, top: 12, bottom: 8),
                   itemCount: cart.lines.length,
                   itemBuilder: (context, index) {
                     final line = cart.lines[index];
@@ -95,9 +103,9 @@ class CartScreen extends StatelessWidget {
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: appCardColor(context),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: appBorderColor(context)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,17 +114,11 @@ class CartScreen extends StatelessWidget {
                               borderRadius: const BorderRadius.horizontal(
                                 left: Radius.circular(15),
                               ),
-                              child: Image.network(
-                                p.imageUrl,
-                                width: 100,
-                                height: 100,
+                              child: AppNetworkImage(
+                                url: p.imageUrl,
+                                width: thumb,
+                                height: thumb,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 100,
-                                  height: 100,
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(Icons.image_not_supported),
-                                ),
                               ),
                             ),
                             Expanded(
@@ -183,10 +185,10 @@ class CartScreen extends StatelessWidget {
               ),
               Material(
                 elevation: 12,
-                color: Colors.white,
+                color: appCardElevated(context),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    padding: appPageInsets(context, top: 12, bottom: 16),
                     child: Column(
                       children: [
                         Row(

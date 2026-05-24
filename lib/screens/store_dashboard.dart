@@ -4,11 +4,15 @@ import 'package:provider/provider.dart';
 import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
-import '../providers/catalog_provider.dart';
 import '../providers/seller_applications_provider.dart';
+import '../styles/app_colors_extension.dart';
 import '../utils/app_screen_style.dart';
 import '../utils/l10n_helpers.dart';
+import '../utils/responsive_layout.dart';
+import '../providers/catalog_provider.dart';
+import '../widgets/store_location_map.dart';
 import '../widgets/store_logo_avatar.dart';
+import 'edit_store_screen.dart';
 
 /// Dashboard penjual — produk dari Realtime Database (toko Anda).
 class StoreDashboardScreen extends StatelessWidget {
@@ -46,59 +50,50 @@ class StoreDashboardScreen extends StatelessWidget {
       auth.displayName?.trim(),
     );
 
+    final colors = appColors(context);
+    final r = ResponsiveLayout.of(context);
     return Scaffold(
-            body: SafeArea(
+      backgroundColor: appScaffoldBackground(context),
+      body: SafeArea(
         bottom: false,
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF742EF5),
-                      Color(0xFFC4A8FF),
-                    ],
+                    colors: colors.profileHeaderGradient,
                   ),
                 ),
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        IconButton(
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.22),
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.chevron_left_rounded),
-                          color: Colors.white,
-                          iconSize: 28,
-                        ),
-                        const Spacer(),
-                        Flexible(
-                          child: Material(
-                            color: Colors.white,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final narrow = constraints.maxWidth < 360;
+                        final addBtn = Material(
+                          color: appCardColor(context),
+                          borderRadius: BorderRadius.circular(22),
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(22),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(22),
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                '/add-product',
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/add-product',
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.add_rounded,
@@ -106,15 +101,13 @@ class StoreDashboardScreen extends StatelessWidget {
                                       size: 20,
                                     ),
                                     const SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        loc.addProduct,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: _purple,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    Text(
+                                      loc.addProduct,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: _purple,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
@@ -122,8 +115,45 @@ class StoreDashboardScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        );
+                        if (narrow) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: IconButton(
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: colors.headerIconButtonBg,
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: const Icon(Icons.chevron_left_rounded),
+                                  color: colors.onHeader,
+                                  iconSize: 28,
+                                ),
+                              ),
+                              addBtn,
+                            ],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.22),
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.chevron_left_rounded),
+                              color: Colors.white,
+                              iconSize: 28,
+                            ),
+                            const Spacer(),
+                            Flexible(child: addBtn),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -133,8 +163,6 @@ class StoreDashboardScreen extends StatelessWidget {
                           storeName: storeName.isNotEmpty
                               ? storeName
                               : loc.myStore,
-                          logoUrl: store?.logoUrl,
-                          logoPath: store?.logoPath,
                           radius: 40,
                         ),
                         const SizedBox(width: 14),
@@ -148,8 +176,8 @@ class StoreDashboardScreen extends StatelessWidget {
                                     : loc.myStore,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: colors.onHeader,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -163,7 +191,7 @@ class StoreDashboardScreen extends StatelessWidget {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.92),
+                                  color: colors.onHeader.withValues(alpha: 0.92),
                                   fontSize: 13,
                                   height: 1.35,
                                 ),
@@ -175,7 +203,7 @@ class StoreDashboardScreen extends StatelessWidget {
                                     Icon(
                                       Icons.location_on_outlined,
                                       size: 14,
-                                      color: Colors.white
+                                      color: colors.onHeader
                                           .withValues(alpha: 0.85),
                                     ),
                                     const SizedBox(width: 4),
@@ -199,47 +227,120 @@ class StoreDashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final stackActions = constraints.maxWidth < 340;
+                        final editBtn = _HeaderActionButton(
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            EditStoreScreen.route,
+                          ),
+                          icon: Icons.store_outlined,
+                          label: loc.editStore,
+                          foregroundColor: colors.onHeader,
+                          borderColor:
+                              colors.onHeader.withValues(alpha: 0.5),
+                        );
+                        final deleteBtn = _HeaderActionButton(
+                          onPressed: () => _confirmDeleteStore(context),
+                          icon: Icons.delete_outline,
+                          label: loc.deleteStore,
+                          foregroundColor: Colors.red.shade100,
+                          borderColor: Colors.red.shade200,
+                        );
+                        if (stackActions) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              editBtn,
+                              const SizedBox(height: 8),
+                              deleteBtn,
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            Expanded(child: editBtn),
+                            const SizedBox(width: 10),
+                            Expanded(child: deleteBtn),
+                          ],
+                        );
+                      },
+                    ),
                     const SizedBox(height: 20),
-                    IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _MiniStatCard(
-                              label: loc.productsLabel,
-                              value: '${products.length}',
-                              circleColor:
-                                  Colors.blue.withValues(alpha: 0.12),
-                              icon: Icons.inventory_2_outlined,
-                              iconColor: Colors.blue.shade700,
-                            ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final cards = [
+                          _MiniStatCard(
+                            label: loc.productsLabel,
+                            value: '${products.length}',
+                            circleColor:
+                                Colors.blue.withValues(alpha: 0.12),
+                            icon: Icons.inventory_2_outlined,
+                            iconColor: Colors.blue.shade700,
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _MiniStatCard(
-                              label: loc.orders,
-                              value: '0',
-                              circleColor: Colors.green.withValues(alpha: 0.12),
-                              icon: Icons.attach_money_rounded,
-                              iconColor: Colors.green.shade700,
-                            ),
+                          _MiniStatCard(
+                            label: loc.orders,
+                            value: '0',
+                            circleColor:
+                                Colors.green.withValues(alpha: 0.12),
+                            icon: Icons.attach_money_rounded,
+                            iconColor: Colors.green.shade700,
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _MiniStatCard(
-                              label: loc.active,
-                              value: '${products.where((p) => p.stock > 0).length}',
-                              circleColor: _purple.withValues(alpha: 0.12),
-                              icon: Icons.visibility_outlined,
-                              iconColor: _purple,
-                            ),
+                          _MiniStatCard(
+                            label: loc.active,
+                            value:
+                                '${products.where((p) => p.stock > 0).length}',
+                            circleColor: _purple.withValues(alpha: 0.12),
+                            icon: Icons.visibility_outlined,
+                            iconColor: _purple,
                           ),
-                        ],
-                      ),
+                        ];
+                        if (constraints.maxWidth < 360 || r.isCompact) {
+                          return Column(
+                            children: [
+                              for (var i = 0; i < cards.length; i++) ...[
+                                if (i > 0) const SizedBox(height: 8),
+                                cards[i],
+                              ],
+                            ],
+                          );
+                        }
+                        return IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (var i = 0; i < cards.length; i++) ...[
+                                if (i > 0) const SizedBox(width: 8),
+                                Expanded(child: cards[i]),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
             ),
+            if (store != null &&
+                store.streetAddress.trim().isNotEmpty &&
+                store.city.trim().isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: appCardColor(context),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: appBorderColor(context)),
+                    ),
+                    child: StoreLocationMap(store: store),
+                  ),
+                ),
+              ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               sliver: SliverToBoxAdapter(
@@ -458,10 +559,13 @@ class StoreDashboardScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       p.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontWeight:
                                             FontWeight.bold,
                                         fontSize: 15,
+                                        height: 1.25,
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -475,29 +579,36 @@ class StoreDashboardScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Container(
-                                      padding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFFE8F5E9,
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Container(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(
-                                          14,
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFFE8F5E9,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                            14,
+                                          ),
                                         ),
-                                      ),
-                                      child: Text(
-                                        p.stock > 0 ? loc.active : loc.outOfStock,
-                                        style: TextStyle(
-                                          fontWeight:
-                                              FontWeight.bold,
-                                          fontSize: 11,
-                                          color:
-                                              Colors.green.shade700,
+                                        child: Text(
+                                          p.stock > 0
+                                              ? loc.active
+                                              : loc.outOfStock,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight:
+                                                FontWeight.bold,
+                                            fontSize: 11,
+                                            color:
+                                                Colors.green.shade700,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -517,87 +628,47 @@ class StoreDashboardScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () => Navigator.pushNamed(
-                                    context,
-                                    '/edit-product',
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: _purple,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 8,
-                                    ),
-                                    side: const BorderSide(
-                                      color: _purple,
-                                      width: 1.2,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.edit_outlined, size: 18),
-                                      const SizedBox(width: 4),
-                                      Flexible(
-                                        child: Text(
-                                          loc.edit,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final stackBtns = constraints.maxWidth < 300;
+                              final editProduct = _ProductActionButton(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  '/edit-product',
+                                  arguments: p.id,
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {},
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 8,
-                                    ),
-                                    side: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 18,
-                                        color: Colors.red.shade400,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Flexible(
-                                        child: Text(
-                                          loc.delete,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.red.shade400,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                                icon: Icons.edit_outlined,
+                                label: loc.edit,
+                                foregroundColor: _purple,
+                                borderColor: _purple,
+                              );
+                              final deleteProduct = _ProductActionButton(
+                                onPressed: () =>
+                                    _confirmDeleteProduct(context, p),
+                                icon: Icons.delete_outline_rounded,
+                                label: loc.delete,
+                                foregroundColor: Colors.red.shade400,
+                                borderColor: Colors.grey.shade300,
+                              );
+                              if (stackBtns) {
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    editProduct,
+                                    const SizedBox(height: 8),
+                                    deleteProduct,
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(child: editProduct),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: deleteProduct),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -608,6 +679,164 @@ class StoreDashboardScreen extends StatelessWidget {
             ),
             const SliverToBoxAdapter(
               child: SizedBox(height: 24),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _confirmDeleteProduct(
+  BuildContext context,
+  CatalogProduct product,
+) async {
+  final loc = context.l10n;
+  final yes = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(loc.delete),
+      content: Text(loc.deleteProductConfirm),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(loc.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(loc.delete),
+        ),
+      ],
+    ),
+  );
+  if (yes != true || !context.mounted) return;
+  final ok =
+      await context.read<CatalogProvider>().deleteProduct(product.id);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(ok ? loc.productDeleted : loc.publishFailed),
+    ),
+  );
+}
+
+Future<void> _confirmDeleteStore(BuildContext context) async {
+  final loc = context.l10n;
+  final yes = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(loc.deleteStore),
+      content: Text(loc.deleteStoreConfirm),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(loc.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(loc.delete),
+        ),
+      ],
+    ),
+  );
+  if (yes != true || !context.mounted) return;
+  final ok =
+      await context.read<SellerApplicationsProvider>().deleteMyStore();
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(ok ? loc.storeDeleted : loc.publishFailed)),
+  );
+  if (ok) {
+    Navigator.popUntil(context, (r) => r.isFirst);
+  }
+}
+
+/// Tombol aksi header toko — teks mengecil otomatis agar tidak overflow.
+class _HeaderActionButton extends StatelessWidget {
+  const _HeaderActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    required this.foregroundColor,
+    required this.borderColor,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+  final Color foregroundColor;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        side: BorderSide(color: borderColor),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductActionButton extends StatelessWidget {
+  const _ProductActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    required this.foregroundColor,
+    required this.borderColor,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+  final Color foregroundColor;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        side: BorderSide(color: borderColor, width: 1.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: foregroundColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -640,6 +869,7 @@ class _MiniStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             radius: 20,
@@ -647,14 +877,16 @@ class _MiniStatCard extends StatelessWidget {
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
           const SizedBox(height: 4),

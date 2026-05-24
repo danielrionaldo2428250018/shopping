@@ -15,6 +15,7 @@ import '../utils/firebase_auth_messages.dart';
 class AuthProvider extends ChangeNotifier {
   AuthProvider(this._prefs) {
     _restoreSellerEmails();
+    _restoreCachedSession();
   }
 
   final SharedPreferences _prefs;
@@ -57,6 +58,9 @@ class AuthProvider extends ChangeNotifier {
     return _emailFromFirebaseUser(user);
   }
   String? get accountEmail => _accountEmail;
+
+  /// Email untuk cocokkan pengajuan penjual (Firebase + cache lokal).
+  String? get effectiveAccountEmail => resolvedAccountEmail ?? _accountEmail;
   String? get displayName => _displayName;
   String? get uid => _uid;
   bool get usesFirebaseAuth => _firebaseBound;
@@ -81,6 +85,19 @@ class AuthProvider extends ChangeNotifier {
           ..clear()
           ..addAll(list.cast<String>());
       } catch (_) {}
+    }
+  }
+
+  /// Tampilan awal konsisten sebelum [bindFirebase] selesai (splash tidak menahan Firebase).
+  void _restoreCachedSession() {
+    if (_prefs.getBool(_kLogged) != true) return;
+    _isLoggedIn = true;
+    final email = _prefs.getString(_kEmail)?.trim().toLowerCase();
+    if (email != null && email.isNotEmpty) {
+      _accountEmail = email;
+      _isSeller = _sellerApprovedEmails.contains(email);
+    } else {
+      _isSeller = _prefs.getBool(_kSeller) ?? false;
     }
   }
 
@@ -165,7 +182,7 @@ class AuthProvider extends ChangeNotifier {
     }
     if (kDebugMode) {
       debugPrint(
-        'Auth login: uid=$_uid email=$_accountEmail isAdmin=$isAdmin',
+        'Auth login: uid=$_uid email=$_accountEmail',
       );
     }
   }
@@ -190,9 +207,39 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Akun email/kata sandi (bukan hanya Google) — bisa ubah sandi di app.
+  bool get canChangePassword {
+    final user = _firebaseAuth?.currentUser;
+    if (user == null) return false;
+    return user.providerData.any((p) => p.providerId == 'password');
+  }
+
   /// Reset kata sandi via email Firebase.
   Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email.trim());
+    await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
+  }
+
+  /// Ubah sandi (wajib sandi saat ini). Hanya akun email/password.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    final email = user?.email?.trim();
+    if (user == null || email == null || email.isEmpty) {
+      throw FirebaseAuthException(code: 'no-email');
+    }
+    if (!canChangePassword) {
+      throw FirebaseAuthException(code: 'google-only');
+    }
+    final cred = EmailAuthProvider.credential(
+      email: email,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPassword);
+    await user.reload();
+    _applyFirebaseUser(_auth.currentUser);
   }
 
   /// Masuk dengan Google (Firebase credential wajib berhasil).
@@ -210,6 +257,16 @@ class AuthProvider extends ChangeNotifier {
     return result;
   }
 
+  void revokeSellerRole() {
+    _isSeller = false;
+    final email = _accountEmail?.trim().toLowerCase();
+    if (email != null && email.isNotEmpty) {
+      _sellerApprovedEmails.remove(email);
+    }
+    _persistSession();
+    notifyListeners();
+  }
+
   void grantSellerRoleForEmail(String email) {
     final e = email.trim().toLowerCase();
     if (e.isEmpty) return;
@@ -224,6 +281,10 @@ class AuthProvider extends ChangeNotifier {
 
   bool isEmailApprovedAsSeller(String email) =>
       _sellerApprovedEmails.contains(email.trim().toLowerCase());
+
+  /// Email yang pernah disetujui sebagai penjual (untuk cocokkan toko).
+  Set<String> get sellerApprovedEmails =>
+      Set<String>.unmodifiable(_sellerApprovedEmails);
 
   void setSeller(bool value) {
     _isSeller = value;

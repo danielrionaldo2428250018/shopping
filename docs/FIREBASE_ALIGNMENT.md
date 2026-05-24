@@ -50,3 +50,9 @@ Wajib di proyek **shop-e1ab3** (sama `google-services.json`):
 4. Isi Web Client ID di `lib/config/google_sign_in_local.dart`.
 
 Detail: `docs/FIREBASE_GOOGLE_SIGNIN.md`.
+
+## Firebase Storage (foto produk / logo toko)
+
+Unggah foto **bukan** izin galeri — gagal biasanya karena **rules Storage belum publish** atau belum login Firebase.
+
+Deploy rules: `docs/FIREBASE_STORAGE.md`.

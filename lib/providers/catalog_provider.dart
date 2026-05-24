@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,8 +18,33 @@ class CatalogProvider extends ChangeNotifier {
     required SharedPreferences prefs,
   }) : _prefs = prefs {
     if (firebaseReady) {
-      _subscribe();
+      attachFirebase();
+    } else {
+      _loading = false;
     }
+  }
+
+  /// Langganan RTDB — dipanggil setelah [Firebase.initializeApp] (startup non-blocking).
+  void attachFirebase() {
+    if (_sub != null) return;
+    if (Firebase.apps.isEmpty) return;
+    _loading = true;
+    _error = null;
+    notifyListeners();
+    _subscribe();
+  }
+
+  void retryConnection() {
+    _sub?.cancel();
+    _sub = null;
+    attachFirebase();
+  }
+
+  Future<bool> _ensureFirebaseReady() async {
+    if (Firebase.apps.isEmpty) return false;
+    attachFirebase();
+    final user = FirebaseAuth.instance.currentUser;
+    return user != null;
   }
 
   final SharedPreferences _prefs;
@@ -59,7 +86,21 @@ class CatalogProvider extends ChangeNotifier {
     bool notifySubscribers = true,
   }) async {
     try {
+      if (!await _ensureFirebaseReady()) {
+        _error = 'Firebase Auth belum siap. Login ulang lalu coba lagi.';
+        notifyListeners();
+        return false;
+      }
       final id = await CatalogRtdbService.saveProduct(product);
+      final saved = product.copyWith(id: id);
+      final existing = kCatalogProducts.indexWhere((p) => p.id == id);
+      if (existing >= 0) {
+        kCatalogProducts[existing] = saved;
+      } else {
+        kCatalogProducts.insert(0, saved);
+      }
+      _error = null;
+      notifyListeners();
       if (notifySubscribers) {
         final loc = appLocalizationsFromPrefs(_prefs);
         await sendNotificationToTopic(
@@ -72,6 +113,111 @@ class CatalogProvider extends ChangeNotifier {
       return true;
     } catch (e, st) {
       if (kDebugMode) debugPrint('publishProduct gagal: $e\n$st');
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateProduct(CatalogProduct product) async {
+    try {
+      await CatalogRtdbService.updateProduct(product);
+      final i = kCatalogProducts.indexWhere((p) => p.id == product.id);
+      if (i >= 0) {
+        kCatalogProducts[i] = product;
+      }
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('updateProduct gagal: $e\n$st');
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Kurangi stok dan perbarui terjual di RTDB. `false` jika ada yang gagal.
+  Future<bool> fulfillPurchaseStock(
+    Iterable<({String productId, int quantity})> lines,
+  ) async {
+    if (Firebase.apps.isNotEmpty &&
+        FirebaseAuth.instance.currentUser == null) {
+      _error = 'auth';
+      notifyListeners();
+      return false;
+    }
+
+    var allOk = true;
+    for (final line in lines) {
+      if (line.productId.isEmpty || line.quantity <= 0) continue;
+
+      final local = catalogProductById(line.productId);
+      final remoteStock = Firebase.apps.isNotEmpty
+          ? await CatalogRtdbService.fetchStock(line.productId)
+          : local?.stock;
+
+      if (remoteStock == null) {
+        allOk = false;
+        if (kDebugMode) {
+          debugPrint('produk tidak ada di RTDB: ${line.productId}');
+        }
+        continue;
+      }
+
+      if (remoteStock < line.quantity) {
+        allOk = false;
+        if (kDebugMode) {
+          debugPrint(
+            'stok RTDB=$remoteStock < qty=${line.quantity} untuk ${line.productId}',
+          );
+        }
+        continue;
+      }
+
+      if (local != null && local.stock != remoteStock) {
+        final i = kCatalogProducts.indexWhere((p) => p.id == line.productId);
+        if (i >= 0) {
+          kCatalogProducts[i] = local.copyWith(stock: remoteStock);
+          notifyListeners();
+        }
+      }
+
+      try {
+        final ok = await CatalogRtdbService.recordPurchase(
+          productId: line.productId,
+          quantity: line.quantity,
+        );
+        if (!ok) {
+          allOk = false;
+          if (kDebugMode) {
+            debugPrint(
+              'transaksi stok gagal ${line.productId} (-${line.quantity})',
+            );
+          }
+        }
+      } catch (e, st) {
+        allOk = false;
+        if (kDebugMode) {
+          debugPrint('fulfillPurchaseStock ${line.productId}: $e\n$st');
+        }
+      }
+    }
+    if (allOk) {
+      _error = null;
+    }
+    return allOk;
+  }
+
+  Future<bool> deleteProduct(String id) async {
+    try {
+      await CatalogRtdbService.removeProduct(id);
+      kCatalogProducts.removeWhere((p) => p.id == id);
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('deleteProduct gagal: $e\n$st');
       _error = e.toString();
       notifyListeners();
       return false;

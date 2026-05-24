@@ -79,6 +79,19 @@ class SellerApplicationsRepository {
   }
 
   /// Hanya pengajuan milik pemohon (email = akun login).
+  /// Semua toko disetujui — untuk halaman toko pembeli & peta lokasi.
+  Stream<List<SellerApplication>> watchApproved() {
+    return _col
+        .where('status', isEqualTo: SellerApplicationStatus.approved.name)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((d) => sellerApplicationFromFirestore(d))
+              .toList()
+            ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt)),
+        );
+  }
+
   Stream<List<SellerApplication>> watchByEmail(String email) {
     final e = email.trim().toLowerCase();
     return _col
@@ -110,6 +123,24 @@ class SellerApplicationsRepository {
       'reviewedAt': FieldValue.serverTimestamp(),
       'rejectReason': reason.trim().isEmpty ? null : reason.trim(),
     });
+  }
+
+  Future<void> updateStore(SellerApplication app) async {
+    await _col.doc(app.id).update({
+      'storeName': app.storeName,
+      'storeDescription': app.storeDescription,
+      'phone': app.phone,
+      'streetAddress': app.streetAddress,
+      'city': app.city,
+      'logoPath': app.logoPath,
+      'logoUrl': app.logoUrl,
+      if (app.latitude != null) 'latitude': app.latitude,
+      if (app.longitude != null) 'longitude': app.longitude,
+    });
+  }
+
+  Future<void> deleteApplication(String id) async {
+    await _col.doc(id).delete();
   }
 
   Future<void> updateCoordinates(String id, double lat, double lng) async {

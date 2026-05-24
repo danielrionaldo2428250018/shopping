@@ -39,9 +39,54 @@ class OrderInvoiceScreen extends StatelessWidget {
     final o = order;
 
     return Scaffold(
-            appBar: AppBar(
+      appBar: AppBar(
         title: Text(loc.myOrders),
       ),
+      bottomNavigationBar: o.status == 'Processing'
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(loc.orderConfirmReceivedQ),
+                        content: Text(loc.orderConfirmReceivedBody),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(loc.no),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(loc.orderConfirmReceivedBtn),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (ok != true || !context.mounted) return;
+                    final done = context
+                        .read<OrdersProvider>()
+                        .completeOrder(orderId);
+                    if (!context.mounted) return;
+                    if (done) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(loc.orderCompletedSnack)),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.check_circle_outline_rounded),
+                  label: Text(loc.orderConfirmReceivedBtn),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -72,12 +117,24 @@ class OrderInvoiceScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    loc.orderStatus(o.status),
+                    orderStatusLabel(loc, o.status),
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
+                      color: o.status == 'Completed'
+                          ? Colors.green.shade700
+                          : Colors.grey.shade800,
                     ),
                   ),
+                  if (o.completedAt != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      loc.orderCompletedAt(_fmt(o.completedAt!)),
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                   if (o.trackingNumber != null) ...[
                     const SizedBox(height: 8),
                     Text(

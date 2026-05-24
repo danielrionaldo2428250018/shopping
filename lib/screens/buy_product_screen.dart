@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/catalog_product.dart';
+import '../data/catalog_data.dart';
+import '../providers/auth_provider.dart';
+import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
 import '../providers/orders_provider.dart';
 import '../utils/phone_order_gate.dart';
@@ -233,6 +236,40 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   Future<void> _confirmOrder() async {
     if (!await ensurePhoneForOrder(context)) return;
     if (!context.mounted) return;
+    final loc = context.l10n;
+
+    if (!context.read<AuthProvider>().isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.signInToContinue)),
+      );
+      return;
+    }
+
+    final fresh = catalogProductById(widget.args.productId);
+    final maxStock = fresh?.stock ?? widget.args.stock;
+    if (_qty > maxStock) {
+      setState(() => _qty = maxStock.clamp(1, maxStock));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.checkoutStockFailed)),
+      );
+      return;
+    }
+
+    final catalog = context.read<CatalogProvider>();
+    final stockOk = await catalog.fulfillPurchaseStock([
+      (productId: widget.args.productId, quantity: _qty),
+    ]);
+    if (!context.mounted) return;
+    if (!stockOk) {
+      final msg = catalog.error == 'auth'
+          ? loc.signInToContinue
+          : loc.checkoutStockFailed;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+      return;
+    }
+
     final result = context.read<OrdersProvider>().addSingleBuy(
           productId: widget.args.productId,
           quantity: _qty,

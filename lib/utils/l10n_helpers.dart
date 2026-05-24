@@ -6,7 +6,7 @@ import '../models/seller_application.dart';
 
 /// Akses cepat: `context.l10n.home`
 extension AppL10nContext on BuildContext {
-  AppLocalizations get l10n => AppLocalizations.of(this)!;
+  AppLocalizations get l10n => AppLocalizations.of(this);
 }
 
 /// Label bahasa untuk pemilih di Settings (sama pola fasum).

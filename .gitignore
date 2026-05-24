@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Konfigurasi lokal (email admin, Google Sign-In, kunci) — pakai file *.example.dart
+lib/config/app_admin_local.dart
+lib/config/google_sign_in_local.dart

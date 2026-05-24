@@ -40,6 +40,12 @@ String firebaseAuthErrorMessage(
       return loc.authGoogleNoEmail;
     case 'google-empty-token':
       return loc.authGoogleEmptyToken;
+    case 'requires-recent-login':
+      return loc.authRequiresRecentLogin;
+    case 'google-only':
+      return loc.changePasswordGoogleOnly;
+    case 'no-email':
+      return loc.authGoogleNoEmail;
     default:
       return e.message ?? loc.authFailedWithCode(e.code);
   }
