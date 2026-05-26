@@ -55,7 +55,7 @@ class RewardsCatalogProvider extends ChangeNotifier {
       const RewardCatalogItem(
         id: 'voucher-diskon-10',
         title: 'Diskon 10% (maks Rp 50rb)',
-        description: 'Berlaku untuk kategori Fashion & Electronics.',
+        description: 'Berlaku untuk kategori Elektronik & Sparepart.',
         pointCost: 300,
         voucherCode: 'POIN10OFF',
       ),

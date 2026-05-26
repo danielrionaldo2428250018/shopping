@@ -11,6 +11,7 @@ import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/orders_provider.dart';
 import '../providers/chat_provider.dart';
+import '../services/push_topic_registration.dart';
 import '../providers/inbox_messages_provider.dart';
 import '../providers/seller_applications_provider.dart';
 import '../providers/user_profile_provider.dart';
@@ -128,9 +129,21 @@ class _FirebaseStartupHostState extends State<FirebaseStartupHost> {
     orders.bindSellers(apps);
     orders.bindInbox(inbox);
     orders.attachFirebase();
-    final store = apps.myApprovedStore;
-    if (auth.isLoggedIn && store != null) {
-      unawaited(chat.registerSellerForPush(store.storeName));
+    if (auth.isLoggedIn && auth.uid != null) {
+      final storeNames = apps.myApprovedStores
+          .map((s) => s.storeName)
+          .where((n) => n.trim().isNotEmpty);
+      unawaited(
+        registerUserPushTopics(
+          buyerUid: auth.uid,
+          sellerStoreNames: storeNames,
+        ),
+      );
+      final store = apps.myApprovedStore;
+      if (store != null) {
+        unawaited(chat.registerSellerForPush(store.storeName));
+        unawaited(orders.ensureSellerRtdbLinked());
+      }
     }
   }
 

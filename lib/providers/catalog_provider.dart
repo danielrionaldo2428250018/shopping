@@ -147,6 +147,15 @@ class CatalogProvider extends ChangeNotifier {
       final toSave = _withCurrentSellerUid(product);
       final id = await CatalogRtdbService.saveProduct(toSave);
       final saved = toSave.copyWith(id: id);
+      final uid = FirebaseAuth.instance.currentUser?.uid.trim();
+      if (uid != null &&
+          uid.isNotEmpty &&
+          saved.sellerName.trim().isNotEmpty) {
+        await ChatRtdbService.registerSellerAccount(
+          storeName: saved.sellerName,
+          sellerUid: uid,
+        );
+      }
       final existing = kCatalogProducts.indexWhere((p) => p.id == id);
       if (existing >= 0) {
         kCatalogProducts[existing] = saved;
@@ -180,9 +189,28 @@ class CatalogProvider extends ChangeNotifier {
     }
   }
 
+  /// Tambah stok produk (mis. setelah habis).
+  Future<bool> adjustProductStock({
+    required String productId,
+    required int delta,
+    String? claimSellerUid,
+    String? sellerStoreName,
+  }) async {
+    if (delta <= 0) return false;
+    final idx = kCatalogProducts.indexWhere((p) => p.id == productId);
+    if (idx < 0) return false;
+    final p = kCatalogProducts[idx];
+    return updateProduct(
+      p.copyWith(stock: p.stock + delta),
+      claimSellerUid: claimSellerUid,
+      sellerStoreName: sellerStoreName,
+    );
+  }
+
   Future<bool> updateProduct(
     CatalogProduct product, {
     String? claimSellerUid,
+    String? sellerStoreName,
   }) async {
     try {
       if (!await _ensureFirebaseReady()) {
@@ -192,14 +220,39 @@ class CatalogProvider extends ChangeNotifier {
       }
       var toSave = product;
       final uid =
-          claimSellerUid?.trim() ?? FirebaseAuth.instance.currentUser?.uid;
+          claimSellerUid?.trim() ?? FirebaseAuth.instance.currentUser?.uid.trim();
       if (uid != null && uid.isNotEmpty) {
-        if (toSave.sellerUid.isEmpty) {
-          toSave = toSave.copyWith(sellerUid: uid);
-        } else if (toSave.sellerUid != uid) {
+        final store = sellerStoreName?.trim();
+        final idx = kCatalogProducts.indexWhere((p) => p.id == toSave.id);
+        if (idx >= 0) {
+          final existing = kCatalogProducts[idx];
+          final slug = storeNameSlug(existing.sellerName);
+          final ownsByStore = store != null &&
+              store.isNotEmpty &&
+              storeNamesMatch(existing.sellerName, store);
+          if (slug.isNotEmpty &&
+              (ownsByStore ||
+                  existing.sellerUid.isEmpty ||
+                  existing.sellerUid != uid)) {
+            if (existing.sellerUid != uid || existing.sellerUid.isEmpty) {
+              await CatalogRtdbService.claimProductOwnership(
+                productId: toSave.id,
+                sellerUid: uid,
+                sellerSlug: slug,
+              );
+              toSave = toSave.copyWith(sellerUid: uid);
+            }
+          } else if (toSave.sellerUid.isNotEmpty && toSave.sellerUid != uid) {
+            _error = 'permission-denied';
+            notifyListeners();
+            return false;
+          }
+        } else if (toSave.sellerUid.isNotEmpty && toSave.sellerUid != uid) {
           _error = 'permission-denied';
           notifyListeners();
           return false;
+        } else if (toSave.sellerUid.isEmpty) {
+          toSave = toSave.copyWith(sellerUid: uid);
         }
       }
       toSave = _withCurrentSellerUid(toSave);
@@ -220,77 +273,118 @@ class CatalogProvider extends ChangeNotifier {
     }
   }
 
-  /// Kurangi stok dan perbarui terjual di RTDB. `false` jika ada yang gagal.
+  void _decrementLocalStock(String productId, int quantity) {
+    final idx = kCatalogProducts.indexWhere((p) => p.id == productId);
+    if (idx < 0) return;
+    final p = kCatalogProducts[idx];
+    final newSold = p.soldCount + quantity;
+    kCatalogProducts[idx] = p.copyWith(
+      stock: p.stock - quantity,
+      soldCount: newSold,
+      soldLabel: formatProductSoldLabel(newSold),
+    );
+    _catalogSignature = null;
+  }
+
+  /// Kembalikan stok lokal jika pembuatan pesanan gagal setelah stok terpotong.
+  void restorePurchaseStock(
+    Iterable<({String productId, int quantity})> lines,
+  ) {
+    for (final line in lines) {
+      if (line.productId.isEmpty || line.quantity <= 0) continue;
+      final idx = kCatalogProducts.indexWhere((p) => p.id == line.productId);
+      if (idx < 0) continue;
+      final p = kCatalogProducts[idx];
+      final newSold = (p.soldCount - line.quantity).clamp(0, 1 << 30);
+      kCatalogProducts[idx] = p.copyWith(
+        stock: p.stock + line.quantity,
+        soldCount: newSold,
+        soldLabel: formatProductSoldLabel(newSold),
+      );
+    }
+    _catalogSignature = null;
+    notifyListeners();
+  }
+
+  /// Kurangi stok (semua baris atau tidak sama sekali) + sinkron RTDB bila ada.
   Future<bool> fulfillPurchaseStock(
     Iterable<({String productId, int quantity})> lines,
   ) async {
-    if (Firebase.apps.isNotEmpty &&
-        FirebaseAuth.instance.currentUser == null) {
-      _error = 'auth';
-      notifyListeners();
-      return false;
-    }
+    final pending = <({String productId, int quantity})>[];
+    final useCloud = Firebase.apps.isNotEmpty &&
+        FirebaseAuth.instance.currentUser != null;
 
-    var allOk = true;
     for (final line in lines) {
       if (line.productId.isEmpty || line.quantity <= 0) continue;
 
       final local = catalogProductById(line.productId);
-      final remoteStock = Firebase.apps.isNotEmpty
-          ? await CatalogRtdbService.fetchStock(line.productId)
-          : local?.stock;
-
-      if (remoteStock == null) {
-        allOk = false;
-        if (kDebugMode) {
-          debugPrint('produk tidak ada di RTDB: ${line.productId}');
-        }
-        continue;
+      if (local == null) {
+        _error = 'stock';
+        notifyListeners();
+        return false;
+      }
+      if (local.stock < line.quantity) {
+        _error = 'stock';
+        notifyListeners();
+        return false;
       }
 
-      if (remoteStock < line.quantity) {
-        allOk = false;
-        if (kDebugMode) {
-          debugPrint(
-            'stok RTDB=$remoteStock < qty=${line.quantity} untuk ${line.productId}',
-          );
-        }
-        continue;
-      }
-
-      if (local != null && local.stock != remoteStock) {
-        final i = kCatalogProducts.indexWhere((p) => p.id == line.productId);
-        if (i >= 0) {
-          kCatalogProducts[i] = local.copyWith(stock: remoteStock);
-          _catalogSignature = null;
-          notifyListeners();
-        }
-      }
-
-      try {
-        final ok = await CatalogRtdbService.recordPurchase(
-          productId: line.productId,
-          quantity: line.quantity,
-        );
-        if (!ok) {
-          allOk = false;
+      if (useCloud) {
+        try {
+          final remoteStock =
+              await CatalogRtdbService.fetchStock(line.productId);
+          if (remoteStock != null && remoteStock < line.quantity) {
+            _error = 'stock';
+            notifyListeners();
+            return false;
+          }
+        } catch (e, st) {
           if (kDebugMode) {
-            debugPrint(
-              'transaksi stok gagal ${line.productId} (-${line.quantity})',
-            );
+            debugPrint('fulfillPurchaseStock cek ${line.productId}: $e\n$st');
           }
         }
-      } catch (e, st) {
-        allOk = false;
-        if (kDebugMode) {
-          debugPrint('fulfillPurchaseStock ${line.productId}: $e\n$st');
+      }
+
+      pending.add(line);
+    }
+
+    if (pending.isEmpty) {
+      _error = null;
+      return true;
+    }
+
+    if (useCloud) {
+      for (final line in pending) {
+        try {
+          final remoteStock =
+              await CatalogRtdbService.fetchStock(line.productId);
+          if (remoteStock == null) continue;
+          final ok = await CatalogRtdbService.recordPurchase(
+            productId: line.productId,
+            quantity: line.quantity,
+          );
+          if (!ok) {
+            _error = 'stock';
+            notifyListeners();
+            return false;
+          }
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('fulfillPurchaseStock RTDB ${line.productId}: $e\n$st');
+          }
+          _error = 'stock';
+          notifyListeners();
+          return false;
         }
       }
     }
-    if (allOk) {
-      _error = null;
+
+    for (final line in pending) {
+      _decrementLocalStock(line.productId, line.quantity);
     }
-    return allOk;
+    _error = null;
+    notifyListeners();
+    return true;
   }
 
   Future<bool> deleteProduct(

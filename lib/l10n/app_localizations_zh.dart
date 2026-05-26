@@ -399,13 +399,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get catElectronics => '电子';
 
   @override
-  String get catFashion => '时尚';
+  String get catAccessories => '配饰';
 
   @override
-  String get catHome => '家居';
+  String get catHomeLiving => 'Rumah Tangga';
 
   @override
-  String get catSports => '运动';
+  String get catBooks => 'Buku & Media';
+
+  @override
+  String get catCollectibles => 'Hobi & Koleksi';
+
+  @override
+  String get catSpareParts => 'Sparepart';
+
+  @override
+  String get catMetal => 'Besi / Logam';
 
   @override
   String get noProductsYet => '暂无商品';
@@ -477,6 +486,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get priceRequired => '价格必须大于 0';
+
+  @override
+  String get stockInvalid => 'Stok tidak boleh negatif';
+
+  @override
+  String get addStock => 'Tambah stok';
+
+  @override
+  String get addStockTitle => 'Tambah stok produk';
+
+  @override
+  String get addStockHint => 'Jumlah yang ditambahkan';
+
+  @override
+  String get addStockSuccess => 'Stok berhasil diperbarui';
+
+  @override
+  String get addStockFailed => 'Gagal memperbarui stok';
 
   @override
   String get stockRequired => '库存至少为 1';
@@ -792,10 +819,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shippingExpress => '加急';
 
   @override
+  String get shippingCargo => 'Cargo';
+
+  @override
+  String get shippingPickup => 'Ambil sendiri';
+
+  @override
   String get shippingEtaReguler => '2–3 个工作日';
 
   @override
   String get shippingEtaExpress => '1 个工作日';
+
+  @override
+  String get shippingEtaCargo => '4–7 hari kerja';
+
+  @override
+  String get shippingEtaPickup => 'Hari ini';
 
   @override
   String subtotalLine(int count) {
@@ -806,6 +845,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String shippingFeeLine(String method) {
     return '运费（$method）';
   }
+
+  @override
+  String get pickupOnlySameCity => 'Hanya 1 kota';
 
   @override
   String get paymentLine => '支付';
@@ -958,6 +1000,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get locationAccess => '位置访问';
+
+  @override
+  String locationUserCity(String city) {
+    return 'Lokasi Anda: $city';
+  }
+
+  @override
+  String get locationNotDetectedYet => 'Kota belum terdeteksi — ketuk Perbarui';
+
+  @override
+  String get locationRefresh => 'Perbarui lokasi';
+
+  @override
+  String get checkoutOrderFailed => 'Pesanan gagal dibuat. Coba lagi.';
+
+  @override
+  String get cartEmptyCheckout => 'Keranjang kosong.';
 
   @override
   String get fingerprintAuth => '指纹认证';
@@ -1237,12 +1296,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpSubtitle => '我们随时为您解决问题';
-
-  @override
-  String get catAccessories => '配饰';
-
-  @override
-  String get catFurniture => '家具';
 
   @override
   String get makeOffer => '出价';
@@ -1637,6 +1690,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get orderReviewBtn => '评价';
+
+  @override
+  String get reviewOrderNotCompleted =>
+      'Ulasan hanya bisa diberikan setelah pesanan diterima.';
+
+  @override
+  String get reviewAlreadySubmitted =>
+      'Produk ini sudah Anda ulas untuk pesanan tersebut.';
+
+  @override
+  String get reviewThankYou => 'Terima kasih atas ulasannya!';
+
+  @override
+  String get buyerReviewsSection => 'Ulasan pembeli';
+
+  @override
+  String storeRatingLine(String rating, int count) {
+    return 'Toko $rating · $count ulasan';
+  }
 
   @override
   String get orderTrackPackage => '追踪包裹';

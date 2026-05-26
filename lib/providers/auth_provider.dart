@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_admin_config.dart';
 import '../services/google_auth_service.dart';
+import '../services/push_topic_registration.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/firebase_auth_messages.dart';
 
@@ -137,6 +138,12 @@ class AuthProvider extends ChangeNotifier {
     }
     _persistSession();
     notifyListeners();
+    if (user != null && !user.isAnonymous) {
+      final uid = user.uid.trim();
+      if (uid.isNotEmpty) {
+        unawaited(registerUserPushTopics(buyerUid: uid));
+      }
+    }
   }
 
   void _persistSession() {

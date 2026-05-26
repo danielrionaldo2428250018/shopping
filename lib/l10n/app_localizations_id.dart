@@ -406,13 +406,22 @@ class AppLocalizationsId extends AppLocalizations {
   String get catElectronics => 'Elektronik';
 
   @override
-  String get catFashion => 'Fashion';
+  String get catAccessories => 'Aksesoris';
 
   @override
-  String get catHome => 'Rumah';
+  String get catHomeLiving => 'Rumah Tangga';
 
   @override
-  String get catSports => 'Olahraga';
+  String get catBooks => 'Buku & Media';
+
+  @override
+  String get catCollectibles => 'Hobi & Koleksi';
+
+  @override
+  String get catSpareParts => 'Sparepart';
+
+  @override
+  String get catMetal => 'Besi / Logam';
 
   @override
   String get noProductsYet => 'Belum ada produk';
@@ -486,6 +495,24 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get priceRequired => 'Harga harus lebih dari 0';
+
+  @override
+  String get stockInvalid => 'Stok tidak boleh negatif';
+
+  @override
+  String get addStock => 'Tambah stok';
+
+  @override
+  String get addStockTitle => 'Tambah stok produk';
+
+  @override
+  String get addStockHint => 'Jumlah yang ditambahkan';
+
+  @override
+  String get addStockSuccess => 'Stok berhasil diperbarui';
+
+  @override
+  String get addStockFailed => 'Gagal memperbarui stok';
 
   @override
   String get stockRequired => 'Stok minimal 1';
@@ -811,10 +838,22 @@ class AppLocalizationsId extends AppLocalizations {
   String get shippingExpress => 'Ekspres';
 
   @override
+  String get shippingCargo => 'Cargo';
+
+  @override
+  String get shippingPickup => 'Ambil sendiri';
+
+  @override
   String get shippingEtaReguler => '2–3 hari kerja';
 
   @override
   String get shippingEtaExpress => '1 hari kerja';
+
+  @override
+  String get shippingEtaCargo => '4–7 hari kerja';
+
+  @override
+  String get shippingEtaPickup => 'Hari ini';
 
   @override
   String subtotalLine(int count) {
@@ -825,6 +864,9 @@ class AppLocalizationsId extends AppLocalizations {
   String shippingFeeLine(String method) {
     return 'Ongkir ($method)';
   }
+
+  @override
+  String get pickupOnlySameCity => 'Hanya 1 kota';
 
   @override
   String get paymentLine => 'Pembayaran';
@@ -980,6 +1022,23 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get locationAccess => 'Akses lokasi';
+
+  @override
+  String locationUserCity(String city) {
+    return 'Lokasi Anda: $city';
+  }
+
+  @override
+  String get locationNotDetectedYet => 'Kota belum terdeteksi — ketuk Perbarui';
+
+  @override
+  String get locationRefresh => 'Perbarui lokasi';
+
+  @override
+  String get checkoutOrderFailed => 'Pesanan gagal dibuat. Coba lagi.';
+
+  @override
+  String get cartEmptyCheckout => 'Keranjang kosong.';
 
   @override
   String get fingerprintAuth => 'Autentikasi sidik jari';
@@ -1269,12 +1328,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get helpSubtitle => 'Kami siap menyelesaikan masalah Anda';
-
-  @override
-  String get catAccessories => 'Aksesoris';
-
-  @override
-  String get catFurniture => 'Furnitur';
 
   @override
   String get makeOffer => 'Ajukan penawaran';
@@ -1636,7 +1689,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get rewardSampleDiscountDesc =>
-      'Berlaku untuk kategori Fashion & Electronics.';
+      'Berlaku untuk kategori Elektronik & Pakaian Bekas.';
 
   @override
   String get rewardSampleBagDesc =>
@@ -1696,7 +1749,26 @@ class AppLocalizationsId extends AppLocalizations {
   String get searchProductsHint => 'Cari produk…';
 
   @override
-  String get orderReviewBtn => 'Ulasan';
+  String get orderReviewBtn => 'Beri ulasan';
+
+  @override
+  String get reviewOrderNotCompleted =>
+      'Ulasan hanya bisa diberikan setelah pesanan diterima.';
+
+  @override
+  String get reviewAlreadySubmitted =>
+      'Produk ini sudah Anda ulas untuk pesanan tersebut.';
+
+  @override
+  String get reviewThankYou => 'Terima kasih atas ulasannya!';
+
+  @override
+  String get buyerReviewsSection => 'Ulasan pembeli';
+
+  @override
+  String storeRatingLine(String rating, int count) {
+    return 'Toko $rating · $count ulasan';
+  }
 
   @override
   String get orderTrackPackage => 'Lacak paket';

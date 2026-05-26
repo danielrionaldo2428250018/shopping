@@ -399,13 +399,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get catElectronics => '전자';
 
   @override
-  String get catFashion => '패션';
+  String get catAccessories => '액세서리';
 
   @override
-  String get catHome => '홈';
+  String get catHomeLiving => 'Rumah Tangga';
 
   @override
-  String get catSports => '스포츠';
+  String get catBooks => 'Buku & Media';
+
+  @override
+  String get catCollectibles => 'Hobi & Koleksi';
+
+  @override
+  String get catSpareParts => 'Sparepart';
+
+  @override
+  String get catMetal => 'Besi / Logam';
 
   @override
   String get noProductsYet => '상품 없음';
@@ -477,6 +486,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get priceRequired => '가격은 0보다 커야 함';
+
+  @override
+  String get stockInvalid => 'Stok tidak boleh negatif';
+
+  @override
+  String get addStock => 'Tambah stok';
+
+  @override
+  String get addStockTitle => 'Tambah stok produk';
+
+  @override
+  String get addStockHint => 'Jumlah yang ditambahkan';
+
+  @override
+  String get addStockSuccess => 'Stok berhasil diperbarui';
+
+  @override
+  String get addStockFailed => 'Gagal memperbarui stok';
 
   @override
   String get stockRequired => '재고 최소 1';
@@ -792,10 +819,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shippingExpress => '특급';
 
   @override
+  String get shippingCargo => 'Cargo';
+
+  @override
+  String get shippingPickup => 'Ambil sendiri';
+
+  @override
   String get shippingEtaReguler => '2–3 영업일';
 
   @override
   String get shippingEtaExpress => '1 영업일';
+
+  @override
+  String get shippingEtaCargo => '4–7 hari kerja';
+
+  @override
+  String get shippingEtaPickup => 'Hari ini';
 
   @override
   String subtotalLine(int count) {
@@ -806,6 +845,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String shippingFeeLine(String method) {
     return '배송비 ($method)';
   }
+
+  @override
+  String get pickupOnlySameCity => 'Hanya 1 kota';
 
   @override
   String get paymentLine => '결제';
@@ -959,6 +1001,23 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get locationAccess => '위치 접근';
+
+  @override
+  String locationUserCity(String city) {
+    return 'Lokasi Anda: $city';
+  }
+
+  @override
+  String get locationNotDetectedYet => 'Kota belum terdeteksi — ketuk Perbarui';
+
+  @override
+  String get locationRefresh => 'Perbarui lokasi';
+
+  @override
+  String get checkoutOrderFailed => 'Pesanan gagal dibuat. Coba lagi.';
+
+  @override
+  String get cartEmptyCheckout => 'Keranjang kosong.';
 
   @override
   String get fingerprintAuth => '지문 인증';
@@ -1240,12 +1299,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpSubtitle => '문제 해결을 위해 여기 있습니다';
-
-  @override
-  String get catAccessories => '액세서리';
-
-  @override
-  String get catFurniture => '가구';
 
   @override
   String get makeOffer => '가격 제안';
@@ -1642,6 +1695,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get orderReviewBtn => '리뷰';
+
+  @override
+  String get reviewOrderNotCompleted =>
+      'Ulasan hanya bisa diberikan setelah pesanan diterima.';
+
+  @override
+  String get reviewAlreadySubmitted =>
+      'Produk ini sudah Anda ulas untuk pesanan tersebut.';
+
+  @override
+  String get reviewThankYou => 'Terima kasih atas ulasannya!';
+
+  @override
+  String get buyerReviewsSection => 'Ulasan pembeli';
+
+  @override
+  String storeRatingLine(String rating, int count) {
+    return 'Toko $rating · $count ulasan';
+  }
 
   @override
   String get orderTrackPackage => '배송 추적';

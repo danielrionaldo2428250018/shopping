@@ -40,6 +40,7 @@ class CartProvider extends ChangeNotifier {
         final q = (m['q'] as num).toInt();
         final p = catalogProductById(id);
         if (p != null) {
+          if (p.stock <= 0) continue;
           final qty = q.clamp(1, p.stock);
           _lines.add(CartLine(product: p, quantity: qty));
         }
@@ -61,6 +62,7 @@ class CartProvider extends ChangeNotifier {
   }
 
   void addProduct(CatalogProduct product, {int quantity = 1}) {
+    if (product.stock <= 0) return;
     final i = _lines.indexWhere((l) => l.product.id == product.id);
     if (i >= 0) {
       final line = _lines[i];

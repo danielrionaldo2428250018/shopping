@@ -23,6 +23,7 @@ import 'providers/theme_prefs_provider.dart';
 import 'providers/user_profile_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'providers/loyalty_points_provider.dart';
+import 'providers/location_provider.dart';
 import 'providers/rewards_catalog_provider.dart';
 import 'styles/app_theme.dart';
 import 'providers/catalog_provider.dart';
@@ -114,6 +115,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => OrdersProvider(prefs),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LocationProvider(prefs),
         ),
         ChangeNotifierProvider(
           create: (_) => WishlistProvider(prefs),

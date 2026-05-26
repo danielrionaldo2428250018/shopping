@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../constants/firebase_rtdb_config.dart';
 import '../models/shop_order.dart';
+import '../services/chat_rtdb_service.dart';
 import '../utils/store_name_match.dart';
 
 /// Sinkron pesanan pembeli ↔ penjual via Realtime Database.
@@ -64,34 +65,100 @@ class OrdersRtdbService {
     return _sellerOrdersByStoreRef.child(storeSlug).onValue.map(_parseSnapshot);
   }
 
-  static Future<void> saveOrder(ShopOrder order) async {
+  /// Lengkapi UID/slug penjual dari `sellerAccounts` atau produk sebelum simpan.
+  static Future<ShopOrder> enrichSellerIdentity(ShopOrder order) async {
+    var sellerUid = order.sellerUid.trim();
+    final store = order.sellerStoreName.trim();
+    var slug = order.sellerSlug.trim();
+    if (slug.isEmpty && store.isNotEmpty) {
+      slug = storeNameSlug(store);
+    }
+
+    if (sellerUid.isEmpty && store.isNotEmpty) {
+      final fromRegistry = await ChatRtdbService.findSellerUidByStoreName(store);
+      if (fromRegistry != null && fromRegistry.isNotEmpty) {
+        sellerUid = fromRegistry;
+      }
+    }
+
+    if (sellerUid == order.sellerUid && slug == order.sellerSlug) {
+      return order;
+    }
+
+    final lines = sellerUid.isEmpty
+        ? order.lines
+        : order.lines
+            .map(
+              (l) => OrderLineSnapshot(
+                productId: l.productId,
+                title: l.title,
+                imageUrl: l.imageUrl,
+                unitPrice: l.unitPrice,
+                quantity: l.quantity,
+                storeName: l.storeName,
+                sellerUid: sellerUid,
+              ),
+            )
+            .toList();
+    return ShopOrder(
+      id: order.id,
+      createdAt: order.createdAt,
+      lines: lines,
+      subtotal: order.subtotal,
+      shippingFee: order.shippingFee,
+      discount: order.discount,
+      total: order.total,
+      status: order.status,
+      trackingNumber: order.trackingNumber,
+      ecoPointsEarned: order.ecoPointsEarned,
+      completedAt: order.completedAt,
+      buyerUid: order.buyerUid,
+      buyerName: order.buyerName,
+      sellerUid: sellerUid,
+      sellerSlug: slug,
+      sellerStoreName: store.isNotEmpty ? store : order.sellerStoreName,
+      reviewedProductIds: order.reviewedProductIds,
+    );
+  }
+
+  static Future<ShopOrder> saveOrder(ShopOrder order) async {
     if (order.buyerUid.isEmpty) {
       if (kDebugMode) {
         debugPrint('saveOrder: buyerUid kosong, lewati cloud');
       }
-      return;
+      return order;
     }
-    final data = order.toJson();
+
+    final enriched = await enrichSellerIdentity(order);
+    final data = enriched.toJson();
     final writes = <Future<void>>[
-      _buyerOrdersRef.child(order.buyerUid).child(order.id).set(data),
+      _buyerOrdersRef.child(enriched.buyerUid).child(enriched.id).set(data),
     ];
-    if (order.sellerUid.isNotEmpty) {
+    if (enriched.sellerUid.isNotEmpty) {
       writes.add(
-        _sellerOrdersRef.child(order.sellerUid).child(order.id).set(data),
+        _sellerOrdersRef.child(enriched.sellerUid).child(enriched.id).set(data),
       );
     }
-    final slug = order.sellerSlug.isNotEmpty
-        ? order.sellerSlug
-        : storeNameSlug(order.sellerStoreName);
+    final slug = enriched.sellerSlug.isNotEmpty
+        ? enriched.sellerSlug
+        : storeNameSlug(enriched.sellerStoreName);
     if (slug.isNotEmpty) {
-      writes.add(_sellerOrdersByStoreRef.child(slug).child(order.id).set(data));
+      writes.add(
+        _sellerOrdersByStoreRef.child(slug).child(enriched.id).set(data),
+      );
     }
     await Future.wait(writes);
     if (kDebugMode) {
       debugPrint(
-        'RTDB order ${order.id} → buyer + seller ${order.sellerUid} + slug $slug',
+        'RTDB order ${enriched.id} → buyer + seller ${enriched.sellerUid} + slug $slug',
       );
+      if (enriched.sellerUid.isEmpty) {
+        debugPrint(
+          'Peringatan: sellerUid kosong — penjual harus login sekali agar sellerAccounts terdaftar.',
+        );
+      }
     }
+    return enriched;
   }
 
   static Future<void> updateOrder(ShopOrder order) async {

@@ -146,8 +146,20 @@ class ChatProvider extends ChangeNotifier {
   void _onAuthChanged() {
     final uid = _auth?.uid;
     if (uid != _watchAuthUid) {
+      final previous = _watchAuthUid;
       _watchAuthUid = uid;
+      if (previous != null &&
+          previous.isNotEmpty &&
+          (uid == null || uid.isEmpty)) {
+        unawaited(ChatSellerNotify.unsubscribeBuyer(previous));
+        for (final store in _sellerStoreNames) {
+          unawaited(ChatSellerNotify.unsubscribeSellerStore(store));
+        }
+      }
       _resubscribeSellerStreams();
+    }
+    if (uid != null && uid.isNotEmpty) {
+      unawaited(ChatSellerNotify.subscribeBuyer(uid));
     }
     unawaited(_collectSellerStoreNames());
     _debouncer.schedule(notifyListeners);
@@ -247,12 +259,25 @@ class ChatProvider extends ChangeNotifier {
   void _syncInboxMirror() {
     final inbox = _inbox;
     final uid = _auth?.uid;
-    if (inbox == null || uid == null) return;
+    if (inbox == null || uid == null || uid.isEmpty) return;
+    final buyerThreads = myThreads
+        .where((t) => t.buyerUid == uid)
+        .toList(growable: false);
     inbox.syncFromChatThreads(
-      threadsForMode(ChatInboxMode.buyer),
+      buyerThreads,
       uid,
       (t) => displayNameForThread(t, ChatInboxMode.buyer),
     );
+  }
+
+  void _mergeThreadMeta(ChatThreadMeta meta) {
+    final i = _allThreads.indexWhere((t) => t.id == meta.id);
+    if (i >= 0) {
+      _allThreads[i] = meta;
+    } else {
+      _allThreads = [..._allThreads, meta];
+    }
+    _allThreads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
   }
 
   String displayNameForThread(ChatThreadMeta t, ChatInboxMode mode) {
@@ -275,6 +300,32 @@ class ChatProvider extends ChangeNotifier {
     if (parts.isEmpty || parts.first.isEmpty) return '?';
     if (parts.length == 1) return parts.first[0].toUpperCase();
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+
+  /// Muat ulang daftar obrolan pembeli dari RTDB (profil / Pesan pembeli).
+  Future<void> refreshBuyerInbox() async {
+    if (!_chatLive) {
+      _lastError = 'Firebase tidak aktif';
+      notifyListeners();
+      return;
+    }
+    final uid = _auth?.uid;
+    if (uid == null || uid.isEmpty) {
+      _lastError = 'Belum login';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _allThreads = await ChatRtdbService.fetchAllThreads();
+      _lastError = null;
+      _syncInboxMirror();
+      notifyListeners();
+    } catch (e) {
+      _lastError = '$e';
+      if (kDebugMode) debugPrint('refreshBuyerInbox: $e');
+      notifyListeners();
+    }
   }
 
   /// Sinkronkan obrolan penjual dari RTDB (panggil saat buka layar Pesan).
@@ -369,8 +420,13 @@ class ChatProvider extends ChangeNotifier {
         productId: productId,
         productTitle: productTitle,
       );
+      final meta = await ChatRtdbService.getThreadMeta(threadId);
+      if (meta != null) {
+        _mergeThreadMeta(meta);
+      }
       _lastError = null;
       _syncInboxMirror();
+      notifyListeners();
       return threadId;
     } catch (e) {
       _lastError = '$e';
@@ -401,11 +457,19 @@ class ChatProvider extends ChangeNotifier {
 
       final meta = await ChatRtdbService.getThreadMeta(threadId);
       if (meta != null) {
+        _mergeThreadMeta(meta);
         _syncInboxMirror();
+        notifyListeners();
         if (meta.buyerUid == auth.uid) {
           await ChatSellerNotify.notifySeller(
             storeName: meta.sellerName,
             buyerName: name,
+            messagePreview: text,
+          );
+        } else if (meta.buyerUid.isNotEmpty) {
+          await ChatSellerNotify.notifyBuyer(
+            buyerUid: meta.buyerUid,
+            storeName: meta.sellerName,
             messagePreview: text,
           );
         }

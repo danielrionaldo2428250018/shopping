@@ -842,23 +842,41 @@ abstract class AppLocalizations {
   /// **'Elektronik'**
   String get catElectronics;
 
-  /// No description provided for @catFashion.
+  /// No description provided for @catAccessories.
   ///
   /// In id, this message translates to:
-  /// **'Fashion'**
-  String get catFashion;
+  /// **'Aksesoris'**
+  String get catAccessories;
 
-  /// No description provided for @catHome.
+  /// No description provided for @catHomeLiving.
   ///
   /// In id, this message translates to:
-  /// **'Rumah'**
-  String get catHome;
+  /// **'Rumah Tangga'**
+  String get catHomeLiving;
 
-  /// No description provided for @catSports.
+  /// No description provided for @catBooks.
   ///
   /// In id, this message translates to:
-  /// **'Olahraga'**
-  String get catSports;
+  /// **'Buku & Media'**
+  String get catBooks;
+
+  /// No description provided for @catCollectibles.
+  ///
+  /// In id, this message translates to:
+  /// **'Hobi & Koleksi'**
+  String get catCollectibles;
+
+  /// No description provided for @catSpareParts.
+  ///
+  /// In id, this message translates to:
+  /// **'Sparepart'**
+  String get catSpareParts;
+
+  /// No description provided for @catMetal.
+  ///
+  /// In id, this message translates to:
+  /// **'Besi / Logam'**
+  String get catMetal;
 
   /// No description provided for @noProductsYet.
   ///
@@ -997,6 +1015,42 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Harga harus lebih dari 0'**
   String get priceRequired;
+
+  /// No description provided for @stockInvalid.
+  ///
+  /// In id, this message translates to:
+  /// **'Stok tidak boleh negatif'**
+  String get stockInvalid;
+
+  /// No description provided for @addStock.
+  ///
+  /// In id, this message translates to:
+  /// **'Tambah stok'**
+  String get addStock;
+
+  /// No description provided for @addStockTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Tambah stok produk'**
+  String get addStockTitle;
+
+  /// No description provided for @addStockHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Jumlah yang ditambahkan'**
+  String get addStockHint;
+
+  /// No description provided for @addStockSuccess.
+  ///
+  /// In id, this message translates to:
+  /// **'Stok berhasil diperbarui'**
+  String get addStockSuccess;
+
+  /// No description provided for @addStockFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal memperbarui stok'**
+  String get addStockFailed;
 
   /// No description provided for @stockRequired.
   ///
@@ -1598,6 +1652,18 @@ abstract class AppLocalizations {
   /// **'Ekspres'**
   String get shippingExpress;
 
+  /// No description provided for @shippingCargo.
+  ///
+  /// In id, this message translates to:
+  /// **'Cargo'**
+  String get shippingCargo;
+
+  /// No description provided for @shippingPickup.
+  ///
+  /// In id, this message translates to:
+  /// **'Ambil sendiri'**
+  String get shippingPickup;
+
   /// No description provided for @shippingEtaReguler.
   ///
   /// In id, this message translates to:
@@ -1610,6 +1676,18 @@ abstract class AppLocalizations {
   /// **'1 hari kerja'**
   String get shippingEtaExpress;
 
+  /// No description provided for @shippingEtaCargo.
+  ///
+  /// In id, this message translates to:
+  /// **'4–7 hari kerja'**
+  String get shippingEtaCargo;
+
+  /// No description provided for @shippingEtaPickup.
+  ///
+  /// In id, this message translates to:
+  /// **'Hari ini'**
+  String get shippingEtaPickup;
+
   /// No description provided for @subtotalLine.
   ///
   /// In id, this message translates to:
@@ -1621,6 +1699,12 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Ongkir ({method})'**
   String shippingFeeLine(String method);
+
+  /// No description provided for @pickupOnlySameCity.
+  ///
+  /// In id, this message translates to:
+  /// **'Hanya 1 kota'**
+  String get pickupOnlySameCity;
 
   /// No description provided for @paymentLine.
   ///
@@ -1921,6 +2005,36 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Akses lokasi'**
   String get locationAccess;
+
+  /// No description provided for @locationUserCity.
+  ///
+  /// In id, this message translates to:
+  /// **'Lokasi Anda: {city}'**
+  String locationUserCity(String city);
+
+  /// No description provided for @locationNotDetectedYet.
+  ///
+  /// In id, this message translates to:
+  /// **'Kota belum terdeteksi — ketuk Perbarui'**
+  String get locationNotDetectedYet;
+
+  /// No description provided for @locationRefresh.
+  ///
+  /// In id, this message translates to:
+  /// **'Perbarui lokasi'**
+  String get locationRefresh;
+
+  /// No description provided for @checkoutOrderFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Pesanan gagal dibuat. Coba lagi.'**
+  String get checkoutOrderFailed;
+
+  /// No description provided for @cartEmptyCheckout.
+  ///
+  /// In id, this message translates to:
+  /// **'Keranjang kosong.'**
+  String get cartEmptyCheckout;
 
   /// No description provided for @fingerprintAuth.
   ///
@@ -2431,18 +2545,6 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Kami siap menyelesaikan masalah Anda'**
   String get helpSubtitle;
-
-  /// No description provided for @catAccessories.
-  ///
-  /// In id, this message translates to:
-  /// **'Aksesoris'**
-  String get catAccessories;
-
-  /// No description provided for @catFurniture.
-  ///
-  /// In id, this message translates to:
-  /// **'Furnitur'**
-  String get catFurniture;
 
   /// No description provided for @makeOffer.
   ///
@@ -3065,7 +3167,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardSampleDiscountDesc.
   ///
   /// In id, this message translates to:
-  /// **'Berlaku untuk kategori Fashion & Electronics.'**
+  /// **'Berlaku untuk kategori Elektronik & Pakaian Bekas.'**
   String get rewardSampleDiscountDesc;
 
   /// No description provided for @rewardSampleBagDesc.
@@ -3173,8 +3275,38 @@ abstract class AppLocalizations {
   /// No description provided for @orderReviewBtn.
   ///
   /// In id, this message translates to:
-  /// **'Ulasan'**
+  /// **'Beri ulasan'**
   String get orderReviewBtn;
+
+  /// No description provided for @reviewOrderNotCompleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulasan hanya bisa diberikan setelah pesanan diterima.'**
+  String get reviewOrderNotCompleted;
+
+  /// No description provided for @reviewAlreadySubmitted.
+  ///
+  /// In id, this message translates to:
+  /// **'Produk ini sudah Anda ulas untuk pesanan tersebut.'**
+  String get reviewAlreadySubmitted;
+
+  /// No description provided for @reviewThankYou.
+  ///
+  /// In id, this message translates to:
+  /// **'Terima kasih atas ulasannya!'**
+  String get reviewThankYou;
+
+  /// No description provided for @buyerReviewsSection.
+  ///
+  /// In id, this message translates to:
+  /// **'Ulasan pembeli'**
+  String get buyerReviewsSection;
+
+  /// No description provided for @storeRatingLine.
+  ///
+  /// In id, this message translates to:
+  /// **'Toko {rating} · {count} ulasan'**
+  String storeRatingLine(String rating, int count);
 
   /// No description provided for @orderTrackPackage.
   ///

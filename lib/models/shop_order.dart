@@ -59,8 +59,8 @@ class ShopOrder {
     this.sellerUid = '',
     this.sellerSlug = '',
     this.sellerStoreName = '',
-    this.reviewed = false,
-  });
+    List<String>? reviewedProductIds,
+  }) : reviewedProductIds = reviewedProductIds ?? <String>[];
 
   final String id;
   final DateTime createdAt;
@@ -81,7 +81,22 @@ class ShopOrder {
   final String sellerUid;
   final String sellerSlug;
   final String sellerStoreName;
-  bool reviewed;
+
+  /// ID produk yang sudah diulas untuk pesanan ini.
+  final List<String> reviewedProductIds;
+
+  bool get reviewed =>
+      lines.isNotEmpty &&
+      lines.every((l) => reviewedProductIds.contains(l.productId));
+
+  bool isProductReviewed(String productId) =>
+      reviewedProductIds.contains(productId);
+
+  List<String> unreviewedProductIds() => lines
+      .map((l) => l.productId)
+      .where((id) => id.isNotEmpty && !reviewedProductIds.contains(id))
+      .toSet()
+      .toList();
 
   String get primaryProductTitle =>
       lines.isEmpty ? '' : lines.first.title;
@@ -99,7 +114,9 @@ class ShopOrder {
     String? status,
     String? trackingNumber,
     DateTime? completedAt,
-    bool? reviewed,
+    List<String>? reviewedProductIds,
+    String? sellerUid,
+    String? sellerSlug,
   }) {
     return ShopOrder(
       id: id,
@@ -115,10 +132,11 @@ class ShopOrder {
       completedAt: completedAt ?? this.completedAt,
       buyerUid: buyerUid,
       buyerName: buyerName,
-      sellerUid: sellerUid,
-      sellerSlug: sellerSlug,
+      sellerUid: sellerUid ?? this.sellerUid,
+      sellerSlug: sellerSlug ?? this.sellerSlug,
       sellerStoreName: sellerStoreName,
-      reviewed: reviewed ?? this.reviewed,
+      reviewedProductIds:
+          reviewedProductIds ?? List<String>.from(this.reviewedProductIds),
     );
   }
 
@@ -139,6 +157,7 @@ class ShopOrder {
         'sellerSlug': sellerSlug,
         'sellerStoreName': sellerStoreName,
         'reviewed': reviewed,
+        'reviewedProductIds': reviewedProductIds,
         if (completedAt != null)
           'completedAt': completedAt!.toIso8601String(),
       };
@@ -165,7 +184,25 @@ class ShopOrder {
       sellerUid: m['sellerUid'] as String? ?? '',
       sellerSlug: m['sellerSlug'] as String? ?? '',
       sellerStoreName: m['sellerStoreName'] as String? ?? '',
-      reviewed: m['reviewed'] as bool? ?? false,
+      reviewedProductIds: _parseReviewedProductIds(m),
     );
+  }
+
+  static List<String> _parseReviewedProductIds(Map<String, dynamic> m) {
+    final raw = m['reviewedProductIds'];
+    if (raw is List) {
+      return raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    if (m['reviewed'] == true) {
+      final lines = m['lines'];
+      if (lines is List && lines.isNotEmpty) {
+        final first = lines.first;
+        if (first is Map) {
+          final id = first['productId']?.toString() ?? '';
+          if (id.isNotEmpty) return [id];
+        }
+      }
+    }
+    return [];
   }
 }

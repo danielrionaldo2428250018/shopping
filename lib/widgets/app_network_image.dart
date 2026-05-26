@@ -48,6 +48,7 @@ class AppNetworkImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final w = width;
     final h = height;
+    final effectiveLogicalWidth = (w != null && w.isFinite && w > 0) ? w : null;
 
     Widget child;
     final trimmed = url.trim();
@@ -62,12 +63,16 @@ class AppNetworkImage extends StatelessWidget {
         fit: fit,
         filterQuality: filterQuality,
         memCacheWidth: memCacheWidth ??
-            (w != null ? GreenComputing.memCacheWidth(context, w) : null),
+            (effectiveLogicalWidth != null
+                ? GreenComputing.memCacheWidth(context, effectiveLogicalWidth)
+                : null),
         autoLoad: !shouldLazy,
       );
     } else {
       final cacheW = memCacheWidth ??
-          (w != null ? GreenComputing.memCacheWidth(context, w) : null);
+          (effectiveLogicalWidth != null
+              ? GreenComputing.memCacheWidth(context, effectiveLogicalWidth)
+              : null);
       child = Image.network(
         trimmed,
         width: w,

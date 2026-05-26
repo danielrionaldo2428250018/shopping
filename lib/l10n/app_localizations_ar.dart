@@ -402,13 +402,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get catElectronics => 'إلكترونيات';
 
   @override
-  String get catFashion => 'أزياء';
+  String get catAccessories => 'إكسسوارات';
 
   @override
-  String get catHome => 'منزل';
+  String get catHomeLiving => 'Rumah Tangga';
 
   @override
-  String get catSports => 'رياضة';
+  String get catBooks => 'Buku & Media';
+
+  @override
+  String get catCollectibles => 'Hobi & Koleksi';
+
+  @override
+  String get catSpareParts => 'Sparepart';
+
+  @override
+  String get catMetal => 'Besi / Logam';
 
   @override
   String get noProductsYet => 'لا توجد منتجات';
@@ -480,6 +489,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get priceRequired => 'السعر يجب أن يكون أكبر من 0';
+
+  @override
+  String get stockInvalid => 'Stok tidak boleh negatif';
+
+  @override
+  String get addStock => 'Tambah stok';
+
+  @override
+  String get addStockTitle => 'Tambah stok produk';
+
+  @override
+  String get addStockHint => 'Jumlah yang ditambahkan';
+
+  @override
+  String get addStockSuccess => 'Stok berhasil diperbarui';
+
+  @override
+  String get addStockFailed => 'Gagal memperbarui stok';
 
   @override
   String get stockRequired => 'المخزون 1 على الأقل';
@@ -797,10 +824,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shippingExpress => 'سريع';
 
   @override
+  String get shippingCargo => 'Cargo';
+
+  @override
+  String get shippingPickup => 'Ambil sendiri';
+
+  @override
   String get shippingEtaReguler => '2–3 أيام عمل';
 
   @override
   String get shippingEtaExpress => 'يوم عمل واحد';
+
+  @override
+  String get shippingEtaCargo => '4–7 hari kerja';
+
+  @override
+  String get shippingEtaPickup => 'Hari ini';
 
   @override
   String subtotalLine(int count) {
@@ -811,6 +850,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String shippingFeeLine(String method) {
     return 'الشحن ($method)';
   }
+
+  @override
+  String get pickupOnlySameCity => 'Hanya 1 kota';
 
   @override
   String get paymentLine => 'الدفع';
@@ -964,6 +1006,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get locationAccess => 'الوصول للموقع';
+
+  @override
+  String locationUserCity(String city) {
+    return 'Lokasi Anda: $city';
+  }
+
+  @override
+  String get locationNotDetectedYet => 'Kota belum terdeteksi — ketuk Perbarui';
+
+  @override
+  String get locationRefresh => 'Perbarui lokasi';
+
+  @override
+  String get checkoutOrderFailed => 'Pesanan gagal dibuat. Coba lagi.';
+
+  @override
+  String get cartEmptyCheckout => 'Keranjang kosong.';
 
   @override
   String get fingerprintAuth => 'المصادقة ببصمة الإصبع';
@@ -1249,12 +1308,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get helpSubtitle => 'نحن هنا لحل مشاكلك';
-
-  @override
-  String get catAccessories => 'إكسسوارات';
-
-  @override
-  String get catFurniture => 'أثاث';
 
   @override
   String get makeOffer => 'تقديم عرض';
@@ -1663,6 +1716,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get orderReviewBtn => 'مراجعة';
+
+  @override
+  String get reviewOrderNotCompleted =>
+      'Ulasan hanya bisa diberikan setelah pesanan diterima.';
+
+  @override
+  String get reviewAlreadySubmitted =>
+      'Produk ini sudah Anda ulas untuk pesanan tersebut.';
+
+  @override
+  String get reviewThankYou => 'Terima kasih atas ulasannya!';
+
+  @override
+  String get buyerReviewsSection => 'Ulasan pembeli';
+
+  @override
+  String storeRatingLine(String rating, int count) {
+    return 'Toko $rating · $count ulasan';
+  }
 
   @override
   String get orderTrackPackage => 'تتبع الطرد';

@@ -1,5 +1,6 @@
 import '../constants/app_admin_config.dart';
 import '../models/catalog_product.dart';
+import '../utils/store_name_match.dart';
 
 /// Apakah pengguna boleh mengubah/menghapus produk ini.
 bool canManageCatalogProduct({
@@ -19,7 +20,7 @@ bool canManageCatalogProduct({
   if (isSeller &&
       myStoreName != null &&
       myStoreName.isNotEmpty &&
-      product.sellerName == myStoreName) {
+      storeNamesMatch(product.sellerName, myStoreName)) {
     return true;
   }
   return false;

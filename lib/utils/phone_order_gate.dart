@@ -44,9 +44,13 @@ Future<bool> ensurePhoneForOrder(BuildContext context) async {
         ),
         FilledButton(
           onPressed: () {
-            if (_digitsOk(ctrl.text)) {
-              Navigator.pop(ctx, true);
+            if (!_digitsOk(ctrl.text)) {
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                SnackBar(content: Text(loc.phoneOrderHint)),
+              );
+              return;
             }
+            Navigator.pop(ctx, true);
           },
           child: Text(loc.saveAndContinue),
         ),

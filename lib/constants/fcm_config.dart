@@ -6,6 +6,9 @@ abstract final class FcmConfig {
   /// Awalan topic per toko: `preloved-seller-{slug}` — penjual subscribe saat login.
   static const String sellerTopicPrefix = 'preloved-seller-';
 
+  /// Awalan topic per pembeli: `preloved-buyer-{uid}` — subscribe setelah login.
+  static const String buyerTopicPrefix = 'preloved-buyer-';
+
   /// URL deploy Vercel shopping-cloud (production).
   static const String cloudApiBaseUrl = 'https://shopping-cloud.vercel.app';
 

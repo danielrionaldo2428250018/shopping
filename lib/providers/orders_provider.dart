@@ -14,7 +14,6 @@ import '../services/catalog_rtdb_service.dart';
 import '../services/chat_rtdb_service.dart';
 import '../services/orders_rtdb_service.dart';
 import '../utils/loyalty_points.dart';
-import '../services/app_notifications.dart';
 import '../services/chat_seller_notify.dart';
 import '../services/order_seller_notify.dart';
 import '../utils/store_name_match.dart';
@@ -59,8 +58,8 @@ class OrdersProvider extends ChangeNotifier {
   int get sellerPendingCount => _sellerOrders
       .where(
         (o) =>
-            o.status == OrderStatus.processing ||
-            o.status == OrderStatus.packing,
+            o.status != OrderStatus.completed &&
+            o.status != OrderStatus.cancelled,
       )
       .length;
 
@@ -103,10 +102,14 @@ class OrdersProvider extends ChangeNotifier {
     if (uid == null || uid.isEmpty) return;
     try {
       if (store != null) {
-        await ChatSellerNotify.linkSellerUid(
-          storeName: store.storeName,
-          sellerUid: uid,
-        );
+        final name = store.storeName.trim();
+        if (name.isNotEmpty) {
+          await ChatSellerNotify.linkSellerUid(
+            storeName: name,
+            sellerUid: uid,
+          );
+          await ChatSellerNotify.subscribeSellerStore(name);
+        }
       }
       final registered = <String>{};
       for (final p in kCatalogProducts) {
@@ -144,14 +147,23 @@ class OrdersProvider extends ChangeNotifier {
 
   Set<String> _sellerSlugsToWatch(String sellerUid) {
     final slugs = <String>{..._cloudSellerSlugs};
-    final store = _sellers?.myApprovedStore;
-    final canonical = store?.storeName.trim() ?? '';
-    if (canonical.isNotEmpty) {
-      slugs.add(storeNameSlug(canonical));
+    final storeNames = <String>{};
+    for (final store in _sellers?.myApprovedStores ?? const []) {
+      final name = store.storeName.trim();
+      if (name.isNotEmpty) storeNames.add(name);
     }
+    final fallback = _sellers?.myApprovedStore?.storeName.trim() ?? '';
+    if (fallback.isNotEmpty) storeNames.add(fallback);
+
+    for (final name in storeNames) {
+      final s = storeNameSlug(name);
+      if (s.isNotEmpty) slugs.add(s);
+    }
+
     for (final p in kCatalogProducts) {
-      final matchesStore =
-          canonical.isNotEmpty && storeNamesMatch(p.sellerName, canonical);
+      final matchesStore = storeNames.any(
+        (canonical) => storeNamesMatch(p.sellerName, canonical),
+      );
       final ownsProduct = p.sellerUid.trim() == sellerUid;
       if (!matchesStore && !ownsProduct) continue;
       final s = storeNameSlug(p.sellerName);
@@ -313,6 +325,9 @@ class OrdersProvider extends ChangeNotifier {
       }
     }
 
+    final fromSlug = await ChatRtdbService.lookupSellerUid(storeName);
+    if (fromSlug != null && fromSlug.isNotEmpty) return fromSlug;
+
     final fromRegistry = await ChatRtdbService.findSellerUidByStoreName(storeName);
     if (fromRegistry != null && fromRegistry.isNotEmpty) {
       return fromRegistry;
@@ -375,20 +390,29 @@ class OrdersProvider extends ChangeNotifier {
     }
     try {
       await FirebaseAuth.instance.currentUser?.getIdToken(true);
-      await OrdersRtdbService.saveOrder(order);
-      if (order.sellerStoreName.trim().isNotEmpty) {
+      final saved = await OrdersRtdbService.saveOrder(order);
+      _patchLocalOrder(saved);
+      if (saved.sellerStoreName.trim().isNotEmpty) {
         unawaited(
           OrderSellerNotify.notifyNewOrder(
-            storeName: order.sellerStoreName,
-            orderId: order.id,
-            buyerName: order.buyerName,
-            productTitle: order.primaryProductTitle,
-            total: order.total,
+            storeName: saved.sellerStoreName,
+            orderId: saved.id,
+            buyerName: saved.buyerName,
+            productTitle: saved.primaryProductTitle,
+            total: saved.total,
           ),
         );
       }
     } catch (e, st) {
       if (kDebugMode) debugPrint('saveOrder cloud: $e\n$st');
+    }
+  }
+
+  void _patchLocalOrder(ShopOrder saved) {
+    final i = _orders.indexWhere((o) => o.id == saved.id);
+    if (i >= 0) {
+      _orders[i] = saved;
+      _persist();
     }
   }
 
@@ -400,14 +424,6 @@ class OrdersProvider extends ChangeNotifier {
       orderId: order.id,
       title: title,
       preview: preview,
-    );
-    unawaited(
-      presentUserNotification(
-        title: title,
-        body: preview,
-        type: 'order',
-        orderId: order.id,
-      ),
     );
   }
 
@@ -677,12 +693,33 @@ class OrdersProvider extends ChangeNotifier {
     unawaited(_syncOrder(o));
   }
 
-  bool markReviewed(String orderId) {
+  bool markProductReviewed(String orderId, String productId) {
     final i = _orders.indexWhere((o) => o.id == orderId);
-    if (i < 0) return false;
-    _orders[i].reviewed = true;
-    unawaited(_syncOrder(_orders[i]));
+    if (i < 0 || productId.isEmpty) return false;
+    final o = _orders[i];
+    if (!o.reviewedProductIds.contains(productId)) {
+      o.reviewedProductIds.add(productId);
+    }
+    _mirrorReviewedProducts(o);
+    unawaited(_syncOrder(o));
+    notifyListeners();
     return true;
+  }
+
+  void _mirrorReviewedProducts(ShopOrder source) {
+    void apply(ShopOrder target) {
+      for (final id in source.reviewedProductIds) {
+        if (!target.reviewedProductIds.contains(id)) {
+          target.reviewedProductIds.add(id);
+        }
+      }
+    }
+
+    final buyerIdx = _orders.indexWhere((o) => o.id == source.id);
+    if (buyerIdx >= 0) apply(_orders[buyerIdx]);
+
+    final sellerIdx = _sellerOrders.indexWhere((o) => o.id == source.id);
+    if (sellerIdx >= 0) apply(_sellerOrders[sellerIdx]);
   }
 
   void clearAll() {

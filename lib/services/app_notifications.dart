@@ -169,6 +169,20 @@ Future<void> presentUserNotification({
   );
 }
 
+Future<bool> _canShowSystemNotification() async {
+  if (kIsWeb) return false;
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    final status = await Permission.notification.status;
+    return status.isGranted;
+  }
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+  }
+  return true;
+}
+
 Future<void> showBasicNotification(
   String? title,
   String? body, {
@@ -181,6 +195,8 @@ Future<void> showBasicNotification(
       body: body ?? '',
     );
   }
+
+  if (!await _canShowSystemNotification()) return;
 
   const android = AndroidNotificationDetails(
     'preloved_default',
@@ -214,6 +230,8 @@ Future<void> showOrderNotification({
   if (!skipInApp) {
     InAppNotificationHost.instance.show(title: title, body: body);
   }
+
+  if (!await _canShowSystemNotification()) return;
 
   final styleInfo = BigTextStyleInformation(
     body,

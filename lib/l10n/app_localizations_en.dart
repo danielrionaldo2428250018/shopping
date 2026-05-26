@@ -406,13 +406,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catElectronics => 'Electronics';
 
   @override
-  String get catFashion => 'Fashion';
+  String get catAccessories => 'Accessories';
 
   @override
-  String get catHome => 'Home';
+  String get catHomeLiving => 'Home & Living';
 
   @override
-  String get catSports => 'Sports';
+  String get catBooks => 'Books & Media';
+
+  @override
+  String get catCollectibles => 'Hobbies & Collectibles';
+
+  @override
+  String get catSpareParts => 'Spare parts';
+
+  @override
+  String get catMetal => 'Metal / Iron';
 
   @override
   String get noProductsYet => 'No products yet';
@@ -484,6 +493,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get priceRequired => 'Price must be greater than 0';
+
+  @override
+  String get stockInvalid => 'Stock cannot be negative';
+
+  @override
+  String get addStock => 'Add stock';
+
+  @override
+  String get addStockTitle => 'Add product stock';
+
+  @override
+  String get addStockHint => 'Quantity to add';
+
+  @override
+  String get addStockSuccess => 'Stock updated';
+
+  @override
+  String get addStockFailed => 'Failed to update stock';
 
   @override
   String get stockRequired => 'Stock must be at least 1';
@@ -808,10 +835,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shippingExpress => 'Express';
 
   @override
+  String get shippingCargo => 'Cargo';
+
+  @override
+  String get shippingPickup => 'Self pickup';
+
+  @override
   String get shippingEtaReguler => '2–3 business days';
 
   @override
   String get shippingEtaExpress => '1 business day';
+
+  @override
+  String get shippingEtaCargo => '4–7 business days';
+
+  @override
+  String get shippingEtaPickup => 'Today';
 
   @override
   String subtotalLine(int count) {
@@ -822,6 +861,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String shippingFeeLine(String method) {
     return 'Shipping ($method)';
   }
+
+  @override
+  String get pickupOnlySameCity => 'Same city only';
 
   @override
   String get paymentLine => 'Payment';
@@ -976,6 +1018,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationAccess => 'Location access';
+
+  @override
+  String locationUserCity(String city) {
+    return 'Your location: $city';
+  }
+
+  @override
+  String get locationNotDetectedYet => 'City not detected yet — tap Refresh';
+
+  @override
+  String get locationRefresh => 'Refresh location';
+
+  @override
+  String get checkoutOrderFailed => 'Could not place order. Please try again.';
+
+  @override
+  String get cartEmptyCheckout => 'Your cart is empty.';
 
   @override
   String get fingerprintAuth => 'Fingerprint authentication';
@@ -1263,12 +1322,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSubtitle => 'We are here to solve your problems';
-
-  @override
-  String get catAccessories => 'Accessories';
-
-  @override
-  String get catFurniture => 'Furniture';
 
   @override
   String get makeOffer => 'Make offer';
@@ -1626,7 +1679,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardSampleDiscountDesc =>
-      'Valid for Fashion & Electronics categories.';
+      'Valid for Electronics & Spare parts categories.';
 
   @override
   String get rewardSampleBagDesc =>
@@ -1686,7 +1739,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchProductsHint => 'Search products…';
 
   @override
-  String get orderReviewBtn => 'Review';
+  String get orderReviewBtn => 'Write review';
+
+  @override
+  String get reviewOrderNotCompleted =>
+      'You can review only after the order is received.';
+
+  @override
+  String get reviewAlreadySubmitted =>
+      'You already reviewed this product for this order.';
+
+  @override
+  String get reviewThankYou => 'Thank you for your review!';
+
+  @override
+  String get buyerReviewsSection => 'Buyer reviews';
+
+  @override
+  String storeRatingLine(String rating, int count) {
+    return 'Store $rating · $count reviews';
+  }
 
   @override
   String get orderTrackPackage => 'Track package';

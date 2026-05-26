@@ -139,9 +139,18 @@ class SellerApplicationsProvider extends ChangeNotifier {
 
     _syncingSellerRole = true;
     try {
+      final uid = auth.uid?.trim();
       for (final app in approved) {
         if (app.email.trim().toLowerCase() == email) {
           auth.grantSellerRoleForEmail(app.email, notify: false);
+          if (uid != null && uid.isNotEmpty) {
+            unawaited(
+              ChatRtdbService.registerSellerAccount(
+                storeName: app.storeName,
+                sellerUid: uid,
+              ),
+            );
+          }
         }
       }
     } finally {

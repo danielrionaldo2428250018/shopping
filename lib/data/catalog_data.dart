@@ -1,3 +1,4 @@
+import '../constants/product_categories.dart';
 import '../models/catalog_product.dart';
 
 /// Label terjual untuk katalog (mis. `12 terjual`).
@@ -47,9 +48,11 @@ List<CatalogProduct> catalogSearch(String query) {
 }
 
 List<CatalogProduct> catalogByCategory(String categoryTitle) {
-  final c = categoryTitle.toLowerCase();
+  final target = ProductCategories.normalize(categoryTitle).toLowerCase();
   return kCatalogProducts
-      .where((p) => p.category.toLowerCase() == c)
+      .where(
+        (p) => ProductCategories.normalize(p.category).toLowerCase() == target,
+      )
       .toList();
 }
 
