@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +10,10 @@ import '../data/catalog_data.dart' show catalogProductById, formatIdr;
 import '../providers/auth_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
+import '../providers/location_provider.dart';
 import '../providers/orders_provider.dart';
+import '../providers/seller_applications_provider.dart';
+import '../providers/settings_prefs_provider.dart';
 import '../utils/checkout_voucher.dart';
 import '../utils/phone_order_gate.dart';
 import '../widgets/app_network_image.dart';
@@ -78,32 +83,88 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   static const Color _purple = Color(0xFF7B42F6);
 
   late int _qty;
+  late final TextEditingController _qtyCtrl;
+  final _qtyFocus = FocusNode();
   int _shippingIndex = 0;
   final _voucherCtrl = TextEditingController();
   String _appliedVoucher = '';
 
   String _paymentLabel = '';
+  bool _locTried = false;
+  bool _isPlacing = false;
 
-  static const _shippingFees = [15000, 35000];
-
-  ({String label, String eta, int fee}) _shippingOption(
-    int index,
-    AppLocalizations loc,
-  ) {
-    switch (index) {
-      case 1:
+  ({String key, String label, String eta, int fee, bool enabled})
+      _shippingOptionForKey(
+    String key,
+    AppLocalizations loc, {
+    required bool enabled,
+  }) {
+    switch (key) {
+      case 'cargo':
         return (
+          key: key,
+          label: loc.shippingCargo,
+          eta: loc.shippingEtaCargo,
+          fee: 60000,
+          enabled: enabled,
+        );
+      case 'express':
+        return (
+          key: key,
           label: loc.shippingExpress,
           eta: loc.shippingEtaExpress,
-          fee: _shippingFees[1],
+          fee: 35000,
+          enabled: enabled,
+        );
+      case 'pickup':
+        return (
+          key: key,
+          label: loc.shippingPickup,
+          eta: loc.shippingEtaPickup,
+          fee: 0,
+          enabled: enabled,
         );
       default:
         return (
+          key: 'reguler',
           label: loc.shippingReguler,
           eta: loc.shippingEtaReguler,
-          fee: _shippingFees[0],
+          fee: 15000,
+          enabled: enabled,
         );
     }
+  }
+
+  List<({String key, String label, String eta, int fee, bool enabled})>
+      _shippingOptions(AppLocalizations loc) {
+    final prefs = context.read<SettingsPrefsProvider>();
+    final userCity = context.read<LocationProvider>().city;
+
+    final app = context
+        .read<SellerApplicationsProvider>()
+        .approvedStoreBySellerName(widget.args.sellerName);
+    var sellerCity = app?.city.trim() ?? '';
+    if (sellerCity.isEmpty) {
+      final fresh = catalogProductById(widget.args.productId);
+      sellerCity = fresh?.locationLabel.trim() ?? '';
+    }
+
+    final canUseLocation =
+        prefs.locationFeatureEnabled && userCity.trim().isNotEmpty;
+    final canPickup = canUseLocation &&
+        sellerCity.isNotEmpty &&
+        context.read<LocationProvider>().isSameCity(sellerCity);
+
+    const keys = <String>['cargo', 'express', 'reguler', 'pickup'];
+    return keys
+        .map(
+          (k) => _shippingOptionForKey(
+            k,
+            loc,
+            enabled: k == 'pickup' ? canPickup : true,
+          ),
+        )
+        .toList();
   }
 
   String _displayPayment(AppLocalizations loc) =>
@@ -116,12 +177,54 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   void initState() {
     super.initState();
     _qty = 1;
+    _qtyCtrl = TextEditingController(text: '1');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = context.read<SettingsPrefsProvider>();
+      if (prefs.locationFeatureEnabled && !_locTried) {
+        _locTried = true;
+        final locProv = context.read<LocationProvider>();
+        Future<void> refreshLoc() async {
+          final ok = locProv.city.trim().isEmpty
+              ? await locProv.requestAndRefresh()
+              : await locProv.refreshIfPermitted();
+          if (ok && mounted) {
+            context.read<SettingsPrefsProvider>().setLocationFeature(true);
+          }
+        }
+        unawaited(refreshLoc());
+      }
+    });
   }
 
   @override
   void dispose() {
     _voucherCtrl.dispose();
+    _qtyCtrl.dispose();
+    _qtyFocus.dispose();
     super.dispose();
+  }
+
+  void _applyQtyTyped() {
+    final raw = _qtyCtrl.text.trim();
+    var n = int.tryParse(raw);
+    if (n == null || n < 1) n = 1;
+    final fresh = catalogProductById(widget.args.productId);
+    final maxStock = fresh?.stock ?? widget.args.stock;
+    if (n > maxStock) n = maxStock;
+    if (n < 1) n = 1;
+    setState(() {
+      _qty = n!;
+      _qtyCtrl.text = '$_qty';
+    });
+  }
+
+  void _ensureShippingIndexEnabled(AppLocalizations loc) {
+    final opts = _shippingOptions(loc);
+    if (opts.isEmpty) return;
+    if (_shippingIndex >= opts.length) _shippingIndex = 0;
+    if (opts[_shippingIndex].enabled) return;
+    final firstEnabled = opts.indexWhere((o) => o.enabled);
+    _shippingIndex = firstEnabled >= 0 ? firstEnabled : 0;
   }
 
   int get _subtotal => widget.args.unitPrice * _qty;
@@ -132,7 +235,10 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   }
 
   int _shippingFee(LoyaltyPointsProvider loyalty) {
-    final base = _shippingOption(_shippingIndex, context.l10n).fee;
+    final loc = context.l10n;
+    _ensureShippingIndexEnabled(loc);
+    final opts = _shippingOptions(loc);
+    final base = opts.isEmpty ? 0 : opts[_shippingIndex].fee;
     return CheckoutVoucherRules.shippingAfterDiscount(
       base,
       _resolvedVoucher(loyalty),
@@ -181,12 +287,18 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
 
   void _incQty() {
     if (_qty >= widget.args.stock) return;
-    setState(() => _qty++);
+    setState(() {
+      _qty++;
+      _qtyCtrl.text = '$_qty';
+    });
   }
 
   void _decQty() {
     if (_qty <= 1) return;
-    setState(() => _qty--);
+    setState(() {
+      _qty--;
+      _qtyCtrl.text = '$_qty';
+    });
   }
 
   Future<void> _pickAddressBuy() async {
@@ -293,6 +405,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   }
 
   Future<void> _confirmOrder() async {
+    if (_isPlacing) return;
     if (!await ensurePhoneForOrder(context)) return;
     if (!context.mounted) return;
     final loc = context.l10n;
@@ -331,53 +444,70 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     }
 
     final catalog = context.read<CatalogProvider>();
-    final stockOk = await catalog.fulfillPurchaseStock([
-      (productId: widget.args.productId, quantity: _qty),
-    ]);
-    if (!context.mounted) return;
-    if (!stockOk) {
-      final msg = catalog.error == 'auth'
-          ? loc.signInToContinue
-          : loc.checkoutStockFailed;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-      return;
-    }
-
-    final result = await context.read<OrdersProvider>().addSingleBuy(
-          productId: widget.args.productId,
-          quantity: _qty,
-          shippingFee: ship,
-          discount: disc,
-          buyerUid: buyerUid,
-          buyerName: context.read<AuthProvider>().displayName ??
-              FirebaseAuth.instance.currentUser?.displayName,
-        );
-    if (result.orderId.isEmpty) return;
-    if (!context.mounted) return;
-    if (voucher != null &&
-        voucher.fromPoints &&
-        result.orderId.isNotEmpty) {
-      loyalty.markVoucherUsed(voucher.code, result.orderId);
-    }
-    final earned = loyalty.earnFromPurchase(
-          result.total,
-          orderId: result.orderId,
-        );
-    if (!context.mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
-      '/payment-success',
-      arguments: {
-        'points': earned,
-        'total': result.total,
-      },
+    final stockLine = (
+      productId: widget.args.productId,
+      quantity: _qty,
     );
+
+    setState(() => _isPlacing = true);
+    try {
+      final stockOk = await catalog.fulfillPurchaseStock([stockLine]);
+      if (!mounted) return;
+      if (!stockOk) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.checkoutStockFailed)),
+        );
+        return;
+      }
+
+      final result = await context.read<OrdersProvider>().addSingleBuy(
+            productId: widget.args.productId,
+            quantity: _qty,
+            shippingFee: ship,
+            discount: disc,
+            buyerUid: buyerUid,
+            buyerName: context.read<AuthProvider>().displayName ??
+                FirebaseAuth.instance.currentUser?.displayName,
+          );
+      if (!mounted) return;
+      if (result.orderId.isEmpty) {
+        catalog.restorePurchaseStock([stockLine]);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.checkoutOrderFailed)),
+        );
+        return;
+      }
+      if (voucher != null &&
+          voucher.fromPoints &&
+          result.orderId.isNotEmpty) {
+        loyalty.markVoucherUsed(voucher.code, result.orderId);
+      }
+      final earned = loyalty.earnFromPurchase(
+        result.total,
+        orderId: result.orderId,
+      );
+      if (!mounted) return;
+      await Navigator.of(context).pushReplacementNamed(
+        '/payment-success',
+        arguments: {
+          'points': earned,
+          'total': result.total,
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      catalog.restorePurchaseStock([stockLine]);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.checkoutOrderFailed)),
+      );
+    } finally {
+      if (mounted) setState(() => _isPlacing = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LocationProvider>();
     final loc = context.l10n;
     final loyalty = context.watch<LoyaltyPointsProvider>();
     final a = widget.args;
@@ -492,7 +622,16 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    icon: const Icon(Icons.payment_rounded),
+                    icon: _isPlacing
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.payment_rounded),
                     label: Text(
                       loc.buyNow,
                       style: const TextStyle(
@@ -624,14 +763,24 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                   icon: const Icon(Icons.remove_rounded),
                   color: _purple,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    '$_qty',
+                SizedBox(
+                  width: 56,
+                  child: TextField(
+                    controller: _qtyCtrl,
+                    focusNode: _qtyFocus,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                    ),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                    onSubmitted: (_) => _applyQtyTyped(),
+                    onEditingComplete: _applyQtyTyped,
                   ),
                 ),
                 IconButton(
@@ -656,6 +805,8 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
   }
 
   Widget _shippingCard(AppLocalizations loc) {
+    final opts = _shippingOptions(loc);
+    _ensureShippingIndexEnabled(loc);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -663,12 +814,12 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
-        children: List.generate(_shippingFees.length, (i) {
-          final o = _shippingOption(i, loc);
+        children: List.generate(opts.length, (i) {
+          final o = opts[i];
           final sel = _shippingIndex == i;
           final borderRadius = BorderRadius.vertical(
             top: i == 0 ? const Radius.circular(14) : Radius.zero,
-            bottom: i == _shippingFees.length - 1
+            bottom: i == opts.length - 1
                 ? const Radius.circular(14)
                 : Radius.zero,
           );
@@ -679,7 +830,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
             borderRadius: borderRadius,
             child: InkWell(
               borderRadius: borderRadius,
-              onTap: () => setState(() => _shippingIndex = i),
+              onTap: o.enabled ? () => setState(() => _shippingIndex = i) : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -701,7 +852,9 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${o.eta} • ${_formatIdr(o.fee)}',
+                            o.enabled
+                                ? '${o.eta} • ${_formatIdr(o.fee)}'
+                                : '${o.eta} • ${_formatIdr(o.fee)} • ${loc.pickupOnlySameCity}',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade700,
@@ -714,7 +867,9 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                       sel
                           ? Icons.radio_button_checked_rounded
                           : Icons.radio_button_off_rounded,
-                      color: sel ? _purple : Colors.grey.shade400,
+                      color: o.enabled
+                          ? (sel ? _purple : Colors.grey.shade400)
+                          : Colors.grey.shade300,
                     ),
                   ],
                 ),
@@ -963,7 +1118,11 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
           _sumRow(loc.subtotalLine(_qty), _formatIdr(_subtotal)),
           const SizedBox(height: 10),
           _sumRow(
-            loc.shippingFeeLine(_shippingOption(_shippingIndex, loc).label),
+            loc.shippingFeeLine(
+              _shippingOptions(loc)[
+                _shippingIndex.clamp(0, _shippingOptions(loc).length - 1)
+              ].label,
+            ),
             _formatIdr(_shippingFee(loyalty)),
           ),
           if (disc > 0) ...[

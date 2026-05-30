@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +10,9 @@ import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/loyalty_points_provider.dart';
+import '../providers/location_provider.dart';
 import '../providers/orders_provider.dart';
+import '../providers/seller_applications_provider.dart';
 import '../providers/settings_prefs_provider.dart';
 import '../services/biometric_auth_service.dart';
 import '../utils/app_screen_style.dart';
@@ -37,27 +41,90 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String _addressSummary = '';
 
   String _paymentLabel = '';
+  bool _locTried = false;
+  bool _isPlacing = false;
 
-  static const _shippingFees = [15000, 35000];
-
-  ({String label, String eta, int fee}) _shippingOption(
-    int index,
-    AppLocalizations loc,
-  ) {
-    switch (index) {
-      case 1:
+  ({String key, String label, String eta, int fee, bool enabled})
+      _shippingOptionForKey(
+    String key,
+    AppLocalizations loc, {
+    required bool enabled,
+  }) {
+    switch (key) {
+      case 'cargo':
         return (
+          key: key,
+          label: loc.shippingCargo,
+          eta: loc.shippingEtaCargo,
+          fee: 60000,
+          enabled: enabled,
+        );
+      case 'express':
+        return (
+          key: key,
           label: loc.shippingExpress,
           eta: loc.shippingEtaExpress,
-          fee: _shippingFees[1],
+          fee: 35000,
+          enabled: enabled,
+        );
+      case 'pickup':
+        return (
+          key: key,
+          label: loc.shippingPickup,
+          eta: loc.shippingEtaPickup,
+          fee: 0,
+          enabled: enabled,
         );
       default:
         return (
+          key: 'reguler',
           label: loc.shippingReguler,
           eta: loc.shippingEtaReguler,
-          fee: _shippingFees[0],
+          fee: 15000,
+          enabled: enabled,
         );
     }
+  }
+
+  List<({String key, String label, String eta, int fee, bool enabled})>
+      _shippingOptions(AppLocalizations loc) {
+    final cart = context.read<CartProvider>();
+    final prefs = context.read<SettingsPrefsProvider>();
+    final userCity = context.read<LocationProvider>().city;
+
+    final storeNames =
+        cart.lines.map((l) => l.product.sellerName.trim()).toSet();
+    final singleStore = storeNames.length == 1;
+
+    String sellerCity = '';
+    if (singleStore) {
+      final storeName = storeNames.first;
+      final app = context
+          .read<SellerApplicationsProvider>()
+          .approvedStoreBySellerName(storeName);
+      sellerCity = app?.city.trim() ?? '';
+      if (sellerCity.isEmpty && cart.lines.isNotEmpty) {
+        sellerCity = cart.lines.first.product.locationLabel.trim();
+      }
+    }
+
+    final canUseLocation =
+        prefs.locationFeatureEnabled && userCity.trim().isNotEmpty;
+    final canPickup = canUseLocation &&
+        singleStore &&
+        sellerCity.isNotEmpty &&
+        context.read<LocationProvider>().isSameCity(sellerCity);
+
+    const keys = <String>['cargo', 'express', 'reguler', 'pickup'];
+    return keys
+        .map(
+          (k) => _shippingOptionForKey(
+            k,
+            loc,
+            enabled: k == 'pickup' ? canPickup : true,
+          ),
+        )
+        .toList();
   }
 
   String _displayPayment(AppLocalizations loc) =>
@@ -69,6 +136,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (_addressSummary.isEmpty) {
       _addressSummary = context.l10n.demoAddrHomeFull;
     }
+    final prefs = context.read<SettingsPrefsProvider>();
+    if (prefs.locationFeatureEnabled && !_locTried) {
+      _locTried = true;
+      final locProv = context.read<LocationProvider>();
+      Future<void> refreshLoc() async {
+        final ok = locProv.city.trim().isEmpty
+            ? await locProv.requestAndRefresh()
+            : await locProv.refreshIfPermitted();
+        if (ok && mounted) {
+          context.read<SettingsPrefsProvider>().setLocationFeature(true);
+        }
+      }
+      unawaited(refreshLoc());
+    }
+  }
+
+  void _ensureShippingIndexEnabled(AppLocalizations loc) {
+    final opts = _shippingOptions(loc);
+    if (opts.isEmpty) return;
+    if (_shippingIndex >= opts.length) _shippingIndex = 0;
+    if (opts[_shippingIndex].enabled) return;
+    final firstEnabled = opts.indexWhere((o) => o.enabled);
+    _shippingIndex = firstEnabled >= 0 ? firstEnabled : 0;
   }
 
   @override
@@ -83,7 +173,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   int _shippingFee(LoyaltyPointsProvider loyalty) {
-    final base = _shippingOption(_shippingIndex, context.l10n).fee;
+    final loc = context.l10n;
+    _ensureShippingIndexEnabled(loc);
+    final opts = _shippingOptions(loc);
+    final base = opts.isEmpty ? 0 : opts[_shippingIndex].fee;
     return CheckoutVoucherRules.shippingAfterDiscount(
       base,
       _resolvedVoucher(loyalty),
@@ -243,6 +336,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _placeOrder() async {
+    if (_isPlacing) return;
     if (!await ensurePhoneForOrder(context)) return;
     if (!context.mounted) return;
 
@@ -289,64 +383,90 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final disc = _discount(sub, loyalty);
     final total = sub + ship - disc;
 
-    if (total < 0 || cart.lines.isEmpty) return;
-
-    for (final line in cart.lines) {
-      final fresh =
-          catalogProductById(line.product.id) ?? line.product;
-      if (line.quantity > fresh.stock) {
-        cart.setQuantity(line.product.id, fresh.stock);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.checkoutStockFailed)),
-        );
-        return;
-      }
+    if (cart.lines.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.cartEmptyCheckout)),
+      );
+      return;
+    }
+    if (total < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.checkoutOrderFailed)),
+      );
+      return;
     }
 
     final stockLines = cart.lines
         .map((l) => (productId: l.product.id, quantity: l.quantity))
         .toList();
 
-    final stockOk = await catalog.fulfillPurchaseStock(stockLines);
-    if (!context.mounted) return;
-    if (!stockOk) {
-      final msg = catalog.error == 'auth'
-          ? loc.signInToContinue
-          : loc.checkoutStockFailed;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-      return;
-    }
+    setState(() => _isPlacing = true);
+    try {
+      for (final line in cart.lines) {
+        final fresh =
+            catalogProductById(line.product.id) ?? line.product;
+        if (line.quantity > fresh.stock) {
+          cart.setQuantity(line.product.id, fresh.stock);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(loc.checkoutStockFailed)),
+          );
+          return;
+        }
+      }
 
-    final result = await orders.addFromCheckout(
-      cart: cart,
-      shippingFee: ship,
-      discount: disc,
-      buyerUid: buyerUid,
-      buyerName: context.read<AuthProvider>().displayName ??
-          FirebaseAuth.instance.currentUser?.displayName,
-    );
-    if (!context.mounted) return;
-    if (voucher != null &&
-        voucher.fromPoints &&
-        result.orderId.isNotEmpty) {
-      loyalty.markVoucherUsed(voucher.code, result.orderId);
-    }
-    final earned = loyalty.earnFromPurchase(
-          result.total,
-          orderId: result.orderId,
+      final stockOk = await catalog.fulfillPurchaseStock(stockLines);
+      if (!mounted) return;
+      if (!stockOk) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.checkoutStockFailed)),
         );
+        return;
+      }
 
-    if (!context.mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
-      '/payment-success',
-      arguments: {
-        'points': earned,
-        'total': result.total,
-      },
-    );
+      final result = await orders.addFromCheckout(
+        cart: cart,
+        shippingFee: ship,
+        discount: disc,
+        buyerUid: buyerUid,
+        buyerName: context.read<AuthProvider>().displayName ??
+            FirebaseAuth.instance.currentUser?.displayName,
+      );
+      if (!mounted) return;
+      if (result.orderId.isEmpty) {
+        catalog.restorePurchaseStock(stockLines);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.checkoutOrderFailed)),
+        );
+        return;
+      }
+      if (voucher != null &&
+          voucher.fromPoints &&
+          result.orderId.isNotEmpty) {
+        loyalty.markVoucherUsed(voucher.code, result.orderId);
+      }
+      final earned = loyalty.earnFromPurchase(
+        result.total,
+        orderId: result.orderId,
+      );
+
+      if (!mounted) return;
+      await Navigator.of(context).pushReplacementNamed(
+        '/payment-success',
+        arguments: {
+          'points': earned,
+          'total': result.total,
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      catalog.restorePurchaseStock(stockLines);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.checkoutOrderFailed)),
+      );
+    } finally {
+      if (mounted) setState(() => _isPlacing = false);
+    }
   }
 
   @override
@@ -381,6 +501,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     final loc = context.l10n;
+    context.watch<LocationProvider>();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -423,7 +544,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: _placeOrder,
-                    icon: const Icon(Icons.lock_outline_rounded),
+                    icon: _isPlacing
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.lock_outline_rounded),
                     label: Text(
                       loc.buyNow,
                       style: const TextStyle(
@@ -511,8 +641,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  ...List.generate(_shippingFees.length, (i) {
-                    final o = _shippingOption(i, loc);
+                  ...List.generate(_shippingOptions(loc).length, (i) {
+                    final o = _shippingOptions(loc)[i];
                     final sel = _shippingIndex == i;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
@@ -523,8 +653,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         borderRadius: BorderRadius.circular(12),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () =>
-                              setState(() => _shippingIndex = i),
+                          onTap: o.enabled
+                              ? () => setState(() => _shippingIndex = i)
+                              : null,
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
@@ -533,7 +664,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   sel
                                       ? Icons.radio_button_checked_rounded
                                       : Icons.radio_button_off_rounded,
-                                  color: sel ? _purple : Colors.grey,
+                                  color: o.enabled
+                                      ? (sel ? _purple : Colors.grey)
+                                      : Colors.grey.shade400,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -548,7 +681,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '${o.eta} • ${formatIdr(o.fee)}',
+                                        o.enabled
+                                            ? '${o.eta} • ${formatIdr(o.fee)}'
+                                            : '${o.eta} • ${formatIdr(o.fee)} • ${loc.pickupOnlySameCity}',
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey.shade700,
@@ -662,7 +797,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(height: 8),
                   _sumRow(
                     loc.shippingFeeLine(
-                      _shippingOption(_shippingIndex, loc).label,
+                      _shippingOptions(loc)[
+                        _shippingIndex.clamp(0, _shippingOptions(loc).length - 1)
+                      ].label,
                     ),
                     formatIdr(ship),
                   ),

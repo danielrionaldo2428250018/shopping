@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../constants/product_categories.dart';
 import '../data/catalog_data.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
@@ -42,19 +43,33 @@ class _EditProductScreenState extends State<EditProductScreen> {
   bool _saving = false;
 
   static const _conditions = ['Brand New', 'Like New', 'Good', 'Fair'];
-  static const _categories = ['Electronics', 'Fashion', 'Home'];
 
   @override
   void initState() {
     super.initState();
-    _product = catalogProductOrNull(widget.productId);
-    final p = _product;
+    final p = catalogProductOrNull(widget.productId);
+    _product = p;
     nameCtrl = TextEditingController(text: p?.title ?? '');
     priceCtrl = TextEditingController(text: '${p?.unitPrice ?? 0}');
     stockCtrl = TextEditingController(text: '${p?.stock ?? 0}');
     descCtrl = TextEditingController(text: p?.description ?? '');
-    category = p?.category;
+    category = p == null ? null : ProductCategories.normalize(p.category);
     condition = p?.condition ?? 'Like New';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_product != null) return;
+    final loaded = catalogProductOrNull(widget.productId);
+    if (loaded == null) return;
+    _product = loaded;
+    nameCtrl.text = loaded.title;
+    priceCtrl.text = '${loaded.unitPrice}';
+    stockCtrl.text = '${loaded.stock}';
+    descCtrl.text = loaded.description;
+    category = ProductCategories.normalize(loaded.category);
+    condition = loaded.condition;
   }
 
   @override
@@ -159,9 +174,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
     final price = _parseInt(priceCtrl.text);
     final stock = _parseInt(stockCtrl.text);
-    if (price <= 0 || stock <= 0) {
+    if (price <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.priceRequired)),
+      );
+      return;
+    }
+    if (stock < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(loc.stockInvalid)),
       );
       return;
     }
@@ -200,9 +221,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
 
     final catalog = context.read<CatalogProvider>();
+    final store =
+        context.read<SellerApplicationsProvider>().myApprovedStore;
     final ok = await catalog.updateProduct(
       updated,
       claimSellerUid: auth.uid,
+      sellerStoreName: store?.storeName.trim(),
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -274,8 +298,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<CatalogProvider>();
     final loc = context.l10n;
-    final p = _product;
+    final p = _product ?? catalogProductOrNull(widget.productId);
 
     if (p == null) {
       return Scaffold(
@@ -342,17 +367,20 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _categories.contains(category) ? category : null,
+                    value: category != null &&
+                            ProductCategories.ids.contains(category)
+                        ? category
+                        : null,
                     decoration: InputDecoration(
                       labelText: loc.selectCategory,
                       filled: true,
                       fillColor: appCardColor(context),
                     ),
-                    items: _categories
+                    items: ProductCategories.ids
                         .map(
                           (c) => DropdownMenuItem(
                             value: c,
-                            child: Text(c),
+                            child: Text(ProductCategories.label(loc, c)),
                           ),
                         )
                         .toList(),

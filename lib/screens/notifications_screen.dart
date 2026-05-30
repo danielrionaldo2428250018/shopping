@@ -11,9 +11,11 @@ import '../models/inbox_thread.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/inbox_messages_provider.dart';
+import '../providers/orders_provider.dart';
 import 'chat_screen.dart';
 import '../services/app_notifications.dart';
 import 'notification_chat_screen.dart';
+import 'seller_orders_screen.dart';
 
 /// Daftar percakapan seperti WhatsApp + izin notifikasi (FCM seperti fasum).
 class NotificationsScreen extends StatefulWidget {
@@ -37,7 +39,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshSellerChatsIfNeeded();
+      _refreshChatsOnOpen();
       _maybeAskNotificationPermission();
     });
   }
@@ -45,10 +47,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _reloadChats() async {
     if (!mounted) return;
     setState(() => _syncingChats = true);
-    await context.read<ChatProvider>().refreshSellerInbox();
+    final chat = context.read<ChatProvider>();
+    if (widget.mode == ChatInboxMode.seller) {
+      await chat.refreshSellerInbox();
+    } else {
+      await chat.refreshBuyerInbox();
+    }
+    if (widget.mode == ChatInboxMode.seller) {
+      context.read<OrdersProvider>().refreshSellerSubscriptions();
+    }
     if (!mounted) return;
     setState(() => _syncingChats = false);
-    final err = context.read<ChatProvider>().lastError;
+    final err = chat.lastError;
     if (err != null && err.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(err)),
@@ -56,9 +66,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  Future<void> _refreshSellerChatsIfNeeded() async {
+  Future<void> _refreshChatsOnOpen() async {
     if (!mounted) return;
-    if (widget.mode != ChatInboxMode.seller) return;
     final auth = context.read<AuthProvider>();
     if (!auth.isLoggedIn) return;
     await _reloadChats();
@@ -153,12 +162,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: Consumer2<ChatProvider, InboxMessagesProvider>(
         builder: (context, chat, inbox, _) {
           final mode = widget.mode;
-          final chats = chat.threadsForMode(mode);
-          final notifs = mode == ChatInboxMode.buyer
-              ? inbox.threads
-                  .where((t) => !t.id.startsWith('rtdb-chat-'))
-                  .toList()
-              : <InboxThread>[];
+          var chats = chat.threadsForMode(mode);
+          if (chats.isEmpty && mode == ChatInboxMode.buyer) {
+            chats = chat.myThreads
+                .where((t) => t.buyerUid == context.read<AuthProvider>().uid)
+                .toList();
+          }
+          final notifs = inbox.threads
+              .where(
+                (t) => mode == ChatInboxMode.buyer
+                    ? !t.id.startsWith('rtdb-chat-')
+                    : t.id.startsWith('order-alert-'),
+              )
+              .toList();
 
           if (!chat.isReady) {
             return Center(
@@ -225,7 +241,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                       ),
                     ],
-                    if (auth.isLoggedIn && isSellerView) ...[
+                    if (auth.isLoggedIn) ...[
                       const SizedBox(height: 16),
                       FilledButton.icon(
                         onPressed: _syncingChats ? null : _reloadChats,
@@ -293,6 +309,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         thread: t,
                         timeLabel: _timeLabel(t.lastAt),
                         onTap: () {
+                          if (t.id.startsWith('order-alert-')) {
+                            Navigator.pushNamed(
+                              context,
+                              SellerOrdersScreen.route,
+                            );
+                            inbox.markThreadRead(t.id);
+                            return;
+                          }
                           final chatId =
                               inbox.chatThreadIdFromInboxId(t.id);
                           if (chatId != null) {

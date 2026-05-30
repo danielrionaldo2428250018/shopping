@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../data/catalog_data.dart';
+import '../constants/product_categories.dart';
 import '../models/catalog_product.dart';
 import '../providers/auth_provider.dart';
 import '../providers/seller_applications_provider.dart';
@@ -51,8 +52,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     'Fair',
   ];
 
-  static const _categories = ['Electronics', 'Fashion', 'Home'];
-
   String _conditionLabel(AppLocalizations loc, String c) {
     switch (c) {
       case 'Brand New':
@@ -63,19 +62,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
         return loc.condGood;
       case 'Fair':
         return loc.condFair;
-      default:
-        return c;
-    }
-  }
-
-  String _categoryLabel(AppLocalizations loc, String c) {
-    switch (c) {
-      case 'Electronics':
-        return loc.catElectronics;
-      case 'Fashion':
-        return loc.catFashion;
-      case 'Home':
-        return loc.catHome;
       default:
         return c;
     }
@@ -494,11 +480,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                     ),
                                   ),
                                 ),
-                                items: _categories
+                                items: ProductCategories.ids
                                     .map(
                                       (c) => DropdownMenuItem(
                                         value: c,
-                                        child: Text(_categoryLabel(loc, c)),
+                                        child: Text(
+                                          ProductCategories.label(loc, c),
+                                        ),
                                       ),
                                     )
                                     .toList(),

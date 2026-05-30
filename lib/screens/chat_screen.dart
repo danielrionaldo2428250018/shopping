@@ -118,6 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
     if (id != null) {
+      await context.read<ChatProvider>().refreshBuyerInbox();
       final meta = await ChatRtdbService.getThreadMeta(id);
       if (meta != null && mounted) {
         final uid = auth.uid;

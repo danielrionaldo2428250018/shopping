@@ -13,6 +13,7 @@ import '../utils/app_screen_style.dart';
 import '../utils/green_computing.dart';
 import '../utils/l10n_helpers.dart';
 import '../utils/responsive_layout.dart';
+import '../constants/product_categories.dart';
 import '../widgets/home_product_tile.dart';
 import '../widgets/shimmer_widgets.dart';
 
@@ -46,32 +47,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     final previewProducts = products.take(previewCount).toList();
 
-    final categories = <Map<String, dynamic>>[
-      {
-        'icon': Icons.smartphone_rounded,
-        'title': loc.catElectronics,
-        'bg': const Color(0xFFE3F2FD),
-        'fg': const Color(0xFF1976D2),
-      },
-      {
-        'icon': Icons.checkroom_rounded,
-        'title': loc.catFashion,
-        'bg': const Color(0xFFFCE4EC),
-        'fg': const Color(0xFFE91E63),
-      },
-      {
-        'icon': Icons.home_rounded,
-        'title': loc.catHome,
-        'bg': const Color(0xFFE8F5E9),
-        'fg': const Color(0xFF43A047),
-      },
-      {
-        'icon': Icons.chair_rounded,
-        'title': loc.catSports,
-        'bg': const Color(0xFFFFF3E0),
-        'fg': const Color(0xFFF57C00),
-      },
-    ];
+    final categoryColors = <String, ({Color bg, Color fg})>{
+      'Electronics': (
+        bg: const Color(0xFFE3F2FD),
+        fg: const Color(0xFF1976D2),
+      ),
+      'HomeLiving': (
+        bg: const Color(0xFFE8F5E9),
+        fg: const Color(0xFF43A047),
+      ),
+      'SpareParts': (
+        bg: const Color(0xFFFFF3E0),
+        fg: const Color(0xFFF57C00),
+      ),
+      'Metal': (
+        bg: const Color(0xFFF3E5F5),
+        fg: const Color(0xFF7B1FA2),
+      ),
+    };
+    final categories = ProductCategories.homeFeaturedIds.map((id) {
+      final colors = categoryColors[id] ??
+          (bg: const Color(0xFFEEEEEE), fg: const Color(0xFF616161));
+      return {
+        'id': id,
+        'icon': ProductCategories.icon(id),
+        'title': ProductCategories.label(loc, id),
+        'bg': colors.bg,
+        'fg': colors.fg,
+      };
+    }).toList();
 
     final colors = appColors(context);
     return Scaffold(
@@ -373,7 +377,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, '/categories');
+                          Navigator.pushNamed(
+                            context,
+                            '/search-results',
+                            arguments: <String, String>{
+                              'category': c['id'] as String,
+                            },
+                          );
                         },
                         child: Column(
                           children: [

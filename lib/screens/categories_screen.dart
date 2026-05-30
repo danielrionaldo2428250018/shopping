@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/product_categories.dart';
 import '../data/catalog_data.dart';
 import '../utils/l10n_helpers.dart';
 
@@ -10,47 +11,17 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = context.l10n;
 
-    final categories = [
-      {
-        'icon': Icons.checkroom,
-        'title': loc.catFashion,
-        'key': 'Fashion',
-        'count': catalogCountForCategory('Fashion'),
-      },
-      {
-        'icon': Icons.phone_android,
-        'title': loc.catElectronics,
-        'key': 'Electronics',
-        'count': catalogCountForCategory('Electronics'),
-      },
-      {
-        'icon': Icons.watch,
-        'title': loc.catAccessories,
-        'key': 'Accessories',
-        'count': catalogCountForCategory('Accessories'),
-      },
-      {
-        'icon': Icons.sports_esports,
-        'title': loc.catSports,
-        'key': 'Gaming',
-        'count': catalogCountForCategory('Gaming'),
-      },
-      {
-        'icon': Icons.weekend,
-        'title': loc.catFurniture,
-        'key': 'Furniture',
-        'count': catalogCountForCategory('Furniture'),
-      },
-      {
-        'icon': Icons.menu_book,
-        'title': loc.catHome,
-        'key': 'Books',
-        'count': catalogCountForCategory('Books'),
-      },
-    ];
+    final categories = ProductCategories.ids.map((id) {
+      return {
+        'icon': ProductCategories.icon(id),
+        'title': ProductCategories.label(loc, id),
+        'key': id,
+        'count': catalogCountForCategory(id),
+      };
+    }).toList();
 
     return Scaffold(
-            appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -80,16 +51,10 @@ class CategoriesScreen extends StatelessWidget {
 
           return GestureDetector(
             onTap: () {
-              String? categoryArg;
-              if (key == 'Fashion' || key == 'Electronics') {
-                categoryArg = key;
-              }
               Navigator.pushNamed(
                 context,
                 '/search-results',
-                arguments: categoryArg != null
-                    ? <String, String>{'category': categoryArg}
-                    : <String, String>{'q': key},
+                arguments: <String, String>{'category': key},
               );
             },
             child: Container(
@@ -103,7 +68,7 @@ class CategoriesScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7F3DFF).withOpacity(0.1),
+                      color: const Color(0xFF7F3DFF).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -115,8 +80,11 @@ class CategoriesScreen extends StatelessWidget {
                   const SizedBox(height: 18),
                   Text(
                     title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
